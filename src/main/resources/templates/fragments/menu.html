@@ -1,0 +1,157 @@
+<div th:fragment="menu">
+
+<!-- Encabezado del Menú -->
+<div id="menu" class="text-center custom-menu-bg text-light has-height-md middle-items wow fadeIn">
+    <h2 class="section-title">
+        <a href="/menu" class="text-light text-decoration-none">MENU</a>
+    </h2>
+</div>
+
+<!-- Barra de categorías -->
+<div class="categories-bar text-light py-2 px-3 sticky-top" style="z-index: 1000;">
+    <div class="category-scroll">
+
+        <a th:each="categoria : ${categorias}"
+           th:classappend="${categoria eq activeCategoria} ? 'active' : ''"
+           class="btn btn-outline-light btn-sm"
+           th:href="'#cat-' + ${#strings.replace(categoria, ' ', '-')}"
+           th:text="${categoria}">
+        </a>
+
+        <div class="category-indicator" id="catIndicator"></div>
+    </div>
+</div>
+
+<!-- Contenedor principal -->
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+
+            <div th:each="categoria : ${categorias}"
+                 class="mb-5"
+                 th:id="'cat-' + ${#strings.replace(categoria, ' ', '-')}">
+
+                <h4 class="maya-category-title mb-3 text-center">
+                    <span th:text="${categoria}"></span>
+                </h4>
+
+                <div class="product-wrapper">
+                    <div class="d-flex product-scroll">
+
+<!-- TARJETA DE PRODUCTO -->
+<div th:each="producto : ${productos}"
+     th:if="${producto.categoria.nombre == categoria}"
+     class="maya-card text-white me-3"
+     style="min-width:260px; max-width:260px; flex:0 0 auto; position:relative;">
+
+    <!-- BADGE DESCUENTO -->
+    <span th:if="${producto.tienePromocion}"
+          class="badge-descuento position-absolute"
+          style="top:10px; left:10px; z-index:3;">
+        -<span th:text="${producto.porcentajeDescuento}"></span>%
+    </span>
+
+    <!-- CARRUSEL -->
+    <div th:if="${producto.imagenes != null and #lists.size(producto.imagenes) > 0}"
+         th:id="'carousel-' + ${producto.id}"
+         class="carousel slide maya-carousel mb-3">
+
+        <div class="carousel-inner" style="min-height:250px;">
+            <div th:each="imagen, iter : ${producto.imagenes}"
+                 th:classappend="${iter.index == 0} ? 'active'"
+                 class="carousel-item">
+
+                <img th:src="${imagen.imageUrl != null} ? @{${imagen.imageUrl}} : @{/imgs/default.png}"
+                     class="d-block w-100"
+                     style="object-fit:cover; height:250px;"
+                     loading="lazy">
+            </div>
+        </div>
+    </div>
+
+    <!-- IMAGEN DEFAULT -->
+    <div th:if="${producto.imagenes == null or #lists.isEmpty(producto.imagenes)}"
+         class="mb-3">
+
+        <img src="/imgs/default.png"
+             class="d-block w-100"
+             style="object-fit:cover; height:250px;"
+             loading="lazy">
+    </div>
+
+    <!-- NOMBRE -->
+    <h5 class="text-center" style="color:#7affbf;"
+        th:text="${producto.productName}"></h5>
+
+    <!-- PRECIOS -->
+    <div class="text-center mb-1">
+        <span th:if="${producto.tienePromocion}">
+            <del class="text-muted">$<span th:text="${producto.price}"></span></del>
+            <span class="badge badge-success ms-2">
+                $<span th:text="${producto.precioConDescuento}"></span>
+            </span>
+        </span>
+
+        <span th:if="${!producto.tienePromocion}">
+            <span class="badge badge-primary">
+                $<span th:text="${producto.price}"></span>
+            </span>
+        </span>
+    </div>
+
+    <!-- CANTIDAD + BOTÓN + STOCK -->
+    <div class="d-flex align-items-center justify-content-center mb-2">
+
+        <input type="number"
+               th:id="'quantity-' + ${producto.id}"
+               class="form-control form-control-sm text-center quantity-input"
+               value="1" min="1"
+               th:attr="max=${producto.stock}"
+               th:data-product-id="${producto.id}"
+               style="width:45px;"
+               th:disabled="${producto.stock == 0}">
+
+        <button class="btn btn-maya btn-sm ms-2 add-to-cart"
+                th:attr="data-product-id=${producto.id}"
+                th:data-name="${producto.productName}"
+                th:data-price="${producto.tienePromocion ? producto.precioConDescuento : producto.price}"
+                th:data-quantity-id="'quantity-' + ${producto.id}"
+                th:data-original-stock="${producto.stock}"
+                th:disabled="${producto.stock == 0}">
+            <i class="fas fa-cart-plus" th:if="${producto.stock > 0}"></i>
+            <i class="fas fa-ban" th:if="${producto.stock == 0}"></i>
+        </button>
+
+        <small class="ms-2 stock-label"
+               th:attr="data-product-id=${producto.id}"
+               th:classappend="
+                   ${producto.stock > 10} ? 'text-success' :
+                   (${producto.stock > 0} ? 'text-warning' : 'text-danger')">
+            <span th:text="${producto.stock > 0 ? 'Stock: ' + producto.stock : 'Agotado'}"></span>
+        </small>
+    </div>
+
+    <!-- DESCRIPCIÓN -->
+    <div class="descripcion-corta small text-light mb-2">
+        <span th:text="${producto.description}"></span>
+    </div>
+
+    <!-- VER MÁS -->
+    <div class="text-end">
+        <a href="#"
+   class="text-info ver-mas"
+   data-action="toggle-descripcion">
+   Ver más
+</a>
+    </div>
+
+</div><!-- maya-card -->
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>

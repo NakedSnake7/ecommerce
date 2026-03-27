@@ -1,0 +1,38 @@
+<footer class="footer mt-auto py-4">
+    <div class="container text-center">
+
+        <nav class="footer-nav mb-2">
+            <a th:href="@{/privacy}" class="footer-link">
+                Políticas de Privacidad
+            </a>
+            <span class="mx-2">|</span>
+            <a th:href="@{/}" class="footer-link">
+                WeedTlanMX
+            </a>
+        </nav>
+
+        <small class="text-muted">
+            © <span th:text="${#dates.year(#dates.createNow())}"></span>
+            WeedTlanMX. Todos los derechos reservados.
+        </small>
+
+    </div>
+    
+</footer>
+<style>
+.footer {
+    background: rgba(6, 8, 7, 0.95);
+    border-top: 1px solid rgba(127, 255, 212, 0.25);
+}
+
+.footer-link {
+    color: #7fffd4;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+</style>

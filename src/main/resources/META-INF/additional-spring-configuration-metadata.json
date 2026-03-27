@@ -1,0 +1,57 @@
+{"properties": [
+  {
+    "name": "stripe.secret.key",
+    "type": "java.lang.String",
+    "description": "A description for 'stripe.secret.key'"
+  },
+  {
+    "name": "stripe.public.key",
+    "type": "java.lang.String",
+    "description": "A description for 'stripe.public.key'"
+  },
+  {
+    "name": "stripe.webhook.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'stripe.webhook.secret'"
+  },
+  {
+    "name": "mailersend.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'mailersend.api.key'"
+  },
+  {
+    "name": "mailersend.api.url",
+    "type": "java.lang.String",
+    "description": "A description for 'mailersend.api.url'"
+  },
+  {
+    "name": "mailersend.from.email",
+    "type": "java.lang.String",
+    "description": "A description for 'mailersend.from.email'"
+  },
+  {
+    "name": "mailersend.from.name",
+    "type": "java.lang.String",
+    "description": "A description for 'mailersend.from.name'"
+  },
+  {
+    "name": "mailersend.reply.to",
+    "type": "java.lang.String",
+    "description": "A description for 'mailersend.reply.to'"
+  },
+  {
+    "name": "google.sheets.credentials",
+    "type": "java.lang.String",
+    "description": "A description for 'google.sheets.credentials'"
+  },
+  {
+    "name": "google.sheets.spreadsheet-id",
+    "type": "java.lang.String",
+    "description": "A description for 'google.sheets.spreadsheet-id'"
+  },
+  {
+    "name": "google.sheets.range",
+    "type": "java.lang.String",
+    "description": "A description for 'google.sheets.range'"
+  }
+]}

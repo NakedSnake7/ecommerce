@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Producto</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <style>
+        body { background-color: #111; }
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-light">
+
+<div id="particles-js"></div>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Editar Producto</h2>
+
+    <p th:text="'Producto: ' + ${productoDTO.productName}">
+        Producto cargando...
+    </p>
+
+    <!-- 🔒 PRODUCTO ID (NECESARIO PARA SEGURIDAD) -->
+    <input type="hidden" id="productoId" th:value="${productoDTO.id}" />
+
+    <!-- FORM -->
+    <form th:action="@{'/api/productos/editar/' + ${productoDTO.id}}"
+          th:object="${productoDTO}"
+          method="post"
+          enctype="multipart/form-data">
+
+        <input type="hidden" th:field="*{id}" />
+
+        <!-- Nombre -->
+        <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" class="form-control"
+                   th:field="*{productName}" required>
+        </div>
+
+        <!-- Precio -->
+        <div class="form-group">
+            <label>Precio</label>
+            <input type="number" class="form-control"
+                   th:field="*{price}" step="0.01" min="0" required>
+        </div>
+
+        <!-- Stock -->
+        <div class="form-group">
+            <label>Stock</label>
+            <input type="number" class="form-control"
+                   th:field="*{stock}" min="0" required>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea class="form-control"
+                      th:field="*{description}"
+                      rows="4" required></textarea>
+        </div>
+
+        <!-- Categoría -->
+        <div class="form-group">
+            <label>Categoría</label>
+            <select class="form-control"
+                    th:field="*{categoriaNombre}" required>
+                <option value="" disabled>Selecciona una categoría</option>
+                <option th:each="cat : ${categorias}"
+                        th:value="${cat.nombre}"
+                        th:text="${cat.nombre}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Descuento -->
+        <div class="form-group">
+            <label>Porcentaje de Descuento (%)</label>
+            <input type="number" class="form-control"
+                   th:field="*{porcentajeDescuento}"
+                   min="0" max="100">
+        </div>
+
+        <!-- IMÁGENES EXISTENTES -->
+        <div class="form-group">
+            <label>Imágenes existentes</label>
+            <div class="row">
+
+                <div class="col-md-4 mb-3"
+                     th:each="imgUrl, iter : ${productoDTO.urlsImagenesExistentes}">
+
+                    <div class="card bg-secondary">
+                        <img th:src="${imgUrl}" class="card-img-top">
+
+                        <div class="card-body text-center">
+
+                            <!-- ELIMINAR AL GUARDAR -->
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="eliminarImagenes"
+                                       th:value="${productoDTO.imagenesExistentes[iter.index]}">
+                                <label class="form-check-label">
+                                    Marcar para eliminar
+                                </label>
+                            </div>
+
+                            <!-- ELIMINAR INMEDIATO -->
+                            <button type="button"
+                                    class="btn btn-danger btn-sm eliminar-img-btn"
+                                    th:attr="data-id=${productoDTO.imagenesExistentes[iter.index]}">
+                                Eliminar ahora
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- NUEVAS IMÁGENES -->
+        <div class="form-group">
+            <label>Nuevas imágenes (opcional)</label>
+            <input type="file" name="imagenes" multiple
+                   class="form-control-file" accept="image/*">
+        </div>
+
+        <!-- BOTONES -->
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success">
+                Guardar Cambios
+            </button>
+            <a href="/VerProductos" class="btn btn-secondary">
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+</div>
+
+<!-- ================= JS ================= -->
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const productoId = document.getElementById("productoId").value;
+
+    document.querySelectorAll(".eliminar-img-btn").forEach(btn => {
+
+        btn.addEventListener("click", async () => {
+
+            const idImg = btn.dataset.id;
+
+            if (!confirm("¿Eliminar esta imagen permanentemente?")) return;
+
+            try {
+                const resp = await fetch(
+                    `/api/productos/${productoId}/eliminar-imagen/${idImg}`,
+                    { method: "DELETE" }
+                );
+
+                if (resp.ok) {
+                    btn.closest(".col-md-4").remove();
+                } else {
+                    alert("No se pudo eliminar la imagen");
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("Error de red");
+            }
+        });
+    });
+});
+</script>
+
+<script>
+document.querySelector("form").addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    const form = e.target;
+    const btn = form.querySelector("button[type='submit']");
+
+    btn.disabled = true;
+    btn.innerText = "Guardando...";
+
+    try {
+        const resp = await fetch(form.action, {
+            method: "POST",
+            body: new FormData(form)
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+            window.location.href = "/VerProductos";
+        } else {
+            alert(data.error || "Error al guardar el producto");
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Error de conexión");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Guardar Cambios";
+    }
+});
+</script>
+
+<!-- PARTICLES -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+particlesJS("particles-js", {
+    particles: {
+        number: { value: 80, density: { enable: true, value_area: 900 } },
+        color: { value: ["#00ffcc", "#2bff99"] },
+        shape: { type: "circle" },
+        opacity: { value: 0.35, random: true },
+        size: { value: 4, random: true },
+        line_linked: {
+            enable: true,
+            distance: 150,
+            color: "#00ffcc",
+            opacity: 0.35,
+            width: 1
+        },
+        move: { enable: true, speed: 1.2 }
+    },
+    interactivity: {
+        events: { onhover: { enable: true, mode: "grab" } }
+    },
+    retina_detect: true
+});
+</script>
+
+</body>
+</html>

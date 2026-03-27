@@ -1,0 +1,76 @@
+### 📦 Archivos generados ###
+target/
+build/
+*.log
+*.class
+
+### Maven ###
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### 🧠 IDEs ###
+# STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### 💻 Sistema ###
+.DS_Store
+Thumbs.db
+
+### 🔐 Seguridad (MUY IMPORTANTE) ###
+.env
+.env.*
+*.env
+
+# Configuración sensible (Spring)
+application.properties
+application.yml
+application-*.properties
+application-*.yml
+
+### 📁 Archivos temporales ###
+*.swp
+*.swo
+
+### 📦 Logs ###
+logs/
+*.log
+
+### 🧪 Testing ###
+/test-output/
+/reports/
+
+### 📂 Archivos comprimidos ###
+*.zip
+*.tar
+*.gz
+
+### 🚀 Deploy ###
+/node_modules/
+dist/
+
+### 📘 Excepciones útiles ###
+!README.md
+!application-example.properties

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Órdenes | WeedTlan</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="/assets/css/custom-styles.css">
+</head>
+
+<body class="mt-5 container-fluid">
+
+<h2 class="mb-4">📦 Gestión de Órdenes – WeedTlan</h2>
+
+<!-- ===================== -->
+<!-- 📊 FILTROS -->
+<!-- ===================== -->
+<form method="get" action="/orders" class="mb-4">
+    <div class="form-row align-items-end">
+
+        <div class="col-md-3 mb-2">
+            <label>Desde</label>
+            <input type="date" name="from" class="form-control" th:value="${param.from}">
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <label>Hasta</label>
+            <input type="date" name="to" class="form-control" th:value="${param.to}">
+        </div>
+
+        <div class="col-md-2 mb-2">
+            <label>Estado</label>
+            <select name="status" class="form-control">
+                <option value="">Todos</option>
+                <option th:each="s : ${orderStatuses}"
+                        th:value="${s}"
+                        th:text="${s}"
+                        th:selected="${param.status == s}">
+                </option>
+            </select>
+        </div>
+
+        <div class="col-md-2 mb-2">
+            <label>Pago</label>
+            <select name="payment" class="form-control">
+                <option value="">Todos</option>
+                <option th:each="p : ${paymentStatuses}"
+                        th:value="${p}"
+                        th:text="${p}"
+                        th:selected="${param.payment == p}">
+                </option>
+            </select>
+        </div>
+
+        <div class="col-md-2 mb-2 d-flex align-items-end">
+            <button class="btn btn-maya w-100">
+                🔍 Filtrar
+            </button>
+        </div>
+
+    </div>
+</form>
+
+<!-- ===================== -->
+<!-- 📤 EXPORTACIONES -->
+<!-- ===================== -->
+
+<div class="mb-3">
+    <h5 class="mb-2">📦 Órdenes</h5>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-success"
+           th:href="@{/admin/orders/excel(
+               status=${param.status},
+               payment=${param.payment},
+               from=${param.from},
+               to=${param.to}
+           )}">
+            📊 Excel
+        </a>
+
+        <a class="btn btn-danger"
+           th:href="@{/admin/orders/pdf(
+               status=${param.status},
+               payment=${param.payment},
+               from=${param.from},
+               to=${param.to}
+           )}">
+            📄 PDF
+        </a>
+    </div>
+</div>
+
+<div class="mb-4">
+    <h5 class="mb-2">🧾 Productos Vendidos</h5>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-success"
+           th:href="@{/admin/reports/products/excel(
+               from=${param.from},
+               to=${param.to}
+           )}">
+            📊 Excel
+        </a>
+
+        <a class="btn btn-danger"
+           th:href="@{/admin/reports/products/pdf(
+               from=${param.from},
+               to=${param.to}
+           )}">
+            📄 PDF
+        </a>
+    </div>
+</div>
+
+<!-- ===================== -->
+<!-- 📋 TABLA -->
+<!-- ===================== -->
+<div class="tabla-contenedor table-responsive">
+    <table class="table table-dark table-hover table-lg text-center">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <!-- 🔥 ORDENADAS POR FECHA DESC -->
+        <tr th:each="order : ${orders}" class="align-middle">
+
+
+            <td th:text="${order.id}"></td>
+            <td th:text="${order.user?.fullName} ?: 'Sin nombre'"></td>
+            <td th:text="${order.user?.email} ?: 'Sin correo'"></td>
+            <td th:text="${order.user?.phone} ?: 'Sin teléfono'"></td>
+
+            <!-- Estado -->
+            <td>
+                <span class="badge"
+                      th:id="'order-status-' + ${order.id}"
+                      th:classappend="${order.orderStatusBadge}"
+                      th:text="${order.orderStatusLabel}">
+                </span>
+                <br>
+                <span class="badge mt-1 d-inline-block"
+                      th:classappend="${order.paymentStatus == T(com.WeedTitlan.server.model.PaymentStatus).PAID
+                                       ? 'badge-success' : 'badge-warning'}"
+                      th:text="${order.paymentStatusLabel}">
+                </span>
+            </td>
+
+            <!-- Total -->
+            <td>
+                $<span th:text="${#numbers.formatDecimal(order.total, 1, 'COMMA', 2, 'POINT')}"></span>
+            </td>
+
+            <!-- Fecha -->
+            <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
+
+            <!-- Acciones -->
+            <td class="d-flex flex-column align-items-center gap-1">
+
+                <a class="btn btn-maya btn-sm"
+                   th:href="@{/orders/{id}(id=${order.id})}">
+                    Ver
+                </a>
+
+                <!-- Selector AJAX -->
+                <select class="form-control form-control-sm order-status-select"
+                        style="width:140px;"
+                        th:data-order-id="${order.id}"
+                        th:if="${order.paymentStatus == T(com.WeedTitlan.server.model.PaymentStatus).PAID
+                                and order.orderStatus != T(com.WeedTitlan.server.model.OrderStatus).DELIVERED}">
+
+                    <option th:value="PROCESSED"
+                            th:selected="${order.orderStatus == T(com.WeedTitlan.server.model.OrderStatus).PROCESSED}">
+                        Procesada
+                    </option>
+                    <option th:value="SHIPPED"
+                            th:selected="${order.orderStatus == T(com.WeedTitlan.server.model.OrderStatus).SHIPPED}">
+                        Envío
+                    </option>
+                    <option th:value="DELIVERED">
+                        Entregada
+                    </option>
+                </select>
+
+                <span th:if="${order.paymentStatus != T(com.WeedTitlan.server.model.PaymentStatus).PAID}"
+                      class="text-warning small">
+                    ⏳ Esperando pago
+                </span>
+
+                <a class="btn btn-danger btn-sm"
+                   rel="nofollow"
+                   th:if="${order.paymentStatus != T(com.WeedTitlan.server.model.PaymentStatus).PAID}"
+                   th:href="@{/orders/{id}/delete(id=${order.id})}"
+                   onclick="return confirm('¿Seguro que deseas eliminar esta orden?');">
+                    ✖ Eliminar
+                </a>
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ===================== -->
+<!-- 🔙 VOLVER -->
+<!-- ===================== -->
+<a href="/servicio" class="btn btn-maya btn-fixed">
+    ⬅ Volver a Servicios
+</a>
+
+<!-- ===================== -->
+<!-- ⚡ AJAX MEJORADO -->
+<!-- ===================== -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.querySelectorAll(".order-status-select").forEach(select => {
+
+        select.addEventListener("change", async () => {
+
+            const orderId = select.dataset.orderId;
+            const newStatus = select.value;
+
+            // 🔒 Bloqueo visual
+            select.disabled = true;
+            select.classList.add("opacity-50");
+
+            try {
+                const response = await fetch(`/orders/${orderId}/status-ajax`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!response.ok) throw new Error();
+
+                const data = await response.json();
+
+                const badge = document.getElementById(`order-status-${orderId}`);
+                badge.textContent = data.label;
+                badge.className = `badge ${data.badge}`;
+
+                if (newStatus === "DELIVERED") {
+                    select.remove();
+                } else {
+                    select.disabled = false;
+                    select.classList.remove("opacity-50");
+                }
+
+            } catch (e) {
+                alert("❌ Error al actualizar estado");
+                select.disabled = false;
+                select.classList.remove("opacity-50");
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+    <link
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+
+<div class="container mt-5 text-center">
+    <h1 class="text-danger">⚠️ Error</h1>
+
+    <p th:text="${error}">
+        Ocurrió un error inesperado
+    </p>
+
+    <a href="/VerProductos" class="btn btn-primary mt-3">
+        Volver
+    </a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmación de Compra</title>
+</head>
+
+<body style="margin:0; padding:25px; background-color:#0f0f0f; font-family:Arial, Helvetica, sans-serif; color:#e6e6e6;">
+
+<table align="center" width="100%" cellpadding="0" cellspacing="0"
+       style="max-width:650px; margin:auto; background-color:#1a1a1a; border-radius:12px; overflow:hidden;">
+
+    <!-- ENCABEZADO -->
+    <tr>
+        <td style="background:linear-gradient(135deg,#1eae98,#159c83); 
+                   color:#ffffff; text-align:center; padding:22px; 
+                   font-size:24px; font-weight:bold;">
+            ¡Gracias por tu compra en WeedTlan! 🌿
+        </td>
+    </tr>
+
+    <!-- CONTENIDO -->
+    <tr>
+        <td style="padding:25px; font-size:15px; line-height:1.7;">
+
+            <p>Hola <b>{NOMBRE}</b>,</p>
+
+            <p>
+                Hemos recibido tu pedido correctamente. Para comenzar a procesarlo,
+                realiza el pago dentro de las próximas <b>24 horas</b>.
+            </p>
+
+            <p><b>Número de orden:</b> #115033{NUMERO_ORDEN}</p>
+            <p><b>Total a depositar:</b>  {TOTAL} MXN</p>
+
+            <hr style="border:none; height:1px; background:#333; margin:20px 0;">
+
+            <h3 style="margin-bottom:10px;">💳 Datos para pago</h3>
+
+            <p><b>CLABE:</b> 706969132718705159</p>
+            <p><b>Banco:</b> Arcus</p>
+            <p><b>Referencia / Motivo:</b> #115033{NUMERO_ORDEN}</p>
+
+            <hr style="border:none; height:1px; background:#333; margin:25px 0;">
+
+            <h3 style="color:#ffffff;">🛒 Detalles de tu compra</h3>
+
+            <!-- TABLA PRODUCTOS -->
+            <table width="100%" cellpadding="5" cellspacing="0" style="border-collapse:collapse; margin-top:10px;">
+                <tr style="background-color:#2a2a2a; color:#ffffff;">
+                    <th style="padding:10px; text-align:left;">Producto</th>
+                    <th style="padding:10px; text-align:center;">Cant.</th>
+                    <th style="padding:10px; text-align:center;">Subtotal</th>
+                </tr>
+
+                {LISTADO_PRODUCTOS}
+            </table>
+
+            <!-- RESUMEN DE PAGO -->
+            <hr style="border:none; height:1px; background:#333; margin:20px 0;">
+
+            <h3 style="margin-bottom:10px;">💰 Resumen de pago</h3>
+
+            <table width="100%" cellpadding="5" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+                <tr>
+                    <td style="text-align:right; padding:6px;"><b>Subtotal:</b></td>
+                    <td style="text-align:right; padding:6px;"> {SUBTOTAL} MXN</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right; padding:6px;"><b>Envío:</b></td>
+                    <td style="text-align:right; padding:6px;"> {ENVIO} MXN</td>
+                </tr>
+                <tr style="background:#2f2f2f; font-size:16px;">
+                    <td style="text-align:right; padding:10px;"><b>Total:</b></td>
+                    <td style="text-align:right; padding:10px; color:#1eae98;">
+                        <b>{TOTAL} MXN</b>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- BOTÓN WHATSAPP -->
+            <a href="https://wa.me/5212221519266?text=Hola,%20ya%20realic%C3%A9%20el%20pago%20de%20mi%20pedido%20%23{NUMERO_ORDEN}%20y%20quiero%20confirmarlo."
+               target="_blank"
+               style="display:block; width:100%; max-width:360px; margin:25px auto;
+                      background-color:#25D366; color:#ffffff; text-decoration:none;
+                      padding:14px; font-size:16px; font-weight:bold;
+                      border-radius:8px; text-align:center;">
+                Confirmar pago por WhatsApp
+            </a>
+
+            <!-- AVISO IMPORTANTE -->
+            <div style="background-color:#262626; padding:16px; margin-top:20px;
+                        border-left:4px solid #27ae60; border-radius:8px;
+                        font-size:14px; color:#dcdcdc;">
+                <b>IMPORTANTE</b><br><br>
+                Tu pedido queda reservado por <b>24 horas</b>.  
+                Si no recibimos el pago dentro de ese tiempo, la orden se cancelará automáticamente.
+                <br><br>
+                Los envíos se realizan cada <b>3 días</b>. Te notificaremos cuando tu paquete sea enviado.
+            </div>
+
+        </td>
+    </tr>
+
+    <!-- PIE -->
+    <tr>
+        <td style="text-align:center; padding:12px; font-size:13px; 
+                   color:#9c9c9c; border-top:1px solid #333;">
+            WeedTlan © 2026 · Todos los derechos reservados
+        </td>
+    </tr>
+
+</table>
+
+</body>
+</html>

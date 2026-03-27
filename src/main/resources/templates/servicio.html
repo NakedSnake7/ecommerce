@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Menú - Gestión de Página</title>
+
+<style>
+:root{
+  --bg:#0f1724;
+  --card:#0b1220;
+  --accent:#22c55e;
+  --accent-2:#06b6d4;
+  --muted:#94a3b8;
+  --text:#e6eef6;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  background:linear-gradient(180deg,#071026 0%, #0b1220 100%);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+}
+
+.menu-card{
+  width:100%;
+  max-width:960px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:14px;
+  padding:1.2rem 1.4rem;
+  box-shadow:0 12px 40px rgba(2,6,23,0.65);
+}
+
+.menu-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:0.9rem;
+}
+
+.logo{
+  width:46px;
+  height:46px;
+  border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  color:#022;
+}
+
+.brand h1{
+  margin:0;
+  font-size:1.15rem;
+}
+.brand p{
+  margin:0;
+  font-size:0.82rem;
+  color:var(--muted);
+}
+
+/* NAV */
+nav{margin-top:1.2rem}
+
+.nav-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:0.8rem;
+}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  padding:0.8rem 0.9rem;
+  border-radius:10px;
+  text-decoration:none;
+  color:var(--text);
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.04);
+  transition:all .18s ease;
+  font-weight:600;
+}
+
+.nav-item span{
+  font-size:0.9rem;
+}
+
+.nav-item:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 22px rgba(0,0,0,.45);
+  border-color:rgba(34,197,94,0.25);
+}
+
+.nav-item.primary{
+  background:linear-gradient(90deg, rgba(34,197,94,0.15), rgba(6,182,212,0.08));
+  border-color:rgba(34,197,94,0.25);
+  color:var(--accent);
+}
+
+.icon{
+  font-size:1.2rem;
+}
+
+/* FOOTER */
+.footer{
+  margin-top:1.4rem;
+  display:flex;
+  justify-content:space-between;
+  font-size:0.85rem;
+  color:var(--muted);
+}
+
+@media (max-width:640px){
+  body{padding:1rem}
+  .footer{flex-direction:column;gap:0.4rem}
+}
+</style>
+</head>
+
+<body>
+
+
+
+<main class="menu-card">
+  <header class="menu-header">
+    <div class="brand">
+      <div class="logo">W</div>
+      <div>
+        <h1>Panel de Productos</h1>
+        <p>Gestión rápida y centralizada</p>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-grid">
+
+      <a th:href="@{/nuevo}" class="nav-item primary">
+        <span class="icon">➕</span>
+        <span>Subir Productos</span>
+      </a>
+
+      <a th:href="@{/VerProductos}" class="nav-item">
+        <span class="icon">📦</span>
+        <span>Ver / Editar Productos</span>
+      </a>
+
+      <a th:href="@{/modificar-precios}" class="nav-item">
+        <span class="icon">💲</span>
+        <span>Modificar Precios</span>
+      </a>
+
+      <a th:href="@{/proveedor/stock}" class="nav-item">
+        <span class="icon">🏭</span>
+        <span>Stock del Proveedor</span>
+      </a>
+
+      <a th:href="@{/orders}" class="nav-item">
+        <span class="icon">🧾</span>
+        <span>Órdenes</span>
+      </a>
+
+      <a th:href="@{/resenas/nueva}" class="nav-item">
+        <span class="icon">⭐</span>
+        <span>Crear Reseñas</span>
+      </a>
+
+    </div>
+  </nav>
+  
+
+  <div class="footer">
+    <span>Usuario: <strong>Administrador</strong></span>
+    <span>Panel WeedTlan • Control Interno</span>
+  </div>
+</main>
+
+</body>
+</html>

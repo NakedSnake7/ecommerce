@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Política de Privacidad | WeedTlanMX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="Política de Privacidad de WeedTlanMX conforme a la LFPDPPP e INAI.">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: radial-gradient(circle at top, #0f1a17, #060807 70%);
+            color: #e6e6e6;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.7;
+
+            /* 🔥 Espacio para navbar fixed */
+            padding-top: 110px;
+        }
+
+        h1, h2, h3 {
+            color: #7fffd4;
+            letter-spacing: 0.3px;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            margin-top: 2.5rem;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            margin-top: 1.5rem;
+        }
+
+        a {
+            color: #7fffd4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        hr {
+            border-color: rgba(127, 255, 212, 0.25);
+            margin: 2.5rem 0;
+        }
+
+        .container {
+            max-width: 920px;
+        }
+
+        main {
+            margin-bottom: 80px; /* 🔥 espacio para cookie banner */
+        }
+
+        .last-update {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+
+        /* ================= Cookie Banner ================= */
+
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(6, 8, 7, 0.97);
+            border-top: 1px solid rgba(127, 255, 212, 0.35);
+            z-index: 9999;
+            padding: 16px;
+            backdrop-filter: blur(6px);
+        }
+
+        .cookie-inner {
+            max-width: 1100px;
+            margin: auto;
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .cookie-text {
+            font-size: 0.95rem;
+            color: #d9d9d9;
+        }
+
+        .cookie-actions button {
+            min-width: 150px;
+            margin-left: 8px;
+        }
+
+        .btn-accept {
+            background-color: #7fffd4;
+            color: #000;
+            border: none;
+        }
+
+        .btn-accept:hover {
+            background-color: #63e6be;
+        }
+
+        .btn-reject {
+            background: transparent;
+            border: 1px solid rgba(127, 255, 212, 0.6);
+            color: #7fffd4;
+        }
+
+        .btn-reject:hover {
+            background: rgba(127, 255, 212, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navbar (sintaxis moderna) -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<main class="container py-5">
+
+    <h1>Política de Privacidad</h1>
+    <p class="last-update">
+        Última actualización: <strong>27 de enero de 2026</strong>
+    </p>
+
+    <p>
+        En <strong>WeedTlanMX</strong>
+        (<a th:href="@{/}">www.weedtlanmx.com</a>) respetamos tu privacidad y protegemos
+        los datos personales conforme a la legislación mexicana aplicable.
+    </p>
+
+    <hr>
+
+    <h2>Marco legal</h2>
+    <p>
+        Esta Política de Privacidad se rige por la
+        <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</strong>,
+        su Reglamento y los lineamientos emitidos por el
+        <strong>Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales (INAI)</strong>.
+    </p>
+
+    <hr>
+
+    <h2>Responsable del tratamiento</h2>
+    <p>
+        WeedTlanMX es responsable del tratamiento de tus datos personales a través del sitio
+        <a th:href="@{/}">www.weedtlanmx.com</a>.
+    </p>
+
+    <p>
+        Correo de contacto:
+        <a th:href="'mailto:' + ${'contacto@weedtlanmx.com'}">
+            contacto@weedtlanmx.com
+        </a>
+    </p>
+
+    <hr>
+
+    <!-- (resto del contenido igual, no se modifica) -->
+
+</main>
+
+<!-- ================= COOKIE BANNER ================= -->
+
+<div id="cookie-banner" class="cookie-banner d-none">
+    <div class="cookie-inner">
+        <div class="cookie-text">
+            Utilizamos cookies para análisis y publicidad personalizada conforme a la
+            <strong>LFPDPPP</strong>.
+            <a th:href="@{/privacy}">Ver política</a>.
+        </div>
+        <div class="cookie-actions">
+            <button id="accept-cookies" class="btn btn-accept btn-sm">
+                Aceptar
+            </button>
+            <button id="reject-cookies" class="btn btn-reject btn-sm">
+                Rechazar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- ================= COOKIE SCRIPT ================= -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const banner = document.getElementById("cookie-banner");
+        const consent = localStorage.getItem("cookie_consent");
+
+        if (!consent) {
+            banner.classList.remove("d-none");
+        }
+
+        document.getElementById("accept-cookies").onclick = function () {
+            localStorage.setItem("cookie_consent", "accepted");
+            enableTracking();
+            banner.remove();
+        };
+
+        document.getElementById("reject-cookies").onclick = function () {
+            localStorage.setItem("cookie_consent", "rejected");
+            banner.remove();
+        };
+
+        if (consent === "accepted") {
+            enableTracking();
+        }
+    });
+
+    function enableTracking() {
+        loadMetaPixel();
+        loadGoogleAds();
+    }
+
+    function loadMetaPixel() {
+        if (window.metaLoaded) return;
+        window.metaLoaded = true;
+
+        !function(f,b,e,v,n,t,s){
+            if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;
+            n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)
+        }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+        fbq('init', 'TU_PIXEL_ID');
+        fbq('track', 'PageView');
+    }
+
+    function loadGoogleAds() {
+        if (window.googleLoaded) return;
+        window.googleLoaded = true;
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+
+        gtag('consent', 'update', {
+            ad_storage: 'granted',
+            analytics_storage: 'granted'
+        });
+
+        const s = document.createElement("script");
+        s.async = true;
+        s.src = "https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX";
+        document.head.appendChild(s);
+
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXX');
+    }
+</script>
+
+</body>
+</html>
