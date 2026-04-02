@@ -37,14 +37,14 @@ public class CategoriaService {
             throw new RuntimeException("No se puede eliminar, categoría no encontrada con ID: " + id);
         }
     }
+  
     public Categoria obtenerOCrearCategoria(String nombre) {
 
-        // Si viene vacío o nulo, no hacemos nada
         if (nombre == null || nombre.trim().isEmpty()) {
-            return null;
+            throw new RuntimeException("La categoría no puede ser nula o vacía");
         }
 
-        return categoriaRepository.findByNombre(nombre)
+        return categoriaRepository.findByNombreIgnoreCase(nombre.trim())
                 .orElseGet(() -> {
                     Categoria nueva = new Categoria();
                     nueva.setNombre(nombre.trim());

@@ -1,6 +1,6 @@
 package com.ecomerce.store.mapper;
 
-import com.ecomerce.store.entity.ResenaEntity;    
+import com.ecomerce.store.entity.ResenaEntity;     
 import com.ecomerce.store.model.Resena;
 
 public class ResenaMapper {

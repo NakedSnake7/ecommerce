@@ -1,8 +1,9 @@
 package com.ecomerce.store.model;
 
-import jakarta.persistence.Column;  
+import jakarta.persistence.Column;   
 import jakarta.persistence.Entity;      
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
@@ -34,6 +35,11 @@ public class User {
     @Column(name = "default_address", length = 255)
     private String defaultAddress;
 
+    // RELACIÓN INVERSA
+    @OneToOne(mappedBy = "user")
+    private AuthUser authUser;
+    
+    
     public String getDefaultAddress() {
 		return defaultAddress;
 	}

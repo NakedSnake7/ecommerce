@@ -1,57 +1,62 @@
 package com.ecomerce.store.controller;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;   
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.ui.Model; // Importa el Model correcto
+import com.ecomerce.store.dto.ProductoDTO;
+import com.ecomerce.store.repository.ResenaRepository;
 import com.ecomerce.store.service.ProductoService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-//import com.WeedTitlan.server.dto.ProductoResumenDTO;
-import com.ecomerce.store.model.Producto;
-import com.ecomerce.store.repository.ResenaRepository;
-
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
 
 @Controller
 public class HomeController {
 
-    @Autowired
-    private ProductoService productoService;
-    
+    private final ProductoService productoService;
     private final ResenaRepository resenaRepository;
 
-    public HomeController(ResenaRepository reseñaRepository) {
-        this.resenaRepository = reseñaRepository;
+    public HomeController(ProductoService productoService, ResenaRepository resenaRepository) {
+        this.productoService = productoService;
+        this.resenaRepository = resenaRepository;
     }
 
-    private void cargarDatosMenu(Model model) {
+    // =========================
+    // 🔥 DATA GLOBAL (REUTILIZABLE)
+    // =========================
+    private void cargarDatosGlobales(Model model) {
+
         List<String> categorias = productoService.obtenerCategorias();
-        List<Producto> productos = productoService.obtenerProductosVisiblesConTodo();
+        List<ProductoDTO> productos = productoService.obtenerProductosCompletos();
 
         model.addAttribute("categorias", categorias);
-        model.addAttribute("productos", productos);
+        model.addAttribute("products", productos); // 🔥 IMPORTANTE (antes "productos")
     }
 
+    // =========================
+    // 🏠 HOME
+    // =========================
     @GetMapping({"/", "/inicio"})
     public String home(Model model, HttpServletRequest request) {
 
         String forwardedHost = request.getHeader("X-Forwarded-Host");
         String host = forwardedHost != null ? forwardedHost : request.getServerName();
 
-        // 👉 LANDING EDITORIAL
+        // 🔥 MULTI-TENANT (muy buen nivel esto)
         if (host != null && host.startsWith("espacio.")) {
-            return "landing-espacio"; // templates/landing-espacio.html
+            return "landing-espacio";
         }
 
-        // 👉 ECOMMERCE NORMAL
-        cargarDatosMenu(model);
+        // 🔥 DATA GLOBAL
+        cargarDatosGlobales(model);
 
+        // 🔥 RESEÑAS
         model.addAttribute(
             "resenasIniciales",
             resenaRepository.findAll(
@@ -62,37 +67,48 @@ public class HomeController {
         return "index";
     }
 
+    // =========================
+    // 🚫 BLOQUEAR LANDING DIRECTO
+    // =========================
     @GetMapping("/landing-espacio")
     public String blockLandingDirect() {
         return "redirect:/";
     }
 
-
+    // =========================
+    // 📂 MENÚ
+    // =========================
     @GetMapping("/menu")
     public String verMenu(Model model) {
-        cargarDatosMenu(model);
+        cargarDatosGlobales(model);
         return "index";
     }
 
+    // =========================
+    // 📦 SUBIR PRODUCTO (PROTEGIDO)
+    // =========================
     @GetMapping("/subirProducto")
-    public String subirProducto(Model model, @AuthenticationPrincipal UserDetails user) {
+    public String subirProducto(@AuthenticationPrincipal UserDetails user) {
         if (user == null) {
             return "redirect:/login";
         }
         return "subirProducto";
     }
+
+    // =========================
+    // 🔄 FRAGMENTO MENÚ (AJAX)
+    // =========================
     @GetMapping("/fragmento-menu")
     public String cargarFragmentoMenu(Model model) {
-        List<String> categorias = productoService.obtenerCategorias();
-        List<Producto> productos = productoService.obtenerProductosVisiblesConTodo();
 
-        model.addAttribute("categorias", categorias);
-        model.addAttribute("productos", productos);
+        cargarDatosGlobales(model);
 
-        // archivo: templates/fragments/menu.html
-        // fragmento: menuFragment
         return "fragments/menu :: menu";
     }
+
+    // =========================
+    // ⭐ FRAGMENTO RESEÑAS
+    // =========================
     @GetMapping("/fragmento-resenas")
     public String cargarResenasFragment(Model model) {
 
@@ -106,31 +122,49 @@ public class HomeController {
         return "fragments/resenas :: resenas";
     }
 
-
-
-
+    // =========================
+    // 📋 LISTA COMPLETA RESEÑAS
+    // =========================
     @GetMapping("/lista")
     public String listarResenas(Model model) {
-    	model.addAttribute("resenas", resenaRepository.findAllByOrderByEstrellasDesc());
+
+        model.addAttribute(
+            "resenas",
+            resenaRepository.findAllByOrderByEstrellasDesc()
+        );
+
         return "resenas";
     }
+
+    // =========================
+    // 💳 CHECKOUT CANCELADO
+    // =========================
     @GetMapping("/checkout-cancel")
     public String checkoutCancel() {
         return "checkout-cancel";
     }
+
+    // =========================
+    // ✅ COMPRA EXITOSA
+    // =========================
     @GetMapping("/gracias")
     public String gracias() {
         return "gracias";
     }
+
+    // =========================
+    // 🧾 SERVICIO
+    // =========================
     @GetMapping("/servicio")
     public String servicio() {
-        return "servicio"; 
+        return "servicio";
     }
+
+    // =========================
+    // 🔒 PRIVACIDAD
+    // =========================
     @GetMapping("/privacy")
     public String privacy() {
-        return "privacy"; 
+        return "privacy";
     }
-
-
-
 }

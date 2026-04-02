@@ -27,6 +27,12 @@ public class OrderItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variante_id", nullable = false)
+    private ProductoVariante variante;
+    
+    
 
     // Constructor vacío para JPA
     public OrderItem() {}
@@ -40,11 +46,20 @@ public class OrderItem {
     }
 
     // Getters y setters
+    
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public ProductoVariante getVariante() {
+		return variante;
+	}
+
+	public void setVariante(ProductoVariante variante) {
+		this.variante = variante;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 

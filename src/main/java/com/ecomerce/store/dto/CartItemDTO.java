@@ -1,14 +1,19 @@
 package com.ecomerce.store.dto;
 
+import com.ecomerce.store.contracts.StockItem;  
+
 import jakarta.validation.constraints.DecimalMin;  
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class CartItemDTO {
+public class CartItemDTO implements StockItem {
 
     @NotNull(message = "El ID del producto no puede ser nulo")
     private Long productId; // 
+    
+    @NotNull
+    private Long varianteId;
 
     @NotBlank(message = "El nombre del producto no puede estar vacío")
     private String name;
@@ -20,6 +25,8 @@ public class CartItemDTO {
     @NotNull(message = "El precio no puede ser nulo")
     @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
     private Double price;
+    
+ 
 
     // =====================
     // GETTERS Y SETTERS
@@ -41,6 +48,12 @@ public class CartItemDTO {
         this.name = name;
     }
 
+    @Override
+    public Long getVarianteId() {
+        return varianteId;
+    }
+
+    @Override
     public Integer getQuantity() {
         return quantity;
     }

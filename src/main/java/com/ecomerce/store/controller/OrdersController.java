@@ -1,6 +1,6 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.model.Order;   
+import com.ecomerce.store.model.Order;    
 import com.ecomerce.store.model.OrderStatus;
 import com.ecomerce.store.model.PaymentStatus;
 import com.ecomerce.store.service.OrderService;
@@ -21,8 +21,11 @@ import java.util.Map;
 public class OrdersController {
 
     private final OrderService orderService;
+    
+    
     public OrdersController(OrderService orderService) {
         this.orderService = orderService;
+		
     }
 
 
@@ -91,11 +94,7 @@ public class OrdersController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            // 1️⃣ Confirmar pago (estado + fecha)
             orderService.confirmarPagoTransferencia(id);
-
-            // 2️⃣ Correo centralizado (idempotente)
-            orderService.enviarCorreoConfirmacionPagoSiAplica(id);
 
             redirectAttributes.addFlashAttribute(
                     "success",
@@ -111,7 +110,6 @@ public class OrdersController {
 
         return "redirect:/orders/" + id;
     }
-
 
 
 

@@ -2,63 +2,66 @@ package com.ecomerce.store.dto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList; 
+import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 
 public class ProductoDTO {
 
     private Long id;
 
-    // Nombre obligatorio
-    @NotBlank(message = "El nombre del producto es obligatorio")
-    @Size(min = 3, max = 80, message = "El nombre debe tener entre 3 y 80 caracteres")
+    @NotBlank
+    @Size(min = 3, max = 80)
     private String productName;
 
-    // Precio obligatorio
-    @NotNull(message = "El precio es obligatorio")
-    @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
-    private BigDecimal price;
+    @NotNull
+    @DecimalMin("0.01")
+    private BigDecimal precio;
 
-
-    // Descripción similar a la entidad
-    @Lob
     private String description;
 
-    // Categoría seleccionada existente
-    @Size(max = 50, message = "El nombre de categoría es demasiado largo")
+    private Long categoriaId;
     private String categoriaNombre;
-
-    // Nueva categoría que se crea
-    @Size(max = 50, message = "El nombre de la nueva categoría es demasiado largo")
     private String nuevaCategoria;
+    
+    private String imageUrl;
+    private Integer stockTotal;
 
-    // Stock
-    @NotNull(message = "El stock es obligatorio")
-    @Min(value = 0, message = "El stock no puede ser negativo")
-    private Integer stock;
+    // 🔥 VARIANTES (modelo Amazon)
+    private List<ProductoVarianteDTO> variantes = new ArrayList<>();
 
-    // Descuento
-    @DecimalMin("0.0")
-    @DecimalMax("100.0")
-    private Double porcentajeDescuento;
+    private Double porcentajeDescuento = 0.0;
 
+    private Boolean visibleEnMenu = true;
+    private Boolean tienePromocion = false;
 
-    private Boolean visibleEnMenu;
-    private Boolean tienePromocion;
-
-    // IDs de imágenes existentes (para eliminar o mostrar en formulario)
     private List<Long> imagenesExistentes = new ArrayList<>();
-
-    // URLs de las imágenes existentes (opcional para mostrar en Thymeleaf)
     private List<String> urlsImagenesExistentes = new ArrayList<>();
-    // ---- Getters y setters ---- //
+    
+    public boolean getTieneVariantes() {
+        return variantes != null && !variantes.isEmpty();
+    }
+    public int getTotalVariantes() {
+        return variantes != null ? variantes.size() : 0;
+    }
+    // -----------------------------
+    // GETTERS / SETTERS
+    // -----------------------------
 
+    public boolean isVisibleEnMenu() {
+        return visibleEnMenu;
+    }
+
+    public void setVisibleEnMenu(boolean visibleEnMenu) {
+        this.visibleEnMenu = visibleEnMenu;
+    }
+    
+    
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -66,45 +69,45 @@ public class ProductoDTO {
     public String getProductName() {
         return productName;
     }
+
     public void setProductName(String productName) {
         this.productName = productName;
     }
 
     public BigDecimal getPrice() {
-        return price;
+        return precio;
     }
 
     public void setPrice(BigDecimal price) {
-        this.price = price.setScale(2, RoundingMode.HALF_UP);
+        this.precio = price != null
+                ? price.setScale(2, RoundingMode.HALF_UP)
+                : null;
     }
-
 
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getCategoriaNombre() {
-        return categoriaNombre;
-    }
-    public void setCategoriaNombre(String categoriaNombre) {
-        this.categoriaNombre = categoriaNombre;
-    }
+
 
     public String getNuevaCategoria() {
         return nuevaCategoria;
     }
+
     public void setNuevaCategoria(String nuevaCategoria) {
         this.nuevaCategoria = nuevaCategoria;
     }
 
-    public Integer getStock() {
-        return stock;
+    public List<ProductoVarianteDTO> getVariantes() {
+        return variantes;
     }
-    public void setStock(Integer stock) {
-        this.stock = stock;
+
+    public void setVariantes(List<ProductoVarianteDTO> variantes) {
+        this.variantes = (variantes != null) ? variantes : new ArrayList<>();
     }
 
     public Double getPorcentajeDescuento() {
@@ -114,35 +117,54 @@ public class ProductoDTO {
     public void setPorcentajeDescuento(Double porcentajeDescuento) {
         this.porcentajeDescuento = porcentajeDescuento;
     }
-    public void setPorcentajeDescuento(Integer porcentajeDescuento) {
-        this.porcentajeDescuento = porcentajeDescuento != null ? porcentajeDescuento.doubleValue() : null;
-    }
-
-
-
-    public Boolean getVisibleEnMenu() {
-        return visibleEnMenu;
-    }
-    public void setVisibleEnMenu(Boolean visibleEnMenu) {
-        this.visibleEnMenu = visibleEnMenu;
-    }
+    
 
     public Boolean getTienePromocion() {
         return tienePromocion;
     }
+
     public void setTienePromocion(Boolean tienePromocion) {
         this.tienePromocion = tienePromocion;
     }
-	public List<Long> getImagenesExistentes() {
-		return imagenesExistentes;
+
+    public List<Long> getImagenesExistentes() {
+        return imagenesExistentes;
+    }
+
+    public void setImagenesExistentes(List<Long> imagenesExistentes) {
+        this.imagenesExistentes = imagenesExistentes;
+    }
+
+    public List<String> getUrlsImagenesExistentes() {
+        return urlsImagenesExistentes;
+    }
+
+    public void setUrlsImagenesExistentes(List<String> urlsImagenesExistentes) {
+        this.urlsImagenesExistentes = urlsImagenesExistentes;
+    }
+
+	public String getImageUrl() {
+		return imageUrl;
 	}
-	public void setImagenesExistentes(List<Long> imagenesExistentes) {
-		this.imagenesExistentes = imagenesExistentes;
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
-	public List<String> getUrlsImagenesExistentes() {
-		return urlsImagenesExistentes;
+	public Integer getStockTotal() {
+		return stockTotal;
 	}
-	public void setUrlsImagenesExistentes(List<String> urlsImagenesExistentes) {
-		this.urlsImagenesExistentes = urlsImagenesExistentes;
+	public void setStockTotal(Integer stockTotal) {
+		this.stockTotal = stockTotal;
+	}
+	public Long getCategoriaId() {
+		return categoriaId;
+	}
+	public void setCategoriaId(Long categoriaId) {
+		this.categoriaId = categoriaId;
+	}
+	public String getCategoriaNombre() {
+		return categoriaNombre;
+	}
+	public void setCategoriaNombre(String categoriaNombre) {
+		this.categoriaNombre = categoriaNombre;
 	}
 }

@@ -1,8 +1,9 @@
 package com.ecomerce.store.model;
 
-import jakarta.persistence.CascadeType;    
+import jakarta.persistence.CascadeType;     
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;   
+import jakarta.persistence.Index;
 import jakarta.validation.constraints.Size;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,12 +11,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,18 +28,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(
+	    name = "orders",
+	    indexes = {
+	        @Index(name = "idx_orders_email", columnList = "customer_email"),
+	        @Index(name = "idx_orders_guest_token", columnList = "guest_token"),
+	        @Index(name = "idx_orders_email_status", columnList = "customer_email, order_status"),
+	        @Index(name = "idx_orders_email_user", columnList = "customer_email, user_id")
+	    }
+	)
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    @NotNull(message = "El usuario es obligatorio")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
-    private String customerName; 
+    @NotBlank(message = "El nombre del cliente es obligatorio")
+    private String customerName;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
@@ -57,10 +69,23 @@ public class Order {
     private LocalDateTime orderDate;
 
     
-    @Column(name = "customer_email", nullable = false)
+    @Email(message = "Correo inválido")
+    @NotBlank(message = "El email es obligatorio")
     private String customerEmail;
-
     
+    @Column(name = "is_guest", nullable = false)
+    private boolean isGuest = false;
+
+    @Column(name = "claimed", nullable = false)
+    private boolean claimed = false;
+
+    @Column(name = "guest_token", unique = true, nullable = true)
+    private String guestToken;
+    
+    @Column(name = "stock_reduced", nullable = false)
+    private boolean stockReduced = false;
+
+
     // Emails
     
     @Column(name = "transfer_instructions_sent", nullable = false)
@@ -83,9 +108,6 @@ public class Order {
 
     @Column(name = "carrier")
     private String carrier;
-
-    @Column(name = "stock_reduced")
-    private Boolean stockReduced = false;
     
     
     @Column(name = "stripe_session_id", unique = true)
@@ -102,6 +124,8 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 20)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    
+    
 
     
     @Transient
@@ -118,6 +142,12 @@ public class Order {
         return customerEmail;
     }
 
+    @Transient
+    public boolean belongsTo(String email) {
+        return customerEmail != null && email != null &&
+               customerEmail.trim().equalsIgnoreCase(email.trim());
+    }
+  
     
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
@@ -130,7 +160,7 @@ public class Order {
     }
 
     
- 
+    
 
 @Column(name = "paid_at")
 private LocalDateTime paidAt;
@@ -139,15 +169,17 @@ private LocalDateTime paidAt;
     public Order() {}
 
     // Constructor sin 'phone'
-    public Order(User user, Double total, OrderStatus status, String address, String customerName) {
+    public Order(User user, Double total, String address, String customerName, String customerEmail) {
         this.user = user;
         this.total = total;
-        this.paymentStatus = PaymentStatus.PENDING;
-        this.orderDate = LocalDateTime.now();
         this.address = address;
         this.customerName = customerName;
+        this.customerEmail = customerEmail;
+        this.orderDate = LocalDateTime.now();
+        this.paymentStatus = PaymentStatus.PENDING;
+        this.orderStatus = OrderStatus.CREATED;
+        this.isGuest = (user == null);
     }
-
 
     // Métodos para manejar la relación bidireccional
     public void addItem(OrderItem item) {
@@ -185,9 +217,63 @@ private LocalDateTime paidAt;
             default -> "badge-secondary";
         };
     }
+  
+    @Transient
+    public boolean hasGuestAccess() {
+        return isGuest && guestToken != null;
+    }
 
+    @Transient
+    public boolean isOwnedByUser() {
+        return user != null;
+    }
+    
+    @PrePersist
+    @PreUpdate
+    public void beforeSave() {
 
+        // 🔹 Normalizar email
+        if (this.customerEmail != null) {
+            this.customerEmail = this.customerEmail.trim().toLowerCase();
+        }
 
+        // 🔹 Generar token si es guest
+        if (this.guestToken == null && this.user == null) {
+            this.guestToken = java.util.UUID.randomUUID().toString().replace("-", "");
+        }
+
+        // 🔹 Validación
+        if (user == null && 
+           (customerEmail == null || customerEmail.isBlank() ||
+            customerName == null || customerName.isBlank())) {
+
+            throw new IllegalStateException("Orden inválida: falta información del cliente");
+        }
+
+        if (user != null && isGuest) {
+            throw new IllegalStateException("Inconsistencia: usuario asignado pero marcado como guest");
+        }
+    }
+    
+    public void claim(User user) {
+        if (this.claimed) {
+            throw new IllegalStateException("La orden ya fue reclamada");
+        }
+        if (!this.isGuest) {
+            throw new IllegalStateException("Solo órdenes guest pueden reclamarse");
+        }
+        if (!belongsTo(user.getEmail())) {
+            throw new IllegalStateException("El email no coincide con la orden");
+        }
+
+        setUser(user);
+        this.claimed = true;
+    }
+    
+    @Transient
+    public boolean canBeClaimed() {
+        return isGuest && !claimed;
+    }
 
     public String getPaymentStatusLabel() {
         if (paymentStatus == null) return "Desconocido";
@@ -223,6 +309,7 @@ private LocalDateTime paidAt;
 
     public void setUser(User user) {
         this.user = user;
+        this.isGuest = (user == null);
     }
 
     public Double getTotal() {
@@ -270,7 +357,7 @@ private LocalDateTime paidAt;
     @Override
     public String toString() {
         return "Order{id=" + id +
-               ", user=" + (user != null ? user.getFullName() : "null") +
+        		", user=" + (user != null ? user.getFullName() : customerName) +
                ", total=" + total +
                ", orderStatus=" + orderStatus +
                ", paymentStatus=" + paymentStatus +
@@ -290,10 +377,7 @@ private LocalDateTime paidAt;
     public String getCarrier() {
         return carrier;
     }
-    // Getter
-    public Boolean isStockReduced() {
-        return stockReduced != null && stockReduced; // evita null
-    }
+   
 
     // Setter
     public void setStockReduced(Boolean stockReduced) {
@@ -344,10 +428,124 @@ public void setPaymentIntentId(String paymentIntentId) {
 public void setCustomerEmail(String customerEmail) {
 	this.customerEmail = customerEmail;
 }
+//=====================
+//stock
+//=====================
+public boolean hasStockReduced() {
+    return this.stockReduced;
+}
+
+public void markStockReduced() {
+    this.stockReduced = true;
+}
+public void markStockAsReduced() {
+    this.stockReduced = true;
+}
 
 //=====================
-//Transferencia
+//PAGOS
 //=====================
+public void markAsPaid(String paymentIntentId) {
+
+    if (this.paymentStatus == PaymentStatus.PAID) {
+        return;
+    }
+
+    if (this.orderStatus == OrderStatus.CANCELLED) {
+        throw new IllegalStateException("No puedes pagar una orden cancelada");
+    }
+
+    this.paymentStatus = PaymentStatus.PAID;
+    this.paidAt = LocalDateTime.now();
+    this.paymentIntentId = paymentIntentId;
+    this.orderStatus = OrderStatus.PAID_PENDING_STOCK;
+}
+public void markAsPaid() {
+    markAsPaid(null);
+}
+
+public void markAsProcessed() {
+    if (this.orderStatus != OrderStatus.PAID_PENDING_STOCK) {
+        throw new IllegalStateException("La orden no está lista para procesarse");
+    }
+    this.orderStatus = OrderStatus.PROCESSED;
+}
+
+public void markAsPendingStock() {
+
+    if (this.paymentStatus != PaymentStatus.PAID) {
+        throw new IllegalStateException("Solo órdenes pagadas pueden quedar en pending stock");
+    }
+
+    this.orderStatus = OrderStatus.PAID_PENDING_STOCK;
+}
+
+public boolean canExpire() {
+    if (this.paymentMethod != PaymentMethod.TRANSFER) return false;
+    if (this.paymentStatus == PaymentStatus.PAID) return false;
+    if (this.orderStatus != OrderStatus.CREATED) return false;
+
+    LocalDateTime limite = this.orderDate.plusHours(24);
+    return LocalDateTime.now().isAfter(limite);
+}
+
+public void markAsExpired() {
+
+    if (!canExpire()) {
+        throw new IllegalStateException("La orden no puede expirar");
+    }
+
+    this.orderStatus = OrderStatus.CANCELLED;
+    this.paymentStatus = PaymentStatus.EXPIRED;
+}
+
+//============================
+//VALIDACION DE TRANSICION
+//============================
+public void changeStatus(OrderStatus newStatus) {
+
+    if (this.orderStatus == OrderStatus.CANCELLED) {
+        throw new IllegalStateException("No puedes modificar una orden cancelada");
+    }
+
+    boolean valid = switch (this.orderStatus) {
+        case CREATED -> newStatus == OrderStatus.PAID_PENDING_STOCK || newStatus == OrderStatus.CANCELLED;
+        case PAID_PENDING_STOCK -> newStatus == OrderStatus.PROCESSED;
+        case PROCESSED -> newStatus == OrderStatus.SHIPPED;
+        case SHIPPED -> newStatus == OrderStatus.DELIVERED;
+        default -> false;
+    };
+
+    if (!valid) {
+        throw new IllegalStateException(
+            "Transición inválida de " + this.orderStatus + " a " + newStatus
+        );
+    }
+
+    this.orderStatus = newStatus;
+}
+
+public boolean isReadyForProcessing() {
+    return this.paymentStatus == PaymentStatus.PAID 
+        && this.orderStatus == OrderStatus.PAID_PENDING_STOCK;
+}
+//============================
+//PRODUCTO ENVIADO
+//============================
+public void markAsShipped(String tracking, String carrier) {
+
+    if (this.orderStatus != OrderStatus.PROCESSED) {
+        throw new IllegalStateException("La orden debe estar procesada antes de enviarse");
+    }
+
+    if (tracking == null || tracking.isBlank()) {
+        throw new IllegalArgumentException("Tracking requerido");
+    }
+
+    this.trackingNumber = tracking;
+    this.carrier = carrier;
+    this.orderStatus = OrderStatus.SHIPPED;
+}
 
 //============================
 //EMAIL FLAGS
@@ -384,5 +582,14 @@ public boolean isShippingConfirmationSent() {
 public void setShippingConfirmationSent(boolean shippingConfirmationSent) {
  this.shippingConfirmationSent = shippingConfirmationSent;
 }
+
+public boolean isStockReduced() {
+    return stockReduced;
+}
+
+public void setStockReduced(boolean stockReduced) {
+    this.stockReduced = stockReduced;
+}
+
 
 }

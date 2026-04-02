@@ -1,12 +1,14 @@
 package com.ecomerce.store.model;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.Column; 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,12 +19,10 @@ public class AuthUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    
-
-	@Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true) // null para guest antes de reclamar
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -30,12 +30,33 @@ public class AuthUser {
 
     private boolean enabled = true;
 
+    //  saber si completó perfil
+    @Column(name = "profile_completed", nullable = false)
+    private boolean profileCompleted = false;
+
+    //  RELACIÓN OPCIONAL
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = true)
+    private User user;
+
     public enum Role {
         ADMIN,
         USER
     }
 
+
+
+
     // getters / setters
+    
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
+    }
+    
     public Long getId() {
 		return id;
 	}
@@ -74,5 +95,12 @@ public class AuthUser {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+	public boolean isProfileCompleted() {
+	    return profileCompleted;
+	}
+
+	public void setProfileCompleted(boolean profileCompleted) {
+	    this.profileCompleted = profileCompleted;
 	}
 }

@@ -1,21 +1,20 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.exceptions.OrderNotFoundException;            
+import com.ecomerce.store.exceptions.OrderNotFoundException;                
 
-import com.ecomerce.store.exceptions.ResourceNotFoundException;
 import com.ecomerce.store.dto.CheckoutRequestDTO;
 import com.ecomerce.store.dto.OrderItemDTO;
 import com.ecomerce.store.dto.OrderRequestDTO;
 import com.ecomerce.store.dto.ProductSalesDTO;
-import com.ecomerce.store.exceptions.InsufficientStockException;
 import com.ecomerce.store.model.Order;
-import com.ecomerce.store.model.OrderItem;
 import com.ecomerce.store.model.OrderStatus;
 import com.ecomerce.store.model.PaymentStatus;
-import com.ecomerce.store.model.Producto;
 import com.ecomerce.store.model.User;
 import com.ecomerce.store.repository.OrderRepository;
-import com.ecomerce.store.repository.ProductoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.dao.CannotAcquireLockException;
@@ -23,29 +22,29 @@ import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
-import java.io.IOException;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-@Service
 
+@Service
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProductoRepository productoRepository;
-    private final EmailService emailService;
+    private final StockService stockService;
+    private final NotificationService notificationService;
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(
-            OrderRepository orderRepository,
-            ProductoRepository productoRepository,
-            EmailService emailService
-    ) {
-        this.orderRepository = orderRepository;
-        this.productoRepository = productoRepository;
-        this.emailService = emailService;
-    }
+    	    OrderRepository orderRepository,
+    	    StockService stockService,
+    	    NotificationService notificationService
+    	) {
+    	    this.orderRepository = orderRepository;
+    	    this.stockService = stockService;
+    	    this.notificationService = notificationService;
+    	}
 
     public Optional<Order> findByStripeSessionId(String stripeSessionId) {
         return orderRepository.findByStripeSessionId(stripeSessionId);
@@ -76,6 +75,7 @@ public class OrderService {
         );
     }
 
+    
     // ============================
     // OBTENER ORDEN
     // ============================
@@ -122,23 +122,42 @@ public class OrderService {
         );
     }
     
-    
- 
+    /* =====================================================
+    reclamar ordenes 
+===================================================== */
+    @Transactional
+    public void claimGuestOrders(User user) {
 
+        String email = user.getEmail().trim().toLowerCase();
+
+        List<Order> orders = orderRepository
+                .findByCustomerEmailIgnoreCaseAndUserIsNull(email);
+
+        List<Order> toUpdate = new ArrayList<>();
+
+        for (Order order : orders) {
+
+            if (order.canBeClaimed()) {
+                order.claim(user);
+                toUpdate.add(order);
+            }
+        }
+
+        if (!toUpdate.isEmpty()) {
+            orderRepository.saveAll(toUpdate);
+        }
+
+        System.out.println("Órdenes reclamadas: " + toUpdate.size());
+    }
 /* =====================================================
     CREACIÓN DE ORDEN
  ===================================================== */
-
- @Transactional
- public Order crearOrden(Order order) {
-
-     order.setPaymentStatus(PaymentStatus.PENDING);
-     order.setOrderStatus(OrderStatus.CREATED);
-     order.setOrderDate(LocalDateTime.now());
-     order.setStockReduced(false);
-
-     return orderRepository.save(order);
- }
+    @Transactional
+    public Order crearOrden(Order order) {
+        return orderRepository.save(order);
+    }
+    
+    
  /* =====================================================
 guardar orden por transferencia
 ===================================================== */
@@ -146,34 +165,24 @@ guardar orden por transferencia
  @Transactional
  public Order saveOrderTransferencia(Order order) {
      Order saved = orderRepository.save(order);
-     enviarCorreoDatosTransferenciaSiAplica(saved.getId());
+     notificationService.sendTransferInstructions(saved);
      return saved;
  }
  /* =====================================================
     WEBHOOK STRIPE – PASO 1 (CRÍTICO)
     👉 ESTE NUNCA DEBE FALLAR
  ===================================================== */
-
- @Transactional
+ @Transactional(propagation = Propagation.REQUIRES_NEW)
  public void marcarOrdenComoPagada(Long orderId, String paymentIntentId) {
-	 
 
-     Order order = orderRepository.findById(orderId)
-             .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada"));
+     Order order = getById(orderId);
 
-     // 🔐 Idempotencia
-     if (order.getPaymentStatus() == PaymentStatus.PAID) {
-         return;
+     if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+         throw new IllegalStateException("No puedes pagar una orden cancelada");
      }
 
-     order.setPaymentStatus(PaymentStatus.PAID);
-     order.setPaidAt(LocalDateTime.now());
-     order.setPaymentIntentId(paymentIntentId);
-     order.setOrderStatus(OrderStatus.PAID_PENDING_STOCK);
-
+     order.markAsPaid(paymentIntentId);
      orderRepository.save(order);
-     
-
  }
 
  /* =====================================================
@@ -184,197 +193,88 @@ guardar orden por transferencia
  @Transactional
  public void procesarPostPago(Long orderId) {
 
-     Order order = orderRepository.findByIdWithUserAndItems(orderId)
-             .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada"));
+     Order order = getByIdWithUserAndItems(orderId);
+     
+     if (!order.isPaid()) {
+    	    throw new IllegalStateException("No puedes procesar una orden no pagada");
+    	}
 
      // 🔐 Idempotencia
      if (order.isStockReduced()) {
     	    if (order.getOrderStatus() != OrderStatus.PROCESSED) {
-    	        order.setOrderStatus(OrderStatus.PROCESSED);
+    	        order.markAsProcessed();
     	        orderRepository.save(order);
     	    }
     	    return;
     	}
 
-
-
      try {
-         descontarStock(order);
-         order.setOrderStatus(OrderStatus.PROCESSED);
+    	 stockService.descontarStock(order);
+
+    	 
+    	 order.markAsProcessed();
+
          orderRepository.save(order);
 
      } catch (Exception e) {
 
-         // ⚠️ El pago YA EXISTE → NO rollback
-         order.setOrderStatus(OrderStatus.PAID_PENDING_STOCK);
+         order.markAsPendingStock();
          orderRepository.save(order);
 
-         // Log + alerta
-         System.err.println(
-             "⚠️ Pago confirmado pero stock falló para orden " + orderId
-         );
-     }
+        
+
+         log.error("Stock falló en orden {}", orderId, e);    }
  }
  @Transactional
  public void confirmarPagoTransferencia(Long orderId) {
 
      Order order = getByIdWithUserAndItems(orderId);
 
-     if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-         throw new IllegalStateException("La orden está expirada");
-     }
-
-     // 🔐 Idempotencia total
-     if (order.getPaymentStatus() == PaymentStatus.PAID
-             && order.getOrderStatus() == OrderStatus.PROCESSED
-             && order.isPaymentConfirmedSent()) {
+     if (order.isPaid() && order.getOrderStatus() == OrderStatus.PROCESSED) {
          return;
      }
 
-     // 1️⃣ Estados finales
-     order.setPaymentStatus(PaymentStatus.PAID);
-     order.setOrderStatus(OrderStatus.PROCESSED);
-     order.setPaidAt(LocalDateTime.now());
-
+     order.markAsPaid(null);
      orderRepository.save(order);
 
-     // 2️⃣ Correo centralizado
-     enviarCorreoConfirmacionPagoSiAplica(orderId);
- }
-
- @Transactional
- public void enviarCorreoDatosTransferenciaSiAplica(Long orderId) {
-
-     Order order = getByIdWithUserAndItems(orderId);
-
-     // Solo transferencias
-     if (order.getPaymentMethod() != Order.PaymentMethod.TRANSFER) {
-         return;
-     }
-
-     // 🔐 Idempotencia
-     if (order.isTransferInstructionsSent()) {
-         return;
-     }
-
      try {
-         emailService.enviarCorreoDatosTransferencia(order);
-
-         order.setTransferInstructionsSent(true);
-         orderRepository.save(order);
-
-     } catch (IOException e) {
-         // ⚠️ NO romper creación de orden
-         e.printStackTrace();
-         System.err.println(
-             "⚠️ Error enviando correo datos transferencia. Orden=" + orderId
-         );
+         procesarPostPago(orderId);
+     } catch (Exception e) {
+         log.error("Error post-pago transferencia {}", orderId, e);
      }
+
+     notificationService.sendPaymentConfirmation(order);
  }
-
- @Transactional
- public void enviarCorreoConfirmacionPagoSiAplica(Long orderId) {
-
-     Order order = getByIdWithUserAndItems(orderId);
-
-     // 🔐 Condición única y final
-     if (order.getPaymentStatus() == PaymentStatus.PAID
-             && order.getOrderStatus() == OrderStatus.PROCESSED
-             && !order.isPaymentConfirmedSent()) {
-
-         try {
-             emailService.enviarCorreoPedidoProcesado(
-                     order.getCustomerEmail(),
-                     order.getCustomerName(),
-                     order.getId(),
-                     order.getItems()
-             );
-
-             order.setPaymentConfirmedSent(true);
-             orderRepository.save(order);
-
-         } catch (IOException e) {
-             // ⚠️ JAMÁS romper flujo de pago
-             e.printStackTrace();
-             System.err.println(
-                     "⚠️ Error enviando correo confirmación pago. Orden=" + orderId
-             );
-         }
-     }
- }
-
     // ============================
     // ACTUALIZAR ESTADO + STOCK
     // ============================
-    @Transactional
-    public Order updateOrderStatus(Long orderId, String newStatus) {
+ @Transactional
+ public Order updateOrderStatus(Long orderId, String newStatus) {
 
-        Order order = getOrderByIdWithUserAndItems(orderId);
+     Order order = getByIdWithUserAndItems(orderId);
 
-        OrderStatus status;
-        try {
-            status = OrderStatus.valueOf(newStatus.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Estado no válido: " + newStatus);
-        }
+     OrderStatus status = OrderStatus.valueOf(newStatus.toUpperCase());
 
-        order.setOrderStatus(status);
-        return orderRepository.save(order);
-    }
+     order.changeStatus(status);
 
-    /* =====================================================
-    DESCONTAR STOCK (AISLADO)
- ===================================================== */
-    @Transactional
-    public void descontarStock(Order order) {
-
-        if (order.isStockReduced()) return;
-
-        for (OrderItem item : order.getItems()) {
-
-            Producto producto = productoRepository
-                    .findByIdForUpdate(item.getProducto().getId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Producto no encontrado")
-                    );
-
-            if (producto.getStock() < item.getQuantity()) {
-                throw new InsufficientStockException(
-                        "Stock insuficiente para " + producto.getProductName()
-                );
-            }
-
-            producto.setStock(producto.getStock() - item.getQuantity());
-            productoRepository.save(producto);
-        }
-
-        order.setStockReduced(true);
-        orderRepository.save(order);
-    }
-
+     return orderRepository.save(order);
+ }
     // ============================
     // ACTUALIZAR INFO DE ENVÍO
     // ============================
     @Transactional
-    public Order updateShippingInfo(Long orderId, String trackingNumber, String carrier) {
+    public Order updateShippingInfo(Long orderId, String tracking, String carrier) {
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Orden no encontrada"));
+        Order order = getById(orderId);
 
-        order.setTrackingNumber(trackingNumber);
-        order.setCarrier(carrier);
-
-        // 🚚 Estado correcto
-        order.setOrderStatus(OrderStatus.SHIPPED);
+        order.markAsShipped(tracking, carrier);
 
         Order saved = orderRepository.save(order);
 
-        // 📧 Correo centralizado
-        enviarCorreoEnvioSiAplica(orderId);
+        notificationService.sendShipping(saved);
 
         return saved;
-    }
-
+    } 
     // ============================
     // ELIMINAR ORDEN
     // ============================
@@ -395,168 +295,41 @@ guardar orden por transferencia
     	    value = { PessimisticLockingFailureException.class, CannotAcquireLockException.class },
     	    maxAttempts = 3,
     	    backoff = @Backoff(delay = 200)
-    	)
-    	@Transactional
-    	public void validarStockOrden(OrderRequestDTO request) {
-    	    if (request.getItems() == null || request.getItems().isEmpty()) {
-    	        throw new IllegalArgumentException("No hay items en la orden");
-    	    }
+    	)    
+    @Transactional
+    public void validarStockOrden(OrderRequestDTO request) {
+        stockService.validarStock(request.getItems());
+    }
 
-    	    for (OrderItemDTO item : request.getItems()) {
-    	        Producto producto = productoRepository.findByIdForUpdate(item.getProductId())
-    	                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + item.getProductId()));
-
-    	        if (producto.getStock() < item.getQuantity()) {
-    	            throw new InsufficientStockException(
-    	                    "Stock insuficiente para " + producto.getProductName() +
-    	                            ". Disponibles: " + producto.getStock());
-    	          }
-    	        }
-    	}
-    
+    public void validarStockCheckout(CheckoutRequestDTO request) {
+        stockService.validarStock(
+            request.getCart().stream()
+                .map(item -> new OrderItemDTO(
+                    item.getVarianteId(),
+                    item.getQuantity()
+                ))
+                .toList()
+        );
+    }  
 /* =====================================================
     EXPIRAR ÓRDENES (TRANSFERENCIAS)
  ===================================================== */
-
     @Transactional
     public boolean expirarOrdenTransferencia(Order order) {
 
-        if (order.getPaymentMethod() != Order.PaymentMethod.TRANSFER) return false;
-        if (order.getPaymentStatus() == PaymentStatus.PAID) return false;
-        if (order.getOrderStatus() != OrderStatus.CREATED) return false;
+        if (!order.canExpire()) return false;
 
-        LocalDateTime limite = order.getOrderDate().plusHours(24);
-        if (LocalDateTime.now().isBefore(limite)) return false;
-
-        // 🔁 Revertir stock si estaba apartado
         if (order.isStockReduced()) {
-            for (OrderItem item : order.getItems()) {
-                Producto producto = productoRepository
-                        .findByIdForUpdate(item.getProducto().getId())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Producto no encontrado")
-                        );
-
-                producto.setStock(producto.getStock() + item.getQuantity());
-                productoRepository.save(producto);
-            }
-            order.setStockReduced(false);
+            stockService.restaurarStock(order);
         }
 
-        // Estados finales
-        order.setOrderStatus(OrderStatus.CANCELLED);
-        order.setPaymentStatus(PaymentStatus.EXPIRED);
+        order.markAsExpired();
+
         orderRepository.save(order);
 
-        // 🔥 CORREO CENTRALIZADO
-        enviarCorreoOrdenExpiradaSiAplica(order.getId(), limite);
+        notificationService.sendExpired(order, order.getOrderDate().plusHours(24));
 
         return true;
-    }
-
-    @Transactional
-    public void validarStockCheckout(CheckoutRequestDTO request) {
-
-        if (request.getCart() == null || request.getCart().isEmpty()) {
-            throw new IllegalArgumentException("El carrito está vacío");
-        }
-
-        request.getCart().forEach(item -> {
-            Producto producto = productoRepository
-                    .findByIdForUpdate(item.getProductId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "Producto no encontrado: " + item.getProductId()
-                            ));
-
-            if (producto.getStock() < item.getQuantity()) {
-                throw new InsufficientStockException(
-                        "Stock insuficiente para " + producto.getProductName() +
-                        ". Disponibles: " + producto.getStock()
-                );
-            }
-        });
-    }
-    @Transactional
-    public void enviarCorreoEnvioSiAplica(Long orderId) {
-
-        Order order = getByIdWithUserAndItems(orderId);
-
-        if (order.getPaymentStatus() != PaymentStatus.PAID) {
-            return;
-        }
-
-        if (order.getOrderStatus() != OrderStatus.SHIPPED) {
-            return;
-        }
-
-        // 🔐 Idempotencia
-        if (order.isShippingConfirmationSent()) {
-            return;
-        }
-
-        // Validar datos mínimos
-        if (order.getTrackingNumber() == null || order.getCarrier() == null) {
-            return;
-        }
-
-        try {
-            emailService.enviarCorreoEnvio(
-                    order.getCustomerEmail(),
-                    order.getCustomerName(),
-                    order.getId(),
-                    order.getOrderDate().toString(), // o fecha de envío si la tienes
-                    order.getTrackingNumber(),
-                    order.getCarrier()
-            );
-
-            order.setShippingConfirmationSent(true);
-            orderRepository.save(order);
-
-        } catch (IOException e) {
-            // ⚠️ No romper el flujo de logística
-            e.printStackTrace();
-            System.err.println(
-                "⚠️ Error enviando correo de envío. Orden=" + orderId
-            );
-        }
-    }
-
-
-    @Transactional
-    public void enviarCorreoOrdenExpiradaSiAplica(Long orderId, LocalDateTime fechaLimite) {
-
-        Order order = getByIdWithUserAndItems(orderId);
-
-        // Solo transferencias
-        if (order.getPaymentMethod() != Order.PaymentMethod.TRANSFER) {
-            return;
-        }
-
-        // Estados finales esperados
-        if (order.getPaymentStatus() != PaymentStatus.EXPIRED
-                || order.getOrderStatus() != OrderStatus.CANCELLED) {
-            return;
-        }
-
-        // 🔐 Idempotencia
-        if (order.isOrderExpiredSent()) {
-            return;
-        }
-
-        try {
-            emailService.enviarCorreoOrdenExpirada(order, fechaLimite);
-
-            order.setOrderExpiredSent(true);
-            orderRepository.save(order);
-
-        } catch (IOException e) {
-            // ⚠️ NO romper el job de expiración
-            e.printStackTrace();
-            System.err.println(
-                "⚠️ Error enviando correo orden expirada. Orden=" + orderId
-            );
-        }
     }
 
     public List<ProductSalesDTO> getPaidProductSalesByDate(
@@ -577,14 +350,15 @@ guardar orden por transferencia
         return orderRepository.findByIdWithUserAndItems(orderId)
                 .orElseThrow(() -> new IllegalStateException("Orden no encontrada"));
     }
-
  // ============================
  // PEDIDOS POR USUARIO (FRONT)
  // ============================
- public List<Order> findByCustomerEmail(String email) {
-     return orderRepository
-             .findByCustomerEmailOrderByOrderDateDesc(email);
- }
+    public List<Order> findByCustomerEmail(String email) {
+        return orderRepository
+            .findByCustomerEmailOrderByOrderDateDesc(
+                email.trim().toLowerCase()
+            );
+    }
  
  public String obtenerUltimaDireccion(User user) {
 	    return orderRepository
@@ -592,7 +366,5 @@ guardar orden por transferencia
 	        .map(Order::getAddress)
 	        .orElse(null);
 	}
-
-
 
 }

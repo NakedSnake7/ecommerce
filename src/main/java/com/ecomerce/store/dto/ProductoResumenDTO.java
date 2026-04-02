@@ -1,10 +1,12 @@
 package com.ecomerce.store.dto;
 
+import java.math.BigDecimal;
+
 public class ProductoResumenDTO {
 
     private Long id;
     private String productName;
-    private double price;
+    private BigDecimal price;
     private Boolean tienePromocion;
     private Double porcentajeDescuento;
     private String imagenUrl;
@@ -12,7 +14,7 @@ public class ProductoResumenDTO {
     private String descripcion;
 
 
-    public ProductoResumenDTO(Long id, String productName, double price,
+    public ProductoResumenDTO(Long id, String productName, BigDecimal price,
                               Boolean tienePromocion, Double porcentajeDescuento, String imagenUrl, String categoria,String descripcion) {
         this.id = id;
         this.productName = productName;
@@ -24,9 +26,13 @@ public class ProductoResumenDTO {
         this.setDescripcion(descripcion);
     }
 
-    public double getPrecioConDescuento() {
+    public BigDecimal getPrecioConDescuento() {
         if (tienePromocion && porcentajeDescuento > 0) {
-            return price - (price * porcentajeDescuento / 100);
+            BigDecimal descuento = price
+                .multiply(BigDecimal.valueOf(porcentajeDescuento))
+                .divide(BigDecimal.valueOf(100));
+
+            return price.subtract(descuento);
         }
         return price;
     }
@@ -40,7 +46,7 @@ public class ProductoResumenDTO {
         return productName;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 

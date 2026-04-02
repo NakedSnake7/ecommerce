@@ -1,6 +1,6 @@
 package com.ecomerce.store.config;
 
-import com.ecomerce.store.service.AuthUserDetailsService;
+import com.ecomerce.store.service.AuthUserDetailsService; 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -40,7 +40,7 @@
 
 <!-- TARJETA DE PRODUCTO -->
 <div th:each="producto : ${productos}"
-     th:if="${producto.categoria.nombre == categoria}"
+th:if="${producto.categoriaNombre == categoria}"
      class="maya-card text-white me-3"
      style="min-width:260px; max-width:260px; flex:0 0 auto; position:relative;">
 

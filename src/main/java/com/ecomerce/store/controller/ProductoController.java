@@ -30,8 +30,8 @@ public class ProductoController {
     // LISTADO
     // ==================================================
     @GetMapping
-    public List<Producto> listarProductos() {
-        return productoService.obtenerTodosLosProductos();
+    public List<ProductoDTO> listarProductos() {
+        return productoService.obtenerProductosCompletos();
     }
 
     // ==================================================
@@ -65,12 +65,19 @@ public class ProductoController {
         Producto datos = new Producto();
         datos.setProductName(dto.getProductName());
         datos.setPrice(dto.getPrice());
-        datos.setStock(dto.getStock());
         datos.setDescription(dto.getDescription());
         datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
-        datos.setCategoria(
-                categoriaService.obtenerOCrearCategoria(dto.getCategoriaNombre())
-        );
+        
+
+        if (dto.getCategoriaId() != null) {
+            datos.setCategoria(
+                categoriaService.obtenerPorId(dto.getCategoriaId())
+            );
+        } else {
+            datos.setCategoria(
+                categoriaService.obtenerOCrearCategoria(dto.getNuevaCategoria())
+            );
+        }
 
         Producto actualizado = productoService.actualizarProductoCompleto(
                 id,
@@ -113,10 +120,10 @@ public class ProductoController {
     }
     @PostMapping("/toggleCategoria")
     public ResponseEntity<Void> toggleCategoria(
-            @RequestParam String categoria,
+            @RequestParam Long categoriaId,
             @RequestParam boolean visible
     ) {
-        productoService.toggleVisibilidadPorCategoria(categoria, visible);
+        productoService.toggleVisibilidadPorCategoria(categoriaId, visible);
         return ResponseEntity.ok().build();
     }
     @PostMapping("/actualizarPrecio")
@@ -129,11 +136,11 @@ public class ProductoController {
     }
     @PostMapping("/ajustarPrecioCategoria")
     public ResponseEntity<Void> ajustarPrecioCategoria(
-            @RequestParam String categoria,
+            @RequestParam Long categoriaId,
             @RequestParam BigDecimal valor,
-            @RequestParam String modo // MONTO | PORCENTAJE
+            @RequestParam String modo
     ) {
-        productoService.ajustarPrecioCategoria(categoria, valor, modo);
+        productoService.ajustarPrecioCategoria(categoriaId, valor, modo);
         return ResponseEntity.ok().build();
     }
 

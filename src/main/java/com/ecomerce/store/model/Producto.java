@@ -1,8 +1,8 @@
 package com.ecomerce.store.model;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;  
-import java.util.List;
+import java.math.BigDecimal;   
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -19,6 +19,8 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "productos")
 public class Producto {
+	
+	
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,11 +32,13 @@ public class Producto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+ 
+	
+	private String sku;
+	
+	private String imagenUrl;
 
-    @Column(nullable = false)
-    private int stock;
-
-    // 🔥 CAMBIO IMPORTANTE: LAZY para evitar N+1
+	// 🔥 CAMBIO IMPORTANTE: LAZY para evitar N+1
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
@@ -49,7 +53,15 @@ public class Producto {
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    private List<ImagenProducto> imagenes = new ArrayList<>();
+    private Set<ImagenProducto> imagenes = new HashSet<>();
+    
+    @OneToMany(
+    	    mappedBy = "producto",
+    	    cascade = CascadeType.ALL,
+    	    orphanRemoval = true,
+    	    fetch = FetchType.LAZY
+    	)
+    private Set<ProductoVariante> variantes = new HashSet<>();
 
     @Column(nullable = false)
     private boolean visibleEnMenu = true;
@@ -59,6 +71,36 @@ public class Producto {
 
     @Column(name = "porcentaje_descuento", nullable = false)
     private Double porcentajeDescuento = 0.0;
+    
+    public void agregarVariante(ProductoVariante variante) {
+        variantes.add(variante);
+        variante.setProducto(this);
+        if (variante.getStock() == null) {
+            variante.setStock(0);
+        }
+    }
+    
+    public ProductoVariante getVariantePrincipal() {
+        if (variantes == null || variantes.isEmpty()) return null;
+
+        return variantes.stream()
+                .filter(v -> Boolean.TRUE.equals(v.getPrincipal()))
+                .findFirst()
+                .orElse(variantes.stream().findFirst().orElse(null)); // fallback seguro
+    }
+    
+    public int getStockDisponible() {
+        if (variantes != null && !variantes.isEmpty()) {
+            return variantes.stream()
+                    .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
+                    .sum();
+        }
+        return 0;
+    }
+    
+    public boolean tieneVariantes() {
+        return variantes != null && !variantes.isEmpty();
+    }
 
     public String getImageUrl() {
         if (imagenes != null && !imagenes.isEmpty()) {
@@ -88,16 +130,31 @@ public class Producto {
 
         return price;
     }
+    
+    public BigDecimal getPrecioMinimo() {
+
+        if (tieneVariantes()) {
+            return variantes.stream()
+                    .map(v -> v.getPrecio() != null ? v.getPrecio() : this.price)
+                    .min(BigDecimal::compareTo)
+                    .orElse(this.price);
+        }
+
+        return this.price;
+    }
+    
+    public boolean tieneStock() {
+        return getStockDisponible() > 0;
+    }
 
 
     // Constructor vacío
     public Producto() {}
 
     // Constructor útil
-    public Producto(String productName, BigDecimal price, int stock, String description, Categoria categoria) {
+    public Producto(String productName, BigDecimal price, String description, Categoria categoria) {
         this.productName = productName;
         this.price = price;
-        this.stock = stock;
         this.description = description;
         this.categoria = categoria;
     }
@@ -107,7 +164,6 @@ public class Producto {
     public void actualizarDatosDesde(Producto producto, Categoria categoria) {
         this.productName = producto.getProductName();
         this.price = producto.getPrice();
-        this.stock = producto.getStock();
         this.description = producto.getDescription();
         this.categoria = categoria;
     }
@@ -140,14 +196,6 @@ public class Producto {
     }
 
 
-    public int getStock() {
-        return stock;
-    }
-
-    public void setStock(int stock) {
-        this.stock = stock;
-    }
-
     public Categoria getCategoria() {
         return categoria;
     }
@@ -164,13 +212,7 @@ public class Producto {
         this.description = description;
     }
 
-    public List<ImagenProducto> getImagenes() {
-        return imagenes;
-    }
 
-    public void setImagenes(List<ImagenProducto> imagenes) {
-        this.imagenes = imagenes;
-    }
 
     public boolean isVisibleEnMenu() {
         return visibleEnMenu;
@@ -195,4 +237,39 @@ public class Producto {
     public void setPorcentajeDescuento(Double porcentajeDescuento) {
         this.porcentajeDescuento = porcentajeDescuento;
     }
+    
+    
+
+    public void setImagenes(Set<ImagenProducto> imagenes) {
+        this.imagenes = imagenes;
+    }
+
+    public void setVariantes(Set<ProductoVariante> variantes) {
+        this.variantes = variantes;
+    }
+
+    public Set<ImagenProducto> getImagenes() {
+        return imagenes;
+    }
+
+    public Set<ProductoVariante> getVariantes() {
+        return variantes;
+    }
+
+	public String getSku() {
+		return sku;
+	}
+
+	public void setSku(String sku) {
+		this.sku = sku;
+	}
+
+	public String getImagenUrl() {
+		return imagenUrl;
+	}
+
+	public void setImagenUrl(String imagenUrl) {
+		this.imagenUrl = imagenUrl;
+	}
+    
 }

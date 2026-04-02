@@ -108,21 +108,21 @@ public class CheckoutController {
                             : PaymentMethod.TRANSFER;
 
             // 6️⃣ Crear orden
+            String emailNormalizado = checkoutRequest.getCustomer()
+                    .getEmail()
+                    .trim()
+                    .toLowerCase();
+
             Order order = new Order(
-                    user,
-                    totalFinal,
-                    OrderStatus.CREATED,
-                    direccion,
-                    checkoutRequest.getCustomer().getFullName()
+                user,
+                totalFinal,
+                direccion,
+                checkoutRequest.getCustomer().getFullName(),
+                emailNormalizado
             );
 
 
-            order.setCustomerEmail(
-                    checkoutRequest.getCustomer()
-                            .getEmail()
-                            .trim()
-                            .toLowerCase()
-            );
+            
             order.setPaymentMethod(metodoPago);
             order.setPaymentStatus(PaymentStatus.PENDING);
 

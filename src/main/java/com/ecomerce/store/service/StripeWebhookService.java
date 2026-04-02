@@ -52,7 +52,6 @@ public class StripeWebhookService {
         // 5️⃣ Post-pago (stock, etc.)
         orderService.procesarPostPago(orderId);
 
-        // 6️⃣ 🔥 CORREO CENTRALIZADO
-        orderService.enviarCorreoConfirmacionPagoSiAplica(orderId);
+       
     }
 }

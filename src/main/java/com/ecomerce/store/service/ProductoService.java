@@ -1,15 +1,18 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.dto.CategoriaGrupoDTO; 
+import com.ecomerce.store.dto.CategoriaGrupoDTO;   
 
-import com.ecomerce.store.dto.CloudinaryUploadResult; 
+import com.ecomerce.store.dto.CloudinaryUploadResult;
+import com.ecomerce.store.dto.ProductoDTO;
+import com.ecomerce.store.dto.ProductoResumenDTO;
 import com.ecomerce.store.exception.ImageUploadException;
+import com.ecomerce.store.mapper.ProductoMapper;
 import com.ecomerce.store.model.ImagenProducto;
 import com.ecomerce.store.model.Producto;
 import com.ecomerce.store.repository.ImagenProductoRepository;
 import com.ecomerce.store.repository.ProductoRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,15 @@ public class ProductoService {
 	private static final Logger log =
             LoggerFactory.getLogger(ProductoService.class);
     @Autowired
-    private ProductoRepository productoRepository;
+    private final ProductoRepository productoRepository;
+
+    public ProductoService(ProductoRepository productoRepository,
+                           ImagenProductoRepository imagenProductoRepository,
+                           CloudinaryService cloudinaryService) {
+        this.productoRepository = productoRepository;
+        this.imagenProductoRepository = imagenProductoRepository;
+        this.cloudinaryService = cloudinaryService;
+    }
 
     @Autowired
     private ImagenProductoRepository imagenProductoRepository;
@@ -46,9 +57,11 @@ public class ProductoService {
     // ============================================================
 
     public List<Producto> obtenerTodosLosProductos() {
-        return productoRepository.findAllConTodo();
+        return productoRepository.findProductosVisiblesConTodo();
     }
-
+    
+    
+    
     public List<Producto> obtenerProductosVisiblesConTodo() {
         return productoRepository.findProductosVisiblesConTodo();
     }
@@ -67,10 +80,18 @@ public class ProductoService {
         return productoRepository.findByProductName(nombre);
     }
 
-    // ============================================================
-    // CRUD BÁSICO
-    // ============================================================
+    
+    @Transactional(readOnly = true)
+    public List<ProductoDTO> obtenerProductosCompletos(){
 
+        List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
+
+        return productos.stream()
+                .map(ProductoMapper::toDTO)
+                .toList();
+    }
+    
+    
     @Transactional
     public Producto guardarProducto(Producto producto) {
         validarProducto(producto);
@@ -120,7 +141,6 @@ public class ProductoService {
 
         producto.setProductName(datos.getProductName());
         producto.setPrice(datos.getPrice());
-        producto.setStock(datos.getStock());
         producto.setDescription(datos.getDescription());
         producto.setPorcentajeDescuento(datos.getPorcentajeDescuento());
         producto.setCategoria(datos.getCategoria());
@@ -210,6 +230,8 @@ public class ProductoService {
             imagenProductoRepository.delete(img);
         }
     }
+    
+ 
 
     // ============================================================
     // LEGACY
@@ -257,13 +279,25 @@ public class ProductoService {
             throw new IllegalArgumentException("El nombre es obligatorio");
         }
 
-        if (producto.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+        if (producto.getPrice() == null || producto.getPrice().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Precio inválido");
         }
+        
 
+        if (producto.getVariantes() != null && !producto.getVariantes().isEmpty()) {
 
-        if (producto.getStock() < 0) {
-            throw new IllegalArgumentException("Stock inválido");
+            boolean hayStockNegativo = producto.getVariantes().stream()
+                    .anyMatch(v -> v.getStock() != null && v.getStock() < 0);
+
+            if (hayStockNegativo) {
+                throw new IllegalArgumentException("Stock inválido en variantes");
+            }
+        }
+        
+        if (!producto.tieneVariantes()) {
+            throw new IllegalArgumentException(
+                "Todos los productos deben tener al menos una variante"
+            );
         }
     }
 
@@ -280,15 +314,16 @@ public class ProductoService {
         }
     }
    
+    @Transactional(readOnly = true)
     public List<CategoriaGrupoDTO> obtenerProductosAgrupadosPorCategoria() {
 
-        List<Producto> productos = productoRepository.findAllConTodo();
-
+    	List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
         return productos.stream()
+            .map(ProductoMapper::toDTO) // 🔥 aquí ocurre todo dentro de TX
             .collect(Collectors.groupingBy(
-                p -> p.getCategoria() != null
-                    ? p.getCategoria().getNombre()
-                    : "Sin categoría",
+                p -> p.getCategoriaNombre() != null
+                        ? p.getCategoriaNombre()
+                        : "Sin categoría",
                 LinkedHashMap::new,
                 Collectors.toList()
             ))
@@ -299,27 +334,34 @@ public class ProductoService {
     }
 
     @Transactional
-    public void toggleVisibilidadPorCategoria(String categoria, boolean visible) {
+    public void toggleVisibilidadPorCategoria(Long categoriaId, boolean visible) {
 
-        productoRepository.updateVisibilidadPorCategoria(categoria, visible);
+        productoRepository.updateVisibilidadPorCategoria(categoriaId, visible);
     }
     
     @Transactional
     public void actualizarPrecio(Long id, BigDecimal precio) {
-        Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    	if (precio == null || precio.compareTo(BigDecimal.ZERO) < 0) {
+    	    throw new IllegalArgumentException("Precio inválido");
+    	}
 
-        producto.setPrice(precio);
+    	Producto producto = productoRepository.findById(id)
+    	        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+    	producto.setPrice(precio.setScale(2, RoundingMode.HALF_UP));
+    	if (!producto.getVariantes().isEmpty()) {
+    	    throw new IllegalStateException("Producto con variantes no usa precio base");
+    	}
     }
     @Transactional
     public void ajustarPrecioCategoria(
-            String categoria,
+            Long categoriaId,
             BigDecimal valor,
             String modo
     ) {
 
         List<Producto> productos =
-                productoRepository.findByCategoriaNombre(categoria);
+                productoRepository.findByCategoriaId(categoriaId);
 
         if (productos.isEmpty()) {
             throw new RuntimeException("No hay productos en la categoría");
@@ -332,12 +374,10 @@ public class ProductoService {
 
             if ("MONTO".equalsIgnoreCase(modo)) {
 
-                // +50 / -20
                 nuevoPrecio = precioActual.add(valor);
 
             } else if ("PORCENTAJE".equalsIgnoreCase(modo)) {
 
-                // +10 / -5
                 BigDecimal ajuste = precioActual
                         .multiply(valor)
                         .divide(BigDecimal.valueOf(100));
@@ -348,16 +388,31 @@ public class ProductoService {
                 throw new IllegalArgumentException("Modo inválido");
             }
 
-            // 🔒 Nunca negativo
             if (nuevoPrecio.compareTo(BigDecimal.ZERO) < 0) {
                 nuevoPrecio = BigDecimal.ZERO;
             }
 
-            p.setPrice(nuevoPrecio.setScale(2, RoundingMode.HALF_UP));
+            if (!p.tieneVariantes() && p.getPrice() != null) {
+                p.setPrice(nuevoPrecio.setScale(2, RoundingMode.HALF_UP));
+            }
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<ProductoResumenDTO> obtenerProductosIndexOptimizado() {
 
-    
+        List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
+
+        return productos.stream().map(p -> new ProductoResumenDTO(
+                p.getId(),
+                p.getProductName(),
+                p.getPrice(),
+                p.getTienePromocion(),
+                p.getPorcentajeDescuento(),
+                p.getImageUrl(), // 👈 USAS TU MÉTODO PRO
+                p.getCategoria() != null ? p.getCategoria().getNombre() : "Sin categoría",
+                p.getDescription()
+        )).toList();
+    }
 
 }

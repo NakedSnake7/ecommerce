@@ -29,6 +29,7 @@ public class ProductoViewController {
     // ==================================================
     @GetMapping("/VerProductos")
     public String verProductos(Model model) {
+    	
 
         model.addAttribute(
             "categorias",
@@ -69,9 +70,29 @@ public class ProductoViewController {
         producto.setProductName(dto.getProductName());
         producto.setPrice(dto.getPrice());
         producto.setDescription(dto.getDescription());
-        producto.setStock(dto.getStock());
+        
+
+        // FIX 
+        String nombreCategoria;
+
+        if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
+            nombreCategoria = dto.getNuevaCategoria();
+        } else if (dto.getCategoriaNombre() != null && !dto.getCategoriaNombre().isBlank()) {
+            nombreCategoria = dto.getCategoriaNombre();
+        } else {
+            result.rejectValue("categoriaNombre", "error.producto", "Debes seleccionar o crear una categoría");
+            model.addAttribute("categorias", categoriaService.obtenerTodas());
+            return "subirProducto";
+        }
+
+        if (nombreCategoria == null) {
+            result.rejectValue("categoriaNombre", "error.producto", "Debes seleccionar o crear una categoría");
+            model.addAttribute("categorias", categoriaService.obtenerTodas());
+            return "subirProducto";
+        }
+
         producto.setCategoria(
-                categoriaService.obtenerOCrearCategoria(dto.getCategoriaNombre())
+            categoriaService.obtenerOCrearCategoria(nombreCategoria)
         );
 
         productoService.actualizarProductoCompleto(
@@ -97,7 +118,7 @@ public class ProductoViewController {
         dto.setProductName(producto.getProductName());
         dto.setPrice(producto.getPrice());
         dto.setDescription(producto.getDescription());
-        dto.setStock(producto.getStock());
+        dto.setCategoriaId(producto.getCategoria().getId());
         dto.setCategoriaNombre(producto.getCategoria().getNombre());
         dto.setPorcentajeDescuento(producto.getPorcentajeDescuento());
 
@@ -131,10 +152,17 @@ public class ProductoViewController {
         datos.setProductName(dto.getProductName());
         datos.setPrice(dto.getPrice());
         datos.setDescription(dto.getDescription());
-        datos.setStock(dto.getStock());
         datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
+        String nombreCategoria;
+
+        if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
+            nombreCategoria = dto.getNuevaCategoria();
+        } else {
+            nombreCategoria = dto.getCategoriaNombre();
+        }
+
         datos.setCategoria(
-                categoriaService.obtenerOCrearCategoria(dto.getCategoriaNombre())
+            categoriaService.obtenerOCrearCategoria(nombreCategoria)
         );
 
         productoService.actualizarProductoCompleto(

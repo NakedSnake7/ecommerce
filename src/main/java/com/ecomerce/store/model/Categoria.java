@@ -1,7 +1,7 @@
 package com.ecomerce.store.model;
 
 import jakarta.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "categorias")
@@ -21,9 +21,17 @@ public class Categoria {
 
     // 🔥 LAZY evita N+1 cuando consultes categorías
     @OneToMany(mappedBy = "categoria", fetch = FetchType.LAZY)
-    private List<Producto> productos;
+    private Set<Producto> productos;
 
-    public Long getId() {
+    public Set<Producto> getProductos() {
+		return productos;
+	}
+
+	public void setProductos(Set<Producto> productos) {
+		this.productos = productos;
+	}
+
+	public Long getId() {
         return id;
     }
 
@@ -39,13 +47,7 @@ public class Categoria {
         this.nombre = nombre;
     }
 
-    public List<Producto> getProductos() {
-        return productos;
-    }
 
-    public void setProductos(List<Producto> productos) {
-        this.productos = productos;
-    }
 
     @Override
     public String toString() {

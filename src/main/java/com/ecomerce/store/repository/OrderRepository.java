@@ -111,5 +111,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     Optional<Order> findTopByUserOrderByOrderDateDesc(User user);
 
+    List<Order> findByCustomerEmailIgnoreCaseAndUserIsNull(String email);
+
 
 }

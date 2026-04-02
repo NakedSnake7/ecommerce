@@ -135,7 +135,6 @@ tr.bg-secondary:hover {
 						<th>Nombre</th>
 						<th>Precio</th>
 						<th>Stock</th>
-						<th>Categoría</th>
 						<th>Imagen</th>
 						<th>Acciones</th>
 						<th>Visible en Menú</th>
@@ -160,7 +159,7 @@ tr.bg-secondary:hover {
 
 <input type="checkbox"
        class="toggle-categoria ml-3"
-       th:attr="data-categoria=${#strings.replace(categoria.nombre,' ','_')}"
+       th:attr="data-categoria-id=${categoria.id}"
        th:checked="${categoria.todosVisibles}">
 
 <span class="ml-1">Visible</span>
@@ -178,21 +177,18 @@ tr.bg-secondary:hover {
   <th:block th:each="producto : ${categoria.productos}">
     <tr class="collapse"
         th:id="'cat-' + ${#strings.replace(categoria.nombre,' ','_')}"
-        th:attr="data-categoria=${#strings.replace(categoria.nombre,' ','_')}"
+        th:attr="data-categoria-id=${categoria.id}"
         th:classappend="${!producto.visibleEnMenu} ? 'table-secondary'">
 
-        <td th:text="${producto.id}"></td>
-        <td th:text="${producto.productName}"></td>
-        <td th:text="'$' + ${producto.price}"></td>
-        <td th:text="${producto.stock}"></td>
-        <td th:text="${producto.categoria?.nombre}"></td>
+<td th:text="${producto.id}"></td>
+<td th:text="${producto.productName}"></td>
+<td th:text="'$' + ${producto.price}"></td>
+<td th:text="${producto.stockTotal}"></td>
+<td th:text="${producto.categoriaNombre}"></td>
 
-        <td>
-            <img th:src="${#lists.isEmpty(producto.imagenes)
-                ? '/imgs/default.png'
-                : producto.imagenes[0].imageUrl}"
-                 width="50" height="50">
-        </td>
+<td>
+    <img th:src="${producto.imageUrl}" width="50" height="50">
+</td>
 
         <td>
             <a th:href="@{/editar/{id}(id=${producto.id})}"
@@ -216,7 +212,7 @@ tr.bg-secondary:hover {
                    class="toggle-visibility"
                    th:attr="
                        data-id=${producto.id},
-                       data-categoria=${#strings.replace(categoria.nombre,' ','_')}
+                       data-categoria-id=${categoria.id}
                    "
                    th:checked="${producto.visibleEnMenu}">
         </td>
@@ -383,21 +379,20 @@ document.querySelectorAll('.toggle-categoria').forEach(catCheckbox => {
 
     catCheckbox.addEventListener('change', function () {
 
-        const categoria = this.getAttribute('data-categoria');
+    	const categoriaId = this.getAttribute('data-categoria-id');
         const visible = this.checked;
 
         fetch('/api/productos/toggleCategoria', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
-                categoria: categoria,
+            	categoriaId: categoriaId,
                 visible: visible
             })
         })
         .then(response => {
             if (!response.ok) throw new Error('Error backend');
-            actualizarUIcategoria(categoria, visible);
-        })
+            actualizarUIcategoria(categoriaId, visible);        })
         .catch(err => {
             console.error(err);
             alert('Error al actualizar la categoría');
@@ -414,8 +409,8 @@ function actualizarUIcategoria(categoria, visible) {
 
     // 1️⃣ Checkboxes individuales
     document.querySelectorAll(
-        `.toggle-visibility[data-categoria="${categoria}"]`
-    ).forEach(cb => {
+    		`.toggle-visibility[data-categoria-id="${categoria}"]`
+    		).forEach(cb => {
         cb.checked = visible;
     });
 
