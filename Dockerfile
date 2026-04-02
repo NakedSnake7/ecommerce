@@ -1,7 +1,7 @@
 # =========================
 # 1️⃣ Build stage
 # =========================
-FROM maven:3.9.9-eclipse-temurin-17 AS builder
+FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
@@ -25,10 +25,7 @@ WORKDIR /app
 # Copiar el jar desde el builder
 COPY --from=builder /app/target/*.jar app.jar
 
-# Puerto (Render usa 10000 por default, pero mejor dinámico)
 ENV PORT=8080
-
 EXPOSE 8080
 
-# Ejecutar app
 ENTRYPOINT ["java", "-jar", "app.jar"]
