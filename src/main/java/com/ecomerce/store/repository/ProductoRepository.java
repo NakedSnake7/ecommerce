@@ -55,11 +55,15 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     		""")
     		List<ProductoResumenDTO> findProductosIndex();
     
-    @Query("SELECT DISTINCT p FROM Producto p " +
-    	       "LEFT JOIN FETCH p.imagenes " +
-    	       "LEFT JOIN FETCH p.categoria " +
-    	       "WHERE p.id = :id")
-    Optional<Producto> findByIdConTodo(@Param("id") Long id);
+    @Query("""
+    		SELECT DISTINCT p FROM Producto p
+    		LEFT JOIN FETCH p.categoria
+    		LEFT JOIN FETCH p.imagenes
+    		LEFT JOIN FETCH p.variantes v
+    		LEFT JOIN FETCH v.atributos
+    		WHERE p.id = :id
+    		""")
+    		Optional<Producto> findByIdConTodo(@Param("id") Long id);
     
  
     
@@ -83,10 +87,46 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
                                        @Param("visible") boolean visible);
     
     @Query("""
-    		SELECT p FROM Producto p
-    		LEFT JOIN FETCH p.variantes
+    		SELECT DISTINCT p FROM Producto p
+    		LEFT JOIN FETCH p.variantes v
+    		LEFT JOIN FETCH v.atributos
     		WHERE p.id = :id
     		""")
-    		Producto findByIdWithVariantes(Long id);
+    		Producto findByIdWithVariantes(@Param("id") Long id);
+    
+    @Query(value = """
+    		SELECT 
+    		    p.id,
+    		    p.product_name,
+    		    p.price,
+
+    		    -- PRECIO MINIMO (si hay variantes)
+    		    COALESCE(
+    		        (SELECT MIN(v.precio) 
+    		         FROM producto_variantes v 
+    		         WHERE v.producto_id = p.id),
+    		        p.price
+    		    ) AS precio_minimo,
+
+    		    -- TIENE VARIANTES
+    		    CASE 
+    		        WHEN EXISTS (
+    		            SELECT 1 
+    		            FROM producto_variantes v 
+    		            WHERE v.producto_id = p.id
+    		        ) THEN true
+    		        ELSE false
+    		    END AS tiene_variantes,
+
+    		    p.tiene_promocion,
+
+    		    c.nombre AS categoria_nombre
+
+    		FROM productos p
+    		LEFT JOIN categorias c ON c.id = p.categoria_id
+
+    		WHERE p.visible_en_menu = 1
+    		""", nativeQuery = true)
+    		List<Object[]> findProductosPrecioRaw();
 
 }

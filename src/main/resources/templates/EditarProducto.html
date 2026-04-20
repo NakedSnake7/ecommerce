@@ -1,231 +1,771 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Producto</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <!-- Bootstrap -->
-    <link
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-        rel="stylesheet">
+<title>Editar Producto</title>
 
-    <style>
-        body { background-color: #111; }
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-        }
-        .container {
-            position: relative;
-            z-index: 1;
-        }
-    </style>
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+<style>
+:root{
+--bg:#0b0b0d;
+--card:#141418;
+--card2:#1b1c21;
+--line:#2a2b31;
+--text:#f4f4f5;
+--muted:#9ca3af;
+--green:#10b981;
+--blue:#3b82f6;
+--red:#ef4444;
+--gold:#f59e0b;
+}
+
+body{
+background:linear-gradient(135deg,#0a0a0a,#111827,#0b0b0d);
+min-height:100vh;
+color:var(--text);
+font-family:Inter,system-ui;
+}
+
+.wrapper{
+max-width:1200px;
+margin:auto;
+padding:30px 15px;
+}
+
+.glass{
+background:rgba(20,20,24,.92);
+border:1px solid rgba(255,255,255,.05);
+backdrop-filter:blur(12px);
+border-radius:24px;
+box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
+
+.header{
+padding:28px;
+margin-bottom:22px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+}
+
+.title{
+font-size:2rem;
+font-weight:800;
+margin:0;
+}
+
+.sub{
+color:var(--muted);
+margin-top:4px;
+}
+
+.section{
+padding:22px;
+margin-bottom:22px;
+}
+
+label{
+font-weight:600;
+font-size:.95rem;
+}
+
+.form-control,
+.custom-file-label{
+background:#111216;
+border:1px solid var(--line);
+color:white;
+border-radius:14px;
+height:auto;
+padding:12px 14px;
+}
+
+textarea.form-control{
+min-height:130px;
+}
+
+.form-control:focus{
+background:#111216;
+color:white;
+border-color:#3b82f6;
+box-shadow:none;
+}
+
+.btn{
+border-radius:14px;
+padding:10px 18px;
+font-weight:700;
+}
+
+.btn-pro{
+background:linear-gradient(135deg,#3b82f6,#2563eb);
+color:white;
+border:none;
+}
+
+.btn-save{
+background:linear-gradient(135deg,#10b981,#059669);
+color:white;
+border:none;
+}
+
+.btn-danger{
+border:none;
+}
+
+.variant-card{
+background:var(--card2);
+border:1px solid var(--line);
+border-radius:18px;
+padding:18px;
+margin-bottom:16px;
+}
+
+.badge-stock{
+padding:7px 12px;
+border-radius:50px;
+font-size:.8rem;
+font-weight:700;
+}
+
+.in{
+background:rgba(16,185,129,.15);
+color:#34d399;
+}
+
+.out{
+background:rgba(239,68,68,.15);
+color:#f87171;
+}
+
+.img-box{
+position:relative;
+border-radius:16px;
+overflow:hidden;
+margin-bottom:15px;
+border:1px solid var(--line);
+}
+
+.img-box img{
+width:100%;
+height:180px;
+object-fit:cover;
+}
+
+.img-actions{
+position:absolute;
+bottom:10px;
+right:10px;
+}
+
+.dropzone{
+border:2px dashed #374151;
+border-radius:18px;
+padding:30px;
+text-align:center;
+cursor:pointer;
+transition:.2s;
+}
+
+.dropzone:hover{
+border-color:#3b82f6;
+background:rgba(59,130,246,.06);
+}
+
+.toast-box{
+position:fixed;
+top:25px;
+right:25px;
+z-index:9999;
+min-width:260px;
+display:none;
+padding:15px 18px;
+border-radius:16px;
+font-weight:700;
+}
+
+.toast-success{
+background:#10b981;
+color:white;
+}
+
+.toast-error{
+background:#ef4444;
+color:white;
+}
+
+.loader{
+display:none;
+width:22px;
+height:22px;
+border:3px solid rgba(255,255,255,.2);
+border-top:3px solid white;
+border-radius:50%;
+animation:spin .8s linear infinite;
+margin-right:10px;
+}
+
+@keyframes spin{
+100%{transform:rotate(360deg);}
+}
+
+@media(max-width:768px){
+.title{font-size:1.5rem;}
+.header{padding:20px;}
+.section{padding:18px;}
+}
+</style>
 </head>
 
-<body class="bg-dark text-light">
+<body>
 
-<div id="particles-js"></div>
+<div class="toast-box" id="toast"></div>
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Editar Producto</h2>
+<div class="wrapper">
 
-    <p th:text="'Producto: ' + ${productoDTO.productName}">
-        Producto cargando...
-    </p>
-
-    <!-- 🔒 PRODUCTO ID (NECESARIO PARA SEGURIDAD) -->
-    <input type="hidden" id="productoId" th:value="${productoDTO.id}" />
-
-    <!-- FORM -->
-    <form th:action="@{'/api/productos/editar/' + ${productoDTO.id}}"
-          th:object="${productoDTO}"
-          method="post"
-          enctype="multipart/form-data">
-
-        <input type="hidden" th:field="*{id}" />
-
-        <!-- Nombre -->
-        <div class="form-group">
-            <label>Nombre</label>
-            <input type="text" class="form-control"
-                   th:field="*{productName}" required>
-        </div>
-
-        <!-- Precio -->
-        <div class="form-group">
-            <label>Precio</label>
-            <input type="number" class="form-control"
-                   th:field="*{price}" step="0.01" min="0" required>
-        </div>
-
-        <!-- Stock -->
-        <div class="form-group">
-            <label>Stock</label>
-            <input type="number" class="form-control"
-                   th:field="*{stock}" min="0" required>
-        </div>
-
-        <!-- Descripción -->
-        <div class="form-group">
-            <label>Descripción</label>
-            <textarea class="form-control"
-                      th:field="*{description}"
-                      rows="4" required></textarea>
-        </div>
-
-        <!-- Categoría -->
-        <div class="form-group">
-            <label>Categoría</label>
-            <select class="form-control"
-                    th:field="*{categoriaNombre}" required>
-                <option value="" disabled>Selecciona una categoría</option>
-                <option th:each="cat : ${categorias}"
-                        th:value="${cat.nombre}"
-                        th:text="${cat.nombre}">
-                </option>
-            </select>
-        </div>
-
-        <!-- Descuento -->
-        <div class="form-group">
-            <label>Porcentaje de Descuento (%)</label>
-            <input type="number" class="form-control"
-                   th:field="*{porcentajeDescuento}"
-                   min="0" max="100">
-        </div>
-
-        <!-- IMÁGENES EXISTENTES -->
-        <div class="form-group">
-            <label>Imágenes existentes</label>
-            <div class="row">
-
-                <div class="col-md-4 mb-3"
-                     th:each="imgUrl, iter : ${productoDTO.urlsImagenesExistentes}">
-
-                    <div class="card bg-secondary">
-                        <img th:src="${imgUrl}" class="card-img-top">
-
-                        <div class="card-body text-center">
-
-                            <!-- ELIMINAR AL GUARDAR -->
-                            <div class="form-check mb-2">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       name="eliminarImagenes"
-                                       th:value="${productoDTO.imagenesExistentes[iter.index]}">
-                                <label class="form-check-label">
-                                    Marcar para eliminar
-                                </label>
-                            </div>
-
-                            <!-- ELIMINAR INMEDIATO -->
-                            <button type="button"
-                                    class="btn btn-danger btn-sm eliminar-img-btn"
-                                    th:attr="data-id=${productoDTO.imagenesExistentes[iter.index]}">
-                                Eliminar ahora
-                            </button>
-
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- NUEVAS IMÁGENES -->
-        <div class="form-group">
-            <label>Nuevas imágenes (opcional)</label>
-            <input type="file" name="imagenes" multiple
-                   class="form-control-file" accept="image/*">
-        </div>
-
-        <!-- BOTONES -->
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-success">
-                Guardar Cambios
-            </button>
-            <a href="/VerProductos" class="btn btn-secondary">
-                Cancelar
-            </a>
-        </div>
-
-    </form>
+<!-- HEADER -->
+<div class="glass header">
+<div>
+<h1 class="title">Editar Producto</h1>
+<div class="sub" th:text="${productoDTO.productName}">Producto</div>
 </div>
 
-<!-- ================= JS ================= -->
+<div>
+<a href="/VerProductos" class="btn btn-outline-light">Volver</a>
+</div>
+</div>
+
+<form id="formEditar"
+      th:action="@{'/api/productos/editar/' + ${productoDTO.id}}"
+      method="post"
+      enctype="multipart/form-data">
+
+<input type="hidden" name="id" th:value="${productoDTO.id}">
+
+<!-- DATOS -->
+<div class="glass section">
+<div class="row">
+
+<div class="col-md-6 mb-3">
+<label>Nombre</label>
+<input class="form-control"
+name="productName"
+th:value="${productoDTO.productName}">
+</div>
+
+<div class="col-md-3 mb-3">
+<label>Precio Base</label>
+<input type="number"
+step="0.01"
+class="form-control"
+name="price"
+th:value="${productoDTO.price}">
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Categoría</label>
+
+<select class="form-control" name="categoriaId">
+    <option value="">Selecciona categoría</option>
+
+    <option th:each="cat : ${categorias}"
+            th:value="${cat.id}"
+            th:text="${cat.nombre}"
+            th:selected="${cat.id == productoDTO.categoriaId}">
+    </option>
+</select>
+</div>
+
+
+
+<div class="col-md-3 mb-3">
+<label>Descuento %</label>
+<input type="number"
+class="form-control"
+name="porcentajeDescuento"
+th:value="${productoDTO.porcentajeDescuento}">
+</div>
+
+<div class="col-md-12 mb-3">
+<label>Descripción</label>
+<textarea class="form-control"
+name="description"
+th:text="${productoDTO.description}"></textarea>
+</div>
+
+</div>
+</div>
+
+<!-- VARIANTES -->
+<div class="glass section">
+
+<div class="d-flex justify-content-between mb-3">
+<h4>Variantes</h4>
+<button type="button" id="addVariante" class="btn btn-pro">
++ Agregar
+</button>
+</div>
+
+<div id="variantesWrap">
+
+<div class="variant-card"
+th:each="v,iter : ${productoDTO.variantes}"
+th:attr="data-index=${iter.index}">
+
+<input type="hidden"
+th:name="|variantes[${iter.index}].id|"
+th:value="${v.id}">
+
+<div class="row">
+
+<div class="col-md-3 mb-2">
+<label>Stock</label>
+<input type="number"
+class="form-control stock-input"
+th:name="|variantes[${iter.index}].stock|"
+th:value="${v.stock}">
+</div>
+
+<div class="col-md-3 mb-2">
+<label>Precio</label>
+<input type="number"
+step="0.01"
+class="form-control"
+th:name="|variantes[${iter.index}].precio|"
+th:value="${v.precio}">
+</div>
+
+<div class="col-md-3 mb-2 d-flex align-items-end">
+<span class="badge-stock"
+th:classappend="${v.stock > 0 ? ' in':' out'}"
+th:text="${v.stock > 0 ? 'Con stock':'Agotado'}">
+</span>
+</div>
+
+</div>
+
+<!-- 🔥 ATRIBUTOS -->
+<div class="atributos-container mt-2">
+
+<div th:each="entry, i : ${v.atributos}" class="attr-row">
+<input type="text"
+class="form-control mb-1"
+th:name="|variantes[${iter.index}].atributosKeys[${i.index}]|"
+th:value="${entry.key}"
+placeholder="Nombre atributo">
+
+<input type="text"
+class="form-control mb-2"
+th:name="|variantes[${iter.index}].atributosValues[${i.index}]|"
+th:value="${entry.value}"
+placeholder="Valor">
+</div>
+
+</div>
+
+<button type="button"
+class="btn btn-info btn-sm addAttr mt-2">
++ atributo
+</button>
+
+<button type="button"
+class="btn btn-danger btn-sm removeVariante mt-2">
+Eliminar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- IMAGENES -->
+<div class="glass section">
+
+<h4 class="mb-3">Imágenes</h4>
+
+<div class="row">
+
+<div class="col-md-4"
+th:each="img,iter : ${productoDTO.urlsImagenesExistentes}">
+
+<div class="img-box">
+<img th:src="${img}">
+<div class="img-actions">
+<label class="btn btn-danger btn-sm mb-0">
+<input type="checkbox"
+hidden
+name="eliminarImagenes"
+th:value="${productoDTO.imagenesExistentes[iter.index]}">
+Eliminar
+</label>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<div class="dropzone mt-3" id="dropzone">
+<div>Arrastra imágenes aquí o haz click</div>
+<input type="file"
+multiple
+name="imagenes"
+id="imagenes"
+hidden
+accept="image/*">
+</div>
+
+<div class="row mt-3" id="preview"></div>
+
+</div>
+
+<!-- SAVE -->
+<div class="text-center mb-5">
+
+<button class="btn btn-save btn-lg px-5" type="submit">
+<span class="loader" id="loader"></span>
+<span id="btnText">Guardar Cambios</span>
+</button>
+
+</div>
+
+</form>
+</div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+/* =========================
+   TOAST
+========================= */
+const toast = (msg, type = 'success') => {
+    const t = document.getElementById('toast');
 
-    const productoId = document.getElementById("productoId").value;
+    t.className =
+        'toast-box ' +
+        (type === 'success'
+            ? 'toast-success'
+            : 'toast-error');
 
-    document.querySelectorAll(".eliminar-img-btn").forEach(btn => {
+    t.innerText = msg;
+    t.style.display = 'block';
 
-        btn.addEventListener("click", async () => {
+    setTimeout(() => {
+        t.style.display = 'none';
+    }, 2500);
+};
 
-            const idImg = btn.dataset.id;
 
-            if (!confirm("¿Eliminar esta imagen permanentemente?")) return;
+/* =========================
+   BADGE STOCK
+========================= */
+function actualizarBadgeStock(input) {
 
-            try {
-                const resp = await fetch(
-                    `/api/productos/${productoId}/eliminar-imagen/${idImg}`,
-                    { method: "DELETE" }
-                );
+    const badge = input
+        .closest('.variant-card')
+        .querySelector('.badge-stock');
 
-                if (resp.ok) {
-                    btn.closest(".col-md-4").remove();
-                } else {
-                    alert("No se pudo eliminar la imagen");
-                }
+    if (!badge) return;
 
-            } catch (e) {
-                console.error(e);
-                alert("Error de red");
-            }
+    if (Number(input.value) > 0) {
+        badge.innerText = 'Con stock';
+        badge.className = 'badge-stock in';
+    } else {
+        badge.innerText = 'Agotado';
+        badge.className = 'badge-stock out';
+    }
+}
+
+
+/* =========================
+   REINDEX VARIANTES
+========================= */
+function reindexVariantes() {
+
+    const cards = document.querySelectorAll('.variant-card');
+
+    cards.forEach((card, index) => {
+
+        card.dataset.index = index;
+
+        // =========================
+        // INPUTS PRINCIPALES
+        // =========================
+        card.querySelectorAll('input').forEach(input => {
+
+            if (!input.name) return;
+
+            // Reindex variantes[]
+            input.name = input.name.replace(
+                /variantes\[\d+]/,
+                `variantes[${index}]`
+            );
         });
-    });
-});
-</script>
 
-<script>
-document.querySelector("form").addEventListener("submit", async function (e) {
+        // =========================
+        // ATRIBUTOS (CLAVE DEL FIX)
+        // =========================
+        const attrRows = card.querySelectorAll('.attr-row');
+
+        attrRows.forEach((row, attrIndex) => {
+
+            const inputs = row.querySelectorAll('input');
+
+            if (inputs.length < 2) return;
+
+            // KEY
+            inputs[0].name =
+                `variantes[${index}].atributosKeys[${attrIndex}]`;
+
+            // VALUE
+            inputs[1].name =
+                `variantes[${index}].atributosValues[${attrIndex}]`;
+
+        });
+
+    });
+}
+
+
+/* =========================
+   STOCK EVENTS EXISTENTES
+========================= */
+document.addEventListener('input', e => {
+
+    if (e.target.classList.contains('stock-input')) {
+        actualizarBadgeStock(e.target);
+    }
+
+});
+
+
+/* =========================
+   AGREGAR VARIANTE
+========================= */
+document.getElementById('addVariante')
+.addEventListener('click', () => {
+
+    const wrap =
+        document.getElementById('variantesWrap');
+
+    const index =
+        document.querySelectorAll('.variant-card').length;
+
+    wrap.insertAdjacentHTML('beforeend', `
+
+    <div class="variant-card"
+         data-index="${index}">
+
+        <div class="row">
+
+            <div class="col-md-4 mb-2">
+                <label>Stock</label>
+
+                <input type="number"
+                       class="form-control stock-input"
+                       name="variantes[${index}].stock"
+                       value="0">
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label>Precio</label>
+
+                <input type="number"
+                       step="0.01"
+                       class="form-control"
+                       name="variantes[${index}].precio">
+            </div>
+
+            <div class="col-md-4 mb-2 d-flex align-items-end">
+                <span class="badge-stock out">
+                    Agotado
+                </span>
+            </div>
+
+        </div>
+
+        <div class="atributos-container mt-2"></div>
+
+        <button type="button"
+                class="btn btn-info btn-sm addAttr mt-2">
+            + atributo
+        </button>
+
+        <button type="button"
+                class="btn btn-danger btn-sm removeVariante mt-2">
+            Eliminar
+        </button>
+
+    </div>
+    `);
+
+});
+
+
+/* =========================
+   CLICK GLOBAL
+========================= */
+document.addEventListener('click', e => {
+
+    /* ELIMINAR VARIANTE */
+    if (e.target.classList.contains('removeVariante')) {
+
+        e.target
+         .closest('.variant-card')
+         .remove();
+
+        reindexVariantes();
+    }
+
+
+    /* AGREGAR ATRIBUTO */
+    if (e.target.classList.contains('addAttr')) {
+
+        const card =
+            e.target.closest('.variant-card');
+
+        const index = card.dataset.index;
+
+        const container =
+            card.querySelector('.atributos-container');
+
+        const attrIndex =
+            container.querySelectorAll('.attr-row').length;
+
+        container.insertAdjacentHTML('beforeend', `
+
+        <div class="attr-row">
+
+            <input type="text"
+                   class="form-control mb-1"
+                   name="variantes[${index}].atributosKeys[${attrIndex}]"
+                   placeholder="Ej: Color">
+
+            <input type="text"
+                   class="form-control mb-2"
+                   name="variantes[${index}].atributosValues[${attrIndex}]"
+                   placeholder="Ej: Negro">
+
+        </div>
+        `);
+    }
+
+});
+
+
+/* =========================
+   DROPZONE IMAGENES
+========================= */
+const dz =
+    document.getElementById('dropzone');
+
+const input =
+    document.getElementById('imagenes');
+
+const preview =
+    document.getElementById('preview');
+
+dz.addEventListener('click', () => {
+    input.click();
+});
+
+input.addEventListener('change', () => {
+
+    preview.innerHTML = '';
+
+    [...input.files].forEach(file => {
+
+        const reader = new FileReader();
+
+        reader.onload = e => {
+
+            preview.insertAdjacentHTML('beforeend', `
+
+            <div class="col-md-3 mb-3">
+                <div class="img-box">
+                    <img src="${e.target.result}">
+                </div>
+            </div>
+
+            `);
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+});
+
+
+/* =========================
+   SUBMIT AJAX
+========================= */
+document.getElementById('formEditar')
+.addEventListener('submit', async e => {
 
     e.preventDefault();
 
     const form = e.target;
-    const btn = form.querySelector("button[type='submit']");
 
-    btn.disabled = true;
-    btn.innerText = "Guardando...";
+    const loader =
+        document.getElementById('loader');
+
+    const text =
+        document.getElementById('btnText');
+
+    loader.style.display = 'inline-block';
+    text.innerText = 'Guardando...';
 
     try {
+
         const resp = await fetch(form.action, {
-            method: "POST",
+            method: 'POST',
             body: new FormData(form)
         });
 
         const data = await resp.json();
+        
+        if (!resp.ok) {
+        	   throw new Error("Error servidor");
+        	}
 
         if (data.success) {
-            window.location.href = "/VerProductos";
+
+            toast(
+                'Producto actualizado 🔥',
+                'success'
+            );
+
+            setTimeout(() => {
+                location.href =
+                    '/VerProductos';
+            }, 1200);
+
         } else {
-            alert(data.error || "Error al guardar el producto");
+
+            toast(
+                data.error ||
+                'Error al guardar',
+                'error'
+            );
         }
 
     } catch (err) {
-        console.error(err);
-        alert("Error de conexión");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Guardar Cambios";
+
+        toast(
+            'Error de conexión',
+            'error'
+        );
     }
+
+    loader.style.display = 'none';
+    text.innerText =
+        'Guardar Cambios';
+
 });
 </script>
-
 <!-- PARTICLES -->
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 <script>
@@ -251,6 +791,5 @@ particlesJS("particles-js", {
     retina_detect: true
 });
 </script>
-
 </body>
 </html>

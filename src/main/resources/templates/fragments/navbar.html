@@ -1,125 +1,43 @@
-<!DOCTYPE html>
-<html lang="es"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
-<body>
-
-<nav th:fragment="navbar"
-     class="custom-navbar navbar navbar-expand-lg navbar-dark fixed-top"
-     style="z-index: 10;">
+<!-- ===== NAVBAR FRAGMENT ===== -->
+<section id="navbar" th:fragment="navbar">
+  <div class="container nav-inner">
     
-    <!-- Botón hamburguesa -->
-    <button class="navbar-toggler ms-2"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-        <!-- Izquierda -->
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-          
-           <!-- Usuario LOGUEADO -->
-<li class="nav-item dropdown d-flex align-items-center user-nav-item"
-    sec:authorize="isAuthenticated()">
-
-
-    <a class="nav-link dropdown-toggle d-flex align-items-center"
-       href="#"
-       id="userDropdown"
-       role="button"
-       data-bs-toggle="dropdown"
-       aria-expanded="false">
-
-        <i class="bi bi-person-circle fs-4 me-1"></i>
-        <!-- email o username -->
-        <span sec:authentication="name">Usuario</span>
+    <!-- LOGO -->
+    <a th:href="@{/}" class="nav-logo">
+      STR<span>I</span>DE
     </a>
 
-        <ul class="dropdown-menu dropdown-menu-start shadow user-dropdown">
-        <li>
-            <a class="dropdown-item" th:href="@{/cuenta}">Mi cuenta</a>
-        </li>
-        <li>
-            <a class="dropdown-item" th:href="@{/pedidos}">Mis pedidos</a>
-        </li>
-        <li><hr class="dropdown-divider"></li>
-        <li>
-            <a class="dropdown-item text-danger" th:href="@{/logout}">
-                Cerrar sesión
-            </a>
-        </li>
+    <!-- LINKS -->
+    <ul class="nav-links">
+      <li><a th:href="@{/categoria/hombres}">Hombres</a></li>
+      <li><a th:href="@{/categoria/mujeres}">Mujeres</a></li>
+      <li><a th:href="@{/novedades}">Novedades</a></li>
+      <li><a th:href="@{/#banner}" class="ofertas">Ofertas</a></li>
     </ul>
-</li>
 
+    <!-- ACTIONS -->
+    <div class="nav-actions">
+      
+      <!-- CARRITO -->
+      <button class="cart-btn" id="cart-btn" aria-label="Ver carrito">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <span class="cart-badge" id="cart-badge" th:text="${cartCount != null ? cartCount : 0}">0</span>
+      </button>
 
-        <!-- Usuario NO LOGUEADO -->
-<li class="nav-item d-flex align-items-center"
-    sec:authorize="isAnonymous()">
-    <a class="nav-link me-2" th:href="@{/login}">
-        <i class="bi bi-box-arrow-in-right me-1"></i> Login
-    </a>
-</li>
+      <!-- LOGIN -->
+      <button class="btn-login" th:onclick="|window.location.href='@{/login}'|">
+        Iniciar sesión
+      </button>
 
-<li class="nav-item"
-    sec:authorize="isAnonymous()">
-    <a class="nav-link"
-       href="#"
-       data-bs-toggle="modal"
-       data-bs-target="#registroModal">
-        <i class="bi bi-person-plus me-1"></i> Registro
-    </a>
-</li>
-
-
-
-            <!-- Menú existente -->
-<li class="nav-item">
-    <a class="nav-link" th:href="@{/#home}">Home</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" th:href="@{/#about}">About</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" th:href="@{/#menu-list}">Productos</a>
-</li>
-
-
-        <!-- Logo central -->
-        <a class="navbar-brand mx-lg-auto d-none d-lg-flex align-items-center" href="#">
-            <img src="assets/imgs/logo.png" class="brand-img me-2" alt="WeedTlanMx">
-            <span class="brand-txt">WeedTlanMx</span>
-        </a>
-
-        <!-- Derecha -->
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/#testmonial}">Reviews</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/#contact}">Contact Us</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/privacy}">Políticas</a>
-            </li>
-            <li class="nav-item ms-lg-3">
-                <button class="btn custom-register-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal">
-                    Inscribirse
-                </button>
-            </li>
-        </ul>
+      <!-- HAMBURGER -->
+      <button class="hamburger" id="hamburger" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
 
     </div>
-</nav>
-
-</body>
-</html>
+  </div>
+</section>

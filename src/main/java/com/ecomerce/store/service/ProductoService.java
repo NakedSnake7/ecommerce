@@ -1,29 +1,36 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.dto.CategoriaGrupoDTO;   
+import com.ecomerce.store.dto.CategoriaGrupoDTO;     
 
 import com.ecomerce.store.dto.CloudinaryUploadResult;
 import com.ecomerce.store.dto.ProductoDTO;
+import com.ecomerce.store.dto.ProductoPrecioDTO;
 import com.ecomerce.store.dto.ProductoResumenDTO;
+import com.ecomerce.store.dto.ProductoVarianteDTO;
 import com.ecomerce.store.exception.ImageUploadException;
 import com.ecomerce.store.mapper.ProductoMapper;
 import com.ecomerce.store.model.ImagenProducto;
 import com.ecomerce.store.model.Producto;
+import com.ecomerce.store.model.ProductoVariante;
+import com.ecomerce.store.model.VarianteAtributo;
 import com.ecomerce.store.repository.ImagenProductoRepository;
 import com.ecomerce.store.repository.ProductoRepository;
+import com.ecomerce.store.repository.ProductoVarianteRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,32 +40,29 @@ import org.slf4j.LoggerFactory;
 @Service
 public class ProductoService {
 
-	private static final Logger log =
+    private static final Logger log =
             LoggerFactory.getLogger(ProductoService.class);
-    @Autowired
-    private final ProductoRepository productoRepository;
 
-    public ProductoService(ProductoRepository productoRepository,
-                           ImagenProductoRepository imagenProductoRepository,
-                           CloudinaryService cloudinaryService) {
+    private final ProductoRepository productoRepository;
+    private final ImagenProductoRepository imagenProductoRepository;
+    private final CloudinaryService cloudinaryService;
+    private final CategoriaService categoriaService;
+    private final ProductoVarianteRepository productoVarianteRepository;
+
+    public ProductoService(
+            ProductoRepository productoRepository,
+            ImagenProductoRepository imagenProductoRepository,
+            CloudinaryService cloudinaryService,
+            CategoriaService categoriaService,
+            ProductoVarianteRepository productoVarianteRepository
+    ) {
         this.productoRepository = productoRepository;
         this.imagenProductoRepository = imagenProductoRepository;
         this.cloudinaryService = cloudinaryService;
+        this.categoriaService = categoriaService;
+        this.productoVarianteRepository = productoVarianteRepository;
     }
 
-    @Autowired
-    private ImagenProductoRepository imagenProductoRepository;
-
-    @Autowired
-    private CloudinaryService cloudinaryService;
-
-    // ============================================================
-    // OBTENCIONES
-    // ============================================================
-
-    public List<Producto> obtenerTodosLosProductos() {
-        return productoRepository.findProductosVisiblesConTodo();
-    }
     
     
     
@@ -90,7 +94,29 @@ public class ProductoService {
                 .map(ProductoMapper::toDTO)
                 .toList();
     }
-    
+    @Transactional(readOnly = true)
+    public List<ProductoDTO> obtenerProductosParaPrecios() {
+
+        return productoRepository.findProductosVisiblesConTodo()
+                .stream()
+                .map(ProductoMapper::toDTO)
+                .toList();
+    }
+    public List<ProductoPrecioDTO> obtenerProductosPrecio() {
+
+        return productoRepository.findProductosPrecioRaw()
+                .stream()
+                .map(r -> new ProductoPrecioDTO(
+                        ((Number) r[0]).longValue(),
+                        (String) r[1],
+                        (BigDecimal) r[2],
+                        (BigDecimal) r[3],
+                        (Boolean) r[4],
+                        (Boolean) r[5],
+                        (String) r[6]
+                ))
+                .toList();
+    }
     
     @Transactional
     public Producto guardarProducto(Producto producto) {
@@ -100,11 +126,21 @@ public class ProductoService {
 
     @Transactional
     public void eliminarProducto(Long id) {
-        Producto producto = obtenerProducto(id);
-        eliminarImagenesPorProducto(producto);
-        productoRepository.delete(producto);
-    }
 
+        Producto producto = productoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("No existe"));
+
+        producto.getImagenes().forEach(img -> {
+            try {
+                cloudinaryService.eliminarImagen(img.getPublicId());
+            } catch (Exception e) {
+                log.warn("Error eliminando imagen {}", img.getPublicId());
+            }
+        });
+
+        productoRepository.deleteById(id);
+        productoRepository.flush();
+    }
     // ============================================================
     // TOGGLES
     // ============================================================
@@ -134,11 +170,15 @@ public class ProductoService {
             Long productoId,
             Producto datos,
             List<MultipartFile> nuevasImagenes,
-            List<Long> eliminarImagenes
+            List<Long> eliminarImagenes,
+            List<ProductoVarianteDTO> variantesDTO
     ) {
 
         Producto producto = obtenerProducto(productoId);
 
+        // =========================
+        // 1. DATOS BASE
+        // =========================
         producto.setProductName(datos.getProductName());
         producto.setPrice(datos.getPrice());
         producto.setDescription(datos.getDescription());
@@ -150,24 +190,147 @@ public class ProductoService {
         List<String> publicIdsSubidos = new ArrayList<>();
 
         try {
-            subirImagenesInterno(producto, nuevasImagenes, publicIdsSubidos);
-            eliminarImagenesInterno(productoId, eliminarImagenes);
-            
+
+            // =========================
+            // 2. ELIMINAR IMÁGENES
+            // =========================
+            if (eliminarImagenes != null && !eliminarImagenes.isEmpty()) {
+
+                producto.getImagenes().removeIf(img -> {
+
+                    boolean eliminar = eliminarImagenes.contains(img.getId());
+
+                    if (eliminar && img.getPublicId() != null) {
+                        try {
+                            cloudinaryService.eliminarImagen(img.getPublicId());
+                        } catch (Exception e) {
+                            log.warn("Error eliminando imagen Cloudinary {}", img.getPublicId());
+                        }
+                    }
+
+                    return eliminar;
+                });
+            }
+
+            // =========================
+            // 3. SUBIR NUEVAS IMÁGENES
+            // =========================
+            if (nuevasImagenes != null) {
+
+                for (MultipartFile file : nuevasImagenes) {
+
+                    // 🔥 IGNORAR ARCHIVOS VACÍOS
+                    if (file == null || file.isEmpty()) {
+                        continue;
+                    }
+
+                    try {
+                        var resultado = cloudinaryService.subirImagen(file);
+
+                        ImagenProducto img = new ImagenProducto();
+                        img.setImageUrl(resultado.getSecureUrl());
+                        img.setPublicId(resultado.getPublicId());
+                        img.setProducto(producto);
+
+                        producto.getImagenes().add(img);
+                        imagenProductoRepository.save(img);
+                        publicIdsSubidos.add(resultado.getPublicId());
+
+                    } catch (IOException e) {
+                        log.error("Error subiendo imagen", e);
+                        throw new RuntimeException("Error subiendo imagen", e);
+                    }
+                }
+            }
+
+            // =========================
+            // 4. SINCRONIZAR VARIANTES
+            // =========================
+            if (variantesDTO != null) {
+
+                Map<Long, ProductoVariante> existentes = producto.getVariantes()
+                        .stream()
+                        .collect(Collectors.toMap(ProductoVariante::getId, v -> v));
+
+                List<ProductoVariante> nuevasLista = new ArrayList<>();
+
+                for (ProductoVarianteDTO dto : variantesDTO) {
+
+                    ProductoVariante variante;
+
+                    // EXISTENTE
+                    if (dto.getId() != null && existentes.containsKey(dto.getId())) {
+                        variante = existentes.get(dto.getId());
+                    } else {
+                        // NUEVA
+                        variante = new ProductoVariante();
+                        variante.setProducto(producto);
+                    }
+
+                    variante.setPrecio(dto.getPrecio());
+                    variante.setStock(dto.getStock());
+
+                    // =========================
+                    // ATRIBUTOS
+                    // =========================
+                    if (variante.getAtributos() == null) {
+                        variante.setAtributos(new LinkedHashSet<>());
+                    } else {
+                        variante.getAtributos().clear();
+                    }
+
+                    if (dto.getAtributos() != null) {
+                        dto.getAtributos().forEach((key, value) -> {
+                            VarianteAtributo attr = new VarianteAtributo();
+                            attr.setNombre(key);
+                            attr.setValor(value);
+                            attr.setVariante(variante);
+                            variante.getAtributos().add(attr);
+                        });
+                    }
+
+                    nuevasLista.add(variante);
+                }
+
+                // reemplazo completo
+                producto.getVariantes().clear();
+                producto.getVariantes().addAll(nuevasLista);
+            }
+
+            // =========================
+            // 5. GUARDAR
+            // =========================
             log.info("Actualizando producto id={}", productoId);
 
             productoRepository.save(producto);
+
             return producto;
 
         } catch (Exception e) {
+
+            // =========================
+            // ROLLBACK CLOUDINARY
+            // =========================
             for (String publicId : publicIdsSubidos) {
                 try {
                     cloudinaryService.eliminarImagen(publicId);
                 } catch (Exception ignored) {}
             }
+
+            log.error("Error actualizando producto {}", productoId, e);
+
             throw e;
         }
     }
+    
+    @Transactional
+    public void actualizarStockVariante(Long varianteId, Integer stock) {
 
+        ProductoVariante variante = productoVarianteRepository.findById(varianteId)
+            .orElseThrow(() -> new RuntimeException("Variante no existe"));
+
+        variante.setStock(stock);
+    }
     // ============================================================
     // MÉTODOS INTERNOS
     // ============================================================
@@ -231,7 +394,24 @@ public class ProductoService {
         }
     }
     
- 
+    @Transactional(readOnly = true)
+    public ProductoDTO obtenerProductoDTO(Long id) {
+        Producto producto = productoRepository.findByIdConTodo(id)
+                .orElseThrow(() -> new ProductoNotFoundException(id));
+
+        return ProductoMapper.toDTO(producto);
+    } 
+    
+    @Transactional
+    public void subirImagenesProducto(
+            Long productoId,
+            List<MultipartFile> imagenes
+    ) {
+        Producto producto = obtenerProducto(productoId);
+
+        List<String> publicIds = new ArrayList<>();
+        subirImagenesInterno(producto, imagenes, publicIds);
+    }
 
     // ============================================================
     // LEGACY
@@ -261,18 +441,6 @@ public class ProductoService {
     // HELPERS
     // ============================================================
 
-    private void eliminarImagenesPorProducto(Producto producto) {
-
-        List<ImagenProducto> imagenes =
-                imagenProductoRepository.findByProductoId(producto.getId());
-
-        for (ImagenProducto img : imagenes) {
-            cloudinaryService.eliminarImagen(img.getPublicId());
-        }
-
-        imagenProductoRepository.deleteAllInBatch(imagenes);
-    }
-
     private void validarProducto(Producto producto) {
 
         if (producto.getProductName() == null || producto.getProductName().isBlank()) {
@@ -294,10 +462,8 @@ public class ProductoService {
             }
         }
         
-        if (!producto.tieneVariantes()) {
-            throw new IllegalArgumentException(
-                "Todos los productos deben tener al menos una variante"
-            );
+        if (producto.getVariantes() == null || producto.getVariantes().isEmpty()) {
+            log.warn("Producto sin variantes id={}", producto.getId());
         }
     }
 
@@ -317,19 +483,25 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public List<CategoriaGrupoDTO> obtenerProductosAgrupadosPorCategoria() {
 
-    	List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
+        List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
+
         return productos.stream()
-            .map(ProductoMapper::toDTO) // 🔥 aquí ocurre todo dentro de TX
+            .map(ProductoMapper::toDTO)
             .collect(Collectors.groupingBy(
-                p -> p.getCategoriaNombre() != null
-                        ? p.getCategoriaNombre()
-                        : "Sin categoría",
+                p -> new AbstractMap.SimpleEntry<>(
+                    p.getCategoriaId(),
+                    p.getCategoriaNombre()
+                ),
                 LinkedHashMap::new,
                 Collectors.toList()
             ))
             .entrySet()
             .stream()
-            .map(e -> new CategoriaGrupoDTO(e.getKey(), e.getValue()))
+            .map(e -> new CategoriaGrupoDTO(
+                e.getKey().getKey(),     //  ID categoría
+                e.getKey().getValue(),   //  Nombre categoría
+                e.getValue()             //  Productos
+            ))
             .toList();
     }
 
@@ -341,17 +513,19 @@ public class ProductoService {
     
     @Transactional
     public void actualizarPrecio(Long id, BigDecimal precio) {
-    	if (precio == null || precio.compareTo(BigDecimal.ZERO) < 0) {
-    	    throw new IllegalArgumentException("Precio inválido");
-    	}
 
-    	Producto producto = productoRepository.findById(id)
-    	        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        if (precio == null || precio.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Precio inválido");
+        }
 
-    	producto.setPrice(precio.setScale(2, RoundingMode.HALF_UP));
-    	if (!producto.getVariantes().isEmpty()) {
-    	    throw new IllegalStateException("Producto con variantes no usa precio base");
-    	}
+        Producto producto = productoRepository.findByIdConTodo(id) //  FIX
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        if (producto.getVariantes() != null && !producto.getVariantes().isEmpty()) {
+            throw new IllegalStateException("Producto con variantes no usa precio base");
+        }
+
+        producto.setPrice(precio.setScale(2, RoundingMode.HALF_UP));
     }
     @Transactional
     public void ajustarPrecioCategoria(
@@ -396,6 +570,43 @@ public class ProductoService {
                 p.setPrice(nuevoPrecio.setScale(2, RoundingMode.HALF_UP));
             }
         }
+    }
+    
+    @Transactional
+    public Producto crearProducto(ProductoDTO dto, List<MultipartFile> imagenes) {
+
+        Producto producto = new Producto();
+        producto.setProductName(dto.getProductName());
+        producto.setPrice(dto.getPrice());
+        producto.setDescription(dto.getDescription());
+
+        producto.setCategoria(
+            categoriaService.obtenerPorId(dto.getCategoriaId())
+        );
+
+        if (dto.getVariantes() != null) {
+            for (var vDto : dto.getVariantes()) {
+
+                ProductoVariante variante = new ProductoVariante();
+                variante.setProducto(producto);
+                variante.setPrecio(vDto.getPrecio());
+                variante.setStock(vDto.getStock());
+
+                if (vDto.getAtributos() != null) {
+                    vDto.getAtributos().forEach((k, v) -> {
+                        variante.agregarAtributo(k, v);
+                    });
+                }
+
+                producto.agregarVariante(variante);
+            }
+        }
+
+        Producto saved = productoRepository.save(producto);
+
+        subirImagenesProducto(saved.getId(), imagenes);
+
+        return saved;
     }
 
     @Transactional(readOnly = true)

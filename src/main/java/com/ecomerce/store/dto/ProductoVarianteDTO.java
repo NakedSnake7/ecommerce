@@ -2,9 +2,11 @@ package com.ecomerce.store.dto;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 public class ProductoVarianteDTO {
@@ -19,10 +21,33 @@ public class ProductoVarianteDTO {
 
     private BigDecimal precio;
 
-    // 🔥 atributos dinámicos tipo Amazon
+    //  atributos dinámicos tipo Amazon
+    @NotEmpty(message = "Debe tener al menos un atributo")
     private Map<String, String> atributos = new HashMap<>();
+    
+    private List<String> atributosKeys;
+    private List<String> atributosValues;
+    
+    
+    
 
-    public Long getId() {
+    public List<String> getAtributosKeys() {
+		return atributosKeys;
+	}
+
+	public void setAtributosKeys(List<String> atributosKeys) {
+		this.atributosKeys = atributosKeys;
+	}
+
+	public List<String> getAtributosValues() {
+		return atributosValues;
+	}
+
+	public void setAtributosValues(List<String> atributosValues) {
+		this.atributosValues = atributosValues;
+	}
+
+	public Long getId() {
         return id;
     }
 
@@ -46,8 +71,33 @@ public class ProductoVarianteDTO {
         this.precio = precio;
     }
 
-    public Map<String, String> getAtributos() {
-        return atributos;
+    public Map<String,String> getAtributos() {
+
+        if (atributos != null && !atributos.isEmpty()) {
+            return atributos;
+        }
+
+        Map<String,String> map = new HashMap<>();
+
+        if (atributosKeys != null && atributosValues != null) {
+
+            for (int i = 0; i < atributosKeys.size(); i++) {
+
+                String key = atributosKeys.get(i);
+                String value =
+                    atributosValues.size() > i
+                    ? atributosValues.get(i)
+                    : null;
+
+                if (key != null && value != null &&
+                    !key.isBlank() && !value.isBlank()) {
+
+                    map.put(key, value);
+                }
+            }
+        }
+
+        return map;
     }
 
     public void setAtributos(Map<String, String> atributos) {

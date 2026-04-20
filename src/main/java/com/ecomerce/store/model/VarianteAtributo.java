@@ -2,7 +2,7 @@ package com.ecomerce.store.model;
 
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference; 
+import com.fasterxml.jackson.annotation.JsonBackReference;  
 
 import jakarta.persistence.*;
 
@@ -24,6 +24,9 @@ public class VarianteAtributo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "variante_id")
     private ProductoVariante variante;
+    
+    
+    
     // -----------------------------
     // GETTERS / SETTERS
     // -----------------------------

@@ -1,0 +1,83 @@
+<section id="products" th:fragment="products">
+  <div class="container">
+
+    <div class="section-header reveal">
+      <h2 class="section-title">Destacados De La Temporada</h2>
+      <p class="section-sub">Selección curada por nuestro equipo</p>
+    </div>
+
+    <div class="products-grid">
+
+      <div class="product-card reveal"
+           th:each="product, iterStat : ${products}"
+           th:classappend="'reveal-delay-' + ${iterStat.index + 1}"
+           th:onclick="|window.location.href='@{/producto-detalle/{id}(id=${product.id})}'|"
+           style="cursor:pointer;">
+
+        <!-- IMAGEN -->
+        <div class="product-img-wrap">
+          <img th:src="${product.imageUrl}"
+               th:alt="${product.productName}"
+               loading="lazy">
+
+          <!-- BADGES -->
+          <span class="product-badge badge-sale"
+                th:if="${product.tienePromocion}">
+            OFERTA
+          </span>
+
+          <span class="product-badge badge-sold"
+                th:if="${product.stockTotal == 0}">
+            SOLD OUT
+          </span>
+
+          <!-- WISHLIST -->
+          <button class="wishlist-btn"
+                  onclick="event.stopPropagation(); this.classList.toggle('active')">
+            ❤️
+          </button>
+        </div>
+
+        <!-- INFO -->
+        <div class="product-info">
+
+          <!-- CATEGORÍA -->
+          <p class="product-brand"
+             th:text="${product.categoriaNombre}">
+          </p>
+
+          <!-- NOMBRE -->
+          <p class="product-name"
+             th:text="${product.productName}">
+          </p>
+
+          <!-- RATING -->
+          <div class="product-rating">
+            <div class="stars">★★★★★</div>
+            <span class="rating-count">(0 reseñas)</span>
+          </div>
+
+          <!-- 💰 PRECIO -->
+          <div class="product-prices">
+
+            <!-- Precio simple desde DTO -->
+            <span class="price-real"
+                  th:text="|$${product.price}|">
+            </span>
+
+          </div>
+
+          <!-- BOTÓN -->
+          <a th:href="@{/producto-detalle/{id}(id=${product.id})}"
+   class="btn-cart"
+   onclick="event.stopPropagation();">
+  Ver producto
+</a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>

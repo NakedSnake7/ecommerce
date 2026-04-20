@@ -9,7 +9,8 @@ public class CategoriaGrupoDTO {
     private List<ProductoDTO> productos;
     private boolean todosVisibles;
 
-    public CategoriaGrupoDTO(String nombre, List<ProductoDTO> productos) {
+    public CategoriaGrupoDTO(Long id, String nombre, List<ProductoDTO> productos) {
+        this.id = id;
         this.nombre = nombre;
         this.productos = productos;
         this.todosVisibles =

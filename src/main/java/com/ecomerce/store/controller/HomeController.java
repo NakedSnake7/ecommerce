@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class HomeController {
     }
 
     // =========================
-    // 🔥 DATA GLOBAL (REUTILIZABLE)
+    // DATA GLOBAL (REUTILIZABLE)
     // =========================
     private void cargarDatosGlobales(Model model) {
 
@@ -36,11 +37,11 @@ public class HomeController {
         List<ProductoDTO> productos = productoService.obtenerProductosCompletos();
 
         model.addAttribute("categorias", categorias);
-        model.addAttribute("products", productos); // 🔥 IMPORTANTE (antes "productos")
+        model.addAttribute("products", productos); //  IMPORTANTE (antes "productos")
     }
 
     // =========================
-    // 🏠 HOME
+    //  HOME
     // =========================
     @GetMapping({"/", "/inicio"})
     public String home(Model model, HttpServletRequest request) {
@@ -48,7 +49,7 @@ public class HomeController {
         String forwardedHost = request.getHeader("X-Forwarded-Host");
         String host = forwardedHost != null ? forwardedHost : request.getServerName();
 
-        // 🔥 MULTI-TENANT (muy buen nivel esto)
+        // 🔥 MULTI-TENANT
         if (host != null && host.startsWith("espacio.")) {
             return "landing-espacio";
         }
@@ -63,12 +64,11 @@ public class HomeController {
                 PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "estrellas"))
             ).getContent()
         );
-
         return "index";
     }
 
     // =========================
-    // 🚫 BLOQUEAR LANDING DIRECTO
+    //  BLOQUEAR LANDING DIRECTO
     // =========================
     @GetMapping("/landing-espacio")
     public String blockLandingDirect() {
@@ -76,7 +76,7 @@ public class HomeController {
     }
 
     // =========================
-    // 📂 MENÚ
+    //  MENÚ
     // =========================
     @GetMapping("/menu")
     public String verMenu(Model model) {
@@ -85,7 +85,7 @@ public class HomeController {
     }
 
     // =========================
-    // 📦 SUBIR PRODUCTO (PROTEGIDO)
+    //  SUBIR PRODUCTO (PROTEGIDO)
     // =========================
     @GetMapping("/subirProducto")
     public String subirProducto(@AuthenticationPrincipal UserDetails user) {
@@ -96,7 +96,7 @@ public class HomeController {
     }
 
     // =========================
-    // 🔄 FRAGMENTO MENÚ (AJAX)
+    //  FRAGMENTO MENÚ (AJAX)
     // =========================
     @GetMapping("/fragmento-menu")
     public String cargarFragmentoMenu(Model model) {
@@ -105,9 +105,18 @@ public class HomeController {
 
         return "fragments/menu :: menu";
     }
+    
+    @GetMapping("/producto-detalle/{id}")
+    public String verDetalleProducto(@PathVariable Long id, Model model) {
 
+        ProductoDTO producto = productoService.obtenerProductoDTO(id);
+
+        model.addAttribute("producto", producto);
+
+        return "producto-detalle"; // 👈 tu HTML
+    }
     // =========================
-    // ⭐ FRAGMENTO RESEÑAS
+    //  FRAGMENTO RESEÑAS
     // =========================
     @GetMapping("/fragmento-resenas")
     public String cargarResenasFragment(Model model) {
@@ -123,7 +132,7 @@ public class HomeController {
     }
 
     // =========================
-    // 📋 LISTA COMPLETA RESEÑAS
+    //  LISTA COMPLETA RESEÑAS
     // =========================
     @GetMapping("/lista")
     public String listarResenas(Model model) {
@@ -137,7 +146,7 @@ public class HomeController {
     }
 
     // =========================
-    // 💳 CHECKOUT CANCELADO
+    //  CHECKOUT CANCELADO
     // =========================
     @GetMapping("/checkout-cancel")
     public String checkoutCancel() {
@@ -145,7 +154,7 @@ public class HomeController {
     }
 
     // =========================
-    // ✅ COMPRA EXITOSA
+    //  COMPRA EXITOSA
     // =========================
     @GetMapping("/gracias")
     public String gracias() {
@@ -153,7 +162,7 @@ public class HomeController {
     }
 
     // =========================
-    // 🧾 SERVICIO
+    //  SERVICIO
     // =========================
     @GetMapping("/servicio")
     public String servicio() {
@@ -161,7 +170,7 @@ public class HomeController {
     }
 
     // =========================
-    // 🔒 PRIVACIDAD
+    //  PRIVACIDAD
     // =========================
     @GetMapping("/privacy")
     public String privacy() {

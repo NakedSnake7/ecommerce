@@ -1,4 +1,9 @@
+export default function Particles() {
+  const canvas = document.getElementById('particles');
+  if (!canvas) return;
 
+  const ctx = canvas.getContext('2d');
+  
  particlesJS("particles-js", {
   "particles": {
     "number": {
@@ -62,3 +67,5 @@
   },
   "retina_detect": true
 });
+
+}

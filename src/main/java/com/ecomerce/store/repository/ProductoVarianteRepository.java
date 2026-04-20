@@ -13,5 +13,9 @@ public interface ProductoVarianteRepository extends JpaRepository<ProductoVarian
     @Query("SELECT v FROM ProductoVariante v WHERE v.id = :id")
     Optional<ProductoVariante> findByIdForUpdate(@Param("id") Long id);
     
+    @Modifying
+    @Query("DELETE FROM ProductoVariante v WHERE v.producto.id = :productoId")
+    void deleteByProductoId(Long productoId);
+    
    
 }

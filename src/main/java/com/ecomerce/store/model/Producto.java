@@ -1,7 +1,9 @@
 package com.ecomerce.store.model;
 
-import java.math.BigDecimal;   
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -15,13 +17,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "productos")
 public class Producto {
 	
 	
-
+	@Version
+	private Long version;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -61,8 +65,8 @@ public class Producto {
     	    orphanRemoval = true,
     	    fetch = FetchType.LAZY
     	)
-    private Set<ProductoVariante> variantes = new HashSet<>();
-
+    private List<ProductoVariante> variantes = new ArrayList<>();
+    
     @Column(nullable = false)
     private boolean visibleEnMenu = true;
 
@@ -72,12 +76,19 @@ public class Producto {
     @Column(name = "porcentaje_descuento", nullable = false)
     private Double porcentajeDescuento = 0.0;
     
+    
+
+    
     public void agregarVariante(ProductoVariante variante) {
-        variantes.add(variante);
+        if (variante == null) return;
+
         variante.setProducto(this);
+
         if (variante.getStock() == null) {
             variante.setStock(0);
         }
+
+        this.variantes.add(variante);
     }
     
     public ProductoVariante getVariantePrincipal() {
@@ -244,7 +255,7 @@ public class Producto {
         this.imagenes = imagenes;
     }
 
-    public void setVariantes(Set<ProductoVariante> variantes) {
+    public void setVariantes(List<ProductoVariante> variantes) {
         this.variantes = variantes;
     }
 
@@ -252,7 +263,7 @@ public class Producto {
         return imagenes;
     }
 
-    public Set<ProductoVariante> getVariantes() {
+    public List<ProductoVariante> getVariantes() {
         return variantes;
     }
 

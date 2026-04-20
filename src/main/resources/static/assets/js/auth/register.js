@@ -1,3 +1,10 @@
+export default function Register() {
+  const form = document.getElementById('register-form');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // lógica
  document.getElementById("registroForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -42,3 +49,8 @@
         msg.classList.remove("d-none");
     }
 });
+
+
+  });
+}
+

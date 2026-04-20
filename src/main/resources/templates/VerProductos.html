@@ -144,7 +144,7 @@ tr.bg-secondary:hover {
 
 <th:block th:each="categoria : ${categorias}">
 
-    <!-- FILA CATEGORÍA -->
+    <!-- CATEGORÍA -->
     <tr>
         <td colspan="8" class="bg-secondary text-white font-weight-bold">
 
@@ -155,76 +155,170 @@ tr.bg-secondary:hover {
                 ▼
             </button>
 
-           <span th:text="${categoria.nombre}">Categoría</span>
+            <span th:text="${categoria.nombre}"></span>
 
-<input type="checkbox"
-       class="toggle-categoria ml-3"
-       th:attr="data-categoria-id=${categoria.id}"
-       th:checked="${categoria.todosVisibles}">
+            <input type="checkbox"
+                   class="toggle-categoria ml-3"
+                   th:attr="data-categoria-id=${categoria.id}"
+                   th:checked="${categoria.todosVisibles}">
 
-<span class="ml-1">Visible</span>
+            <span class="ml-1">Visible</span>
 
-
-
-          
-
-            <small class="ml-3 text-light"
+            <small class="ml-3"
                    th:text="'(' + ${#lists.size(categoria.productos)} + ' productos)'"></small>
         </td>
     </tr>
 
-    <!-- PRODUCTOS DE LA CATEGORÍA -->
-  <th:block th:each="producto : ${categoria.productos}">
-    <tr class="collapse"
-        th:id="'cat-' + ${#strings.replace(categoria.nombre,' ','_')}"
-        th:attr="data-categoria-id=${categoria.id}"
-        th:classappend="${!producto.visibleEnMenu} ? 'table-secondary'">
+    <!-- PRODUCTOS -->
+    <th:block th:each="producto : ${categoria.productos}">
 
-<td th:text="${producto.id}"></td>
-<td th:text="${producto.productName}"></td>
-<td th:text="'$' + ${producto.price}"></td>
-<td th:text="${producto.stockTotal}"></td>
-<td th:text="${producto.categoriaNombre}"></td>
+        <tr class="collapse"
+            th:id="'cat-' + ${#strings.replace(categoria.nombre,' ','_')}"
+            th:attr="data-categoria=${categoria.id}"
+            th:classappend="${!producto.visibleEnMenu} ? 'table-secondary'">
 
-<td>
-    <img th:src="${producto.imageUrl}" width="50" height="50">
-</td>
+            <!-- ID -->
+            <td th:text="${producto.id}"></td>
 
-        <td>
-            <a th:href="@{/editar/{id}(id=${producto.id})}"
-               class="btn btn-warning btn-sm">Editar</a>
+            <!-- NOMBRE + BADGES -->
+            <td>
+                <span th:text="${producto.productName}"></span>
 
-            <button class="btn btn-danger btn-sm delete-product"
-                    th:attr="data-id=${producto.id}">
-                Eliminar
-            </button>
+                <br>
 
-            <button type="button"
-                    th:id="'togglePromo-' + ${producto.id}"
-                    th:class="|btn btn-sm ${(producto.tienePromocion) ? 'btn-danger' : 'btn-success'}|"
-                    th:text="${producto.tienePromocion ? 'Desactivar Promo' : 'Activar Promo'}"
-                    th:onclick="'togglePromocion(' + ${producto.id} ')'">
-            </button>
-        </td>
+                <span class="badge badge-info" th:if="${producto.tieneVariantes}">
+                    Variantes
+                </span>
 
-        <td>
-            <input type="checkbox"
-                   class="toggle-visibility"
-                   th:attr="
-                       data-id=${producto.id},
-                       data-categoria-id=${categoria.id}
-                   "
-                   th:checked="${producto.visibleEnMenu}">
-        </td>
+                <span class="badge badge-danger" th:if="${producto.tienePromocion}">
+                    Promo
+                </span>
+            </td>
 
-    </tr>
-</th:block>
+            <!-- PRECIO INTELIGENTE -->
+            <td>
+                <div th:if="${producto.tienePromocion}">
+                    <span style="text-decoration: line-through; color: #aaa;">
+                        $<span th:text="${#numbers.formatDecimal(producto.precio,1,2)}"></span>
+                    </span>
+                    <br>
+                    <span class="text-success font-weight-bold">
+                        $<span th:text="${#numbers.formatDecimal(producto.precioFinal,1,2)}"></span>
+                    </span>
+                </div>
 
+                <div th:if="${!producto.tienePromocion}">
+                    <span th:if="${producto.tieneVariantes}">
+                        Desde $<span th:text="${#numbers.formatDecimal(producto.precioMinimo,1,2)}"></span>
+                    </span>
+
+                    <span th:if="${!producto.tieneVariantes}">
+                        $<span th:text="${#numbers.formatDecimal(producto.precio,1,2)}"></span>
+                    </span>
+                </div>
+            </td>
+
+            <!-- STOCK -->
+            <td th:classappend="${!producto.tieneStock()} ? 'text-danger font-weight-bold'">
+                <span th:text="${producto.stockTotal}"></span>
+
+                <span th:if="${!producto.tieneStock()}">
+                    (Sin stock)
+                </span>
+            </td>
+
+            <!-- IMAGEN -->
+            <td>
+                <img loading="lazy"
+                     th:src="${producto.imageUrl != null ? producto.imageUrl : '/img/default.jpg'}"
+                     width="50" height="50"
+                     class="rounded">
+            </td>
+
+            <!-- ACCIONES -->
+            <td>
+
+                <a th:href="@{/editar/{id}(id=${producto.id})}"
+                   class="btn btn-warning btn-sm">Editar</a>
+
+                <button class="btn btn-danger btn-sm delete-product"
+                        th:attr="data-id=${producto.id}">
+                    Eliminar
+                </button>
+
+                <button type="button"
+                        th:id="'togglePromo-' + ${producto.id}"
+                        th:class="|btn btn-sm ${(producto.tienePromocion) ? 'btn-danger' : 'btn-success'}|"
+                        th:text="${producto.tienePromocion ? 'Desactivar Promo' : 'Activar Promo'}"
+                        th:onclick="'togglePromocion(' + ${producto.id} ')'">
+                </button>
+
+                <!-- BOTÓN VARIANTES -->
+                <button class="btn btn-info btn-sm"
+                        th:if="${producto.tieneVariantes}"
+                        data-toggle="collapse"
+                        th:attr="data-target='#var-' + ${producto.id}">
+                    Variantes
+                </button>
+
+            </td>
+
+            <!-- VISIBILIDAD -->
+            <td>
+                <input type="checkbox"
+                       class="toggle-visibility"
+                       th:attr="data-id=${producto.id}, data-categoria-id=${categoria.id}"
+                       th:checked="${producto.visibleEnMenu}">
+            </td>
+
+        </tr>
+
+        <!-- VARIANTES -->
+        <tr class="collapse bg-dark"
+            th:id="'var-' + ${producto.id}">
+
+            <td colspan="8">
+
+                <table class="table table-sm table-bordered text-white">
+                    <thead>
+                        <tr>
+                            <th>Atributos</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr th:each="var : ${producto.variantes}">
+
+                            <!-- ATRIBUTOS DINÁMICOS -->
+                            <td>
+                                <span th:each="attr : ${var.atributos}">
+                                    <b th:text="${attr.key}"></b>:
+                                    <span th:text="${attr.value}"></span> |
+                                </span>
+                            </td>
+
+                            <!-- STOCK -->
+                            <td th:text="${var.stock}"></td>
+
+                            <!-- PRECIO -->
+                            <td>
+                                $<span th:text="${#numbers.formatDecimal(var.precio != null ? var.precio : producto.precio,1,2)}"></span>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+
+            </td>
+        </tr>
+
+    </th:block>
 
 </th:block>
 
 </tbody>
-
 
 
 			</table>

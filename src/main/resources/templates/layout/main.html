@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(title, content)">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title th:text="${title} ?: 'STRIDE'">STRIDE</title>
+
+<!-- SEO -->
+<meta name="description" th:content="${description} ?: 'Tienda online STRIDE'">
+<meta name="keywords" th:content="${keywords} ?: 'tenis, streetwear, ecommerce'">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
+<!-- CSS dinámico -->
+<link rel="stylesheet" th:href="@{/assets/css/stride.css}">
+
+<!-- Extra CSS por página -->
+<!--   <th:block th:replace="~{${extraCss} ?: ~{fragments/empty :: empty}}"></th:block>-->
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<!-- CONTENIDO -->
+<main th:replace="${content}"></main>
+
+<!-- FOOTER -->
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<!-- SCRIPTS -->
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- JS dinámico por página <th:block th:replace="${extraJs}"></th:block> -->
+<script>
+document.documentElement.classList.add('js-enabled');
+</script>
+
+</body>
+</html>

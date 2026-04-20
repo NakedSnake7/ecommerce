@@ -1,11 +1,11 @@
 package com.ecomerce.store.model;
 
-import java.math.BigDecimal; 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;  
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -27,8 +27,8 @@ public class ProductoVariante {
 	    }
 
 	    return atributos.stream()
-	            .map(attr -> attr.getNombre() + ": " + attr.getValor())
-	            .collect(Collectors.joining(" | "));
+	            .map(VarianteAtributo::getValor)
+	            .collect(Collectors.joining(" - "));
 	}
 
     @Id
@@ -49,14 +49,15 @@ public class ProductoVariante {
     
 
     // 🔥 ATRIBUTOS DINÁMICOS (lo importante del cambio)
-    @JsonManagedReference
     @OneToMany(
-        mappedBy = "variante",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
-    private List<VarianteAtributo> atributos = new ArrayList<>();
+    	    mappedBy = "variante",
+    	    cascade = CascadeType.ALL,
+    	    orphanRemoval = true,
+    	    fetch = FetchType.LAZY
+    	)
+    	private Set<VarianteAtributo> atributos = new LinkedHashSet<>();
+    
+    
     
     public void addAtributo(VarianteAtributo atributo) {
         atributo.setVariante(this);
@@ -64,11 +65,30 @@ public class ProductoVariante {
     }
     
     
+    public Map<String, String> getAtributosMap() {
+        return atributos.stream()
+            .collect(Collectors.toMap(
+                VarianteAtributo::getNombre,
+                VarianteAtributo::getValor
+            ));
+    }
+    
+    @PrePersist
+    @PreUpdate
+    private void validar() {
+        if (stock == null || stock < 0) {
+            throw new IllegalArgumentException("Stock inválido");
+        }
+    }
 
     // -----------------------------
     // HELPERS
     // -----------------------------
-
+    public void agregarAtributo(VarianteAtributo attr) {
+        attr.setVariante(this);
+        this.atributos.add(attr);
+    }
+    
     public BigDecimal getPrecioFinal() {
         return precio != null ? precio : producto.getPrice();
     }
@@ -117,10 +137,7 @@ public class ProductoVariante {
         this.precio = precio;
     }
 
-    public List<VarianteAtributo> getAtributos() {
-        return atributos;
-    }
-    
+  
     public Boolean getPrincipal() {
 		return principal;
 	}
@@ -129,15 +146,18 @@ public class ProductoVariante {
 		this.principal = principal;
 	}
 
-   
-    public void setAtributos(List<VarianteAtributo> atributos) {
-        this.atributos.clear();
+	public Set<VarianteAtributo> getAtributos() {
+	    return atributos;
+	}
+	    
+	public void setAtributos(Set<VarianteAtributo> atributos) {
+	    this.atributos.clear();
 
-        if (atributos != null) {
-            for (VarianteAtributo attr : atributos) {
-                attr.setVariante(this);
-                this.atributos.add(attr);
-            }
-        }
-    }
+	    if (atributos != null) {
+	        for (VarianteAtributo attr : atributos) {
+	            attr.setVariante(this);
+	            this.atributos.add(attr);
+	        }
+	    }
+	}
 }

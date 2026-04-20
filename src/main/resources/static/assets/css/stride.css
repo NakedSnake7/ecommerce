@@ -52,6 +52,18 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   padding: 0 1.5rem;
 }
 
+.reveal {
+  opacity: 1;
+}
+
+.js-enabled .reveal {
+  opacity: 0;
+}
+
+.js-enabled .reveal.visible {
+  opacity: 1;
+}
+
 /* ============ SCROLL REVEAL ============ */
 .reveal {
   opacity: 0;

@@ -69,21 +69,28 @@ public class ProductoController {
         datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
         
 
-        if (dto.getCategoriaId() != null) {
-            datos.setCategoria(
-                categoriaService.obtenerPorId(dto.getCategoriaId())
-            );
-        } else {
+        if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
+
             datos.setCategoria(
                 categoriaService.obtenerOCrearCategoria(dto.getNuevaCategoria())
             );
+
+        } else if (dto.getCategoriaId() != null) {
+
+            datos.setCategoria(
+                categoriaService.obtenerPorId(dto.getCategoriaId())
+            );
+
+        } else {
+            throw new IllegalArgumentException("Debe seleccionar o crear una categoría");
         }
 
         Producto actualizado = productoService.actualizarProductoCompleto(
                 id,
                 datos,
                 nuevasImagenes,
-                eliminarImagenes
+                eliminarImagenes,
+                dto.getVariantes() // ✅ AQUÍ ESTÁ LA CLAVE
         );
 
         return Map.of(

@@ -1,9 +1,8 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.model.ImagenProducto; 
+import com.ecomerce.store.model.ImagenProducto;  
 import com.ecomerce.store.repository.ImagenProductoRepository;
 
-import java.util.List;
 
 
 import org.springframework.stereotype.Service;
@@ -39,15 +38,7 @@ public class ImagenProductoService {
         imagenProductoRepository.save(imagen);
     }
 
-    public void eliminarImagenesPorProducto(Long productoId) {
-        List<ImagenProducto> imagenes = imagenProductoRepository.findByProductoId(productoId);
-        for (ImagenProducto imagen : imagenes) {
-            if (imagen.getPublicId() != null) {
-                cloudinaryService.eliminarImagen(imagen.getPublicId());
-            }
-        }
-        imagenProductoRepository.deleteAll(imagenes);
-    }
+
 
     public void eliminarImagen(ImagenProducto imagenProducto) {
         if (imagenProducto.getPublicId() != null) {

@@ -53,10 +53,10 @@ body {
           class="form-control form-control-sm"
           style="max-width:220px">
     <option value="">Todas las categorías</option>
-    <option th:each="cat : ${categorias}"
-            th:value="${cat}"
-            th:text="${cat}">
-    </option>
+<option th:each="cat : ${categorias}"
+        th:value="${cat}"
+        th:text="${cat}">
+</option>
   </select>
 
   <input type="text"
@@ -121,42 +121,176 @@ body {
                     <th>Nuevo precio</th>
                 </tr>
             </thead>
-            <tbody>
+<tbody>
 
-<tr th:each="producto : ${productos}"
+<th:block th:each="producto : ${productos}" th:if="${producto != null}">
+
+<tr
     th:attr="
-        data-categoria=${producto.categoria.nombre},
+        data-categoria=${producto.categoriaNombre},
         data-nombre=${#strings.toLowerCase(producto.productName)}
     "
     th:classappend="${!producto.visibleEnMenu} ? 'table-secondary'">
 
+    <!-- ID -->
+    <td th:text="${producto.id}"></td>
 
-                <td th:text="${producto.id}"></td>
-                <td>
-                <span class="text-muted" th:text="${producto.categoria.nombre}"></span>
-                <span class="mx-1">·</span>
-                <strong th:text="${producto.productName}"></strong>
-                </td>
+    <!-- NOMBRE -->
+    <td>
+        <span class="text-muted"
+              th:text="${producto.categoriaNombre}"></span>
 
+        <span class="mx-1">·</span>
 
-                <td th:text="'$' + ${#numbers.formatDecimal(producto.price,1,2)}"></td>
+        <strong th:text="${producto.productName}"></strong>
 
-                <td>
-                   <input type="number"
-       step="0.01"
-       min="0"
-       class="price-input"
-       th:attr="data-id=${producto.id}"
-       placeholder="Nuevo precio">
+        <br>
 
-                </td>
+        <span class="badge badge-info"
+              th:if="${producto.tieneVariantes}">
+            Variantes
+        </span>
+
+        <span class="badge badge-danger"
+              th:if="${producto.tienePromocion}">
+            Promo
+        </span>
+    </td>
+
+    <!-- PRECIO -->
+    <td>
+
+        <!-- PROMO -->
+        <div th:if="${producto.tienePromocion}">
+            <span style="text-decoration: line-through;">
+                $<span th:text="${#numbers.formatDecimal(producto.price,1,2)}"></span>
+            </span>
+            <br>
+            <span class="text-success font-weight-bold">
+                $<span th:text="${#numbers.formatDecimal(producto.precioFinal,1,2)}"></span>
+            </span>
+        </div>
+
+        <!-- VARIANTES -->
+        <div th:if="${!producto.tienePromocion and producto.tieneVariantes}">
+            Desde $<span th:text="${#numbers.formatDecimal(producto.precioMinimo,1,2)}"></span>
+        </div>
+
+        <!-- SIMPLE -->
+        <div th:if="${!producto.tienePromocion and !producto.tieneVariantes}">
+            $<span th:text="${#numbers.formatDecimal(producto.price,1,2)}"></span>
+        </div>
+
+    </td>
+
+    <!-- INPUT -->
+    <td>
+
+        <input type="number"
+               step="0.01"
+               min="0"
+               class="price-input"
+               th:if="${!producto.tieneVariantes}"
+               th:attr="data-id=${producto.id}"
+               placeholder="Nuevo precio">
+
+        <button class="btn btn-info btn-sm"
+                th:if="${producto.tieneVariantes}"
+                data-toggle="collapse"
+                th:attr="data-target='#var-' + ${producto.id}">
+            Editar variantes
+        </button>
+
+    </td>
+
+</tr>
+
+<!-- 👇 AHORA SÍ TIENE CONTEXTO -->
+<tr class="collapse bg-dark"
+    th:id="'var-' + ${producto.id}">
+
+<td colspan="4">
+
+    <table class="table table-sm table-bordered text-white">
+        <thead>
+            <tr>
+                <th>Atributos</th>
+                <th>Precio</th>
+                <th>Editar</th>
             </tr>
+        </thead>
 
-            </tbody>
+        <tbody>
+            <tr th:each="var : ${producto.variantes}">
+
+                <td>
+                    <span th:each="attr : ${var.atributos}">
+                        <b th:text="${attr.key}"></b>:
+                        <span th:text="${attr.value}"></span> |
+                    </span>
+                </td>
+
+                <td>
+                    $<span th:text="${#numbers.formatDecimal(var.precio,1,2)}"></span>
+                </td>
+
+                <td>
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           class="price-variante-input"
+                           th:attr="data-id=${var.id}"
+                           placeholder="Nuevo precio">
+                </td>
+
+            </tr>
+        </tbody>
+    </table>
+
+</td>
+</tr>
+
+</th:block>
+
+</tbody>
         </table>
     </div>
 
     <a href="/servicio" class="btn btn-outline-light mt-3">⬅ Volver</a>
+    
+<script>
+document.querySelectorAll('.price-variante-input').forEach(input => {
+
+    input.addEventListener('keydown', function (e) {
+
+        if (e.key !== 'Enter') return;
+
+        const id = this.dataset.id;
+        const precio = this.value;
+
+        if (!precio || precio <= 0) {
+            marcarError(this);
+            return;
+        }
+
+        fetch('/api/variantes/actualizarPrecio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                varianteId: id,
+                precio: precio
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error();
+            marcarGuardado(this);
+        })
+        .catch(() => marcarError(this));
+
+    });
+
+});
+</script>    
 
 <script>
 const filtroCategoria = document.getElementById('filtroCategoria');

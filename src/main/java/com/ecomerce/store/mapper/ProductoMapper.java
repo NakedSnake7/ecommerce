@@ -6,7 +6,9 @@ import com.ecomerce.store.model.Producto;
 import com.ecomerce.store.model.ProductoVariante;
 import com.ecomerce.store.model.ImagenProducto;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ProductoMapper {
@@ -20,9 +22,9 @@ public class ProductoMapper {
         dto.setDescription(producto.getDescription());
 
         // =========================
-        // 🔥 IMAGEN PRINCIPAL (FIX REAL)
+        // IMAGEN
         // =========================
-        String imagen = producto.getImagenes() != null && !producto.getImagenes().isEmpty()
+        String imagen = (producto.getImagenes() != null && !producto.getImagenes().isEmpty())
                 ? producto.getImagenes().stream()
                     .map(ImagenProducto::getImageUrl)
                     .findFirst()
@@ -34,33 +36,72 @@ public class ProductoMapper {
         // =========================
         // CATEGORIA
         // =========================
-     if (producto.getCategoria() != null) {
-         dto.setCategoriaId(producto.getCategoria().getId());
-         dto.setCategoriaNombre(producto.getCategoria().getNombre());
-     } else {
-         dto.setCategoriaId(null);
-         dto.setCategoriaNombre("Sin categoría");
-     }
+        if (producto.getCategoria() != null) {
+            dto.setCategoriaId(producto.getCategoria().getId());
+            dto.setCategoriaNombre(producto.getCategoria().getNombre());
+        } else {
+            dto.setCategoriaNombre("Sin categoría");
+        }
 
         dto.setTienePromocion(producto.getTienePromocion());
         dto.setPorcentajeDescuento(producto.getPorcentajeDescuento());
         dto.setVisibleEnMenu(producto.isVisibleEnMenu());
 
         // =========================
-        // 🔥 PRECIO DESDE VARIANTE
+        // VARIANTES
+        // =========================
+        List<ProductoVarianteDTO> variantesDTO = mapVariantes(producto);
+        dto.setVariantes(variantesDTO);
+
+        boolean tieneVariantes = !variantesDTO.isEmpty();
+
+        // =========================
+        // PRECIO BASE
         // =========================
         ProductoVariante variante = getVariantePrincipal(producto);
 
-        if (variante != null && variante.getPrecio() != null) {
-            dto.setPrice(variante.getPrecio());
+        BigDecimal precioBase = (variante != null && variante.getPrecio() != null)
+                ? variante.getPrecio()
+                : producto.getPrice();
+
+        dto.setPrice(precioBase);
+
+        // =========================
+        // PRECIO FINAL (DESCUENTO)
+        // =========================
+        BigDecimal precioFinal = precioBase;
+
+        if (Boolean.TRUE.equals(producto.getTienePromocion())
+                && producto.getPorcentajeDescuento() != null
+                && producto.getPorcentajeDescuento() > 0) {
+
+            BigDecimal descuento = precioBase
+                    .multiply(BigDecimal.valueOf(producto.getPorcentajeDescuento()))
+                    .divide(BigDecimal.valueOf(100));
+
+            precioFinal = precioBase.subtract(descuento);
+        }
+
+        dto.setPrecioFinal(precioFinal);
+
+        // =========================
+        // PRECIO MINIMO
+        // =========================
+        if (tieneVariantes) {
+            BigDecimal min = producto.getVariantes().stream()
+                    .map(v -> v.getPrecio() != null ? v.getPrecio() : producto.getPrice())
+                    .min(BigDecimal::compareTo)
+                    .orElse(producto.getPrice());
+
+            dto.setPrecioMinimo(min);
         } else {
-            dto.setPrice(producto.getPrice());
+            dto.setPrecioMinimo(precioFinal);
         }
 
         // =========================
-        // 🔥 STOCK TOTAL (FIX CLAVE)
+        // STOCK TOTAL
         // =========================
-        int stockTotal = producto.getVariantes() != null
+        int stockTotal = (producto.getVariantes() != null)
                 ? producto.getVariantes()
                     .stream()
                     .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
@@ -68,11 +109,6 @@ public class ProductoMapper {
                 : 0;
 
         dto.setStockTotal(stockTotal);
-
-        // =========================
-        // VARIANTES
-        // =========================
-        dto.setVariantes(mapVariantes(producto));
 
         return dto;
     }
@@ -104,6 +140,15 @@ public class ProductoMapper {
         dto.setPrecio(v.getPrecioFinal());
         dto.setStock(v.getStock() != null ? v.getStock() : 0);
 
+        Map<String, String> atributosMap = v.getAtributos()
+                .stream()
+                .collect(Collectors.toMap(
+                        attr -> attr.getNombre(),
+                        attr -> attr.getValor()
+                ));
+
+        dto.setAtributos(atributosMap);
+
         return dto;
     }
 
@@ -120,11 +165,6 @@ public class ProductoMapper {
                 .stream()
                 .filter(v -> Boolean.TRUE.equals(v.getPrincipal()))
                 .findFirst()
-                .orElse(
-                    producto.getVariantes()
-                            .stream()
-                            .findFirst()
-                            .orElse(null)
-                );
+                .orElse(producto.getVariantes().get(0));
     }
 }

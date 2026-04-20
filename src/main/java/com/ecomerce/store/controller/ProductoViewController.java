@@ -1,7 +1,9 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.ProductoDTO;   
+import com.ecomerce.store.dto.ProductoDTO;
+import com.ecomerce.store.dto.ProductoVarianteDTO;
 import com.ecomerce.store.model.Producto;
+
 import com.ecomerce.store.service.ProductoService;
 import com.ecomerce.store.service.CategoriaService;
 
@@ -66,45 +68,21 @@ public class ProductoViewController {
             return "subirProducto";
         }
 
-        Producto producto = new Producto();
-        producto.setProductName(dto.getProductName());
-        producto.setPrice(dto.getPrice());
-        producto.setDescription(dto.getDescription());
-        
+        try {
 
-        // FIX 
-        String nombreCategoria;
+            productoService.crearProducto(dto, imagenes);
 
-        if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
-            nombreCategoria = dto.getNuevaCategoria();
-        } else if (dto.getCategoriaNombre() != null && !dto.getCategoriaNombre().isBlank()) {
-            nombreCategoria = dto.getCategoriaNombre();
-        } else {
-            result.rejectValue("categoriaNombre", "error.producto", "Debes seleccionar o crear una categoría");
+            return "redirect:/VerProductos";
+
+        } catch (Exception e) {
+
+            result.reject("error.producto", "Error al guardar el producto");
+
             model.addAttribute("categorias", categoriaService.obtenerTodas());
+
             return "subirProducto";
         }
-
-        if (nombreCategoria == null) {
-            result.rejectValue("categoriaNombre", "error.producto", "Debes seleccionar o crear una categoría");
-            model.addAttribute("categorias", categoriaService.obtenerTodas());
-            return "subirProducto";
-        }
-
-        producto.setCategoria(
-            categoriaService.obtenerOCrearCategoria(nombreCategoria)
-        );
-
-        productoService.actualizarProductoCompleto(
-                productoService.guardarProducto(producto).getId(),
-                producto,
-                imagenes,
-                null
-        );
-
-        return "redirect:/VerProductos";
     }
-
     // ==================================================
     // FORMULARIO EDITAR
     // ==================================================
@@ -114,6 +92,7 @@ public class ProductoViewController {
         Producto producto = productoService.obtenerProducto(id);
 
         ProductoDTO dto = new ProductoDTO();
+
         dto.setId(producto.getId());
         dto.setProductName(producto.getProductName());
         dto.setPrice(producto.getPrice());
@@ -121,14 +100,40 @@ public class ProductoViewController {
         dto.setCategoriaId(producto.getCategoria().getId());
         dto.setCategoriaNombre(producto.getCategoria().getNombre());
         dto.setPorcentajeDescuento(producto.getPorcentajeDescuento());
+        dto.setTienePromocion(producto.getTienePromocion());
 
+        /* =========================
+           IMÁGENES
+        ========================= */
         producto.getImagenes().forEach(img -> {
             dto.getImagenesExistentes().add(img.getId());
             dto.getUrlsImagenesExistentes().add(img.getImageUrl());
         });
 
+        /* =========================
+           VARIANTES
+        ========================= */
+        producto.getVariantes().forEach(variante -> {
+
+            ProductoVarianteDTO vdto =
+                    new ProductoVarianteDTO();
+
+            vdto.setId(variante.getId());
+            vdto.setStock(variante.getStock());
+            vdto.setPrecio(variante.getPrecio());
+
+            variante.getAtributos().forEach(attr -> {
+                vdto.getAtributos()
+                    .put(attr.getNombre(), attr.getValor());
+            });
+
+            dto.getVariantes().add(vdto);
+        });
+
         model.addAttribute("productoDTO", dto);
-        model.addAttribute("categorias", categoriaService.obtenerTodas());
+        model.addAttribute("categorias",
+                categoriaService.obtenerTodas());
+
         return "EditarProducto";
     }
 
@@ -148,40 +153,58 @@ public class ProductoViewController {
             return "EditarProducto";
         }
 
-        Producto datos = new Producto();
-        datos.setProductName(dto.getProductName());
-        datos.setPrice(dto.getPrice());
-        datos.setDescription(dto.getDescription());
-        datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
-        String nombreCategoria;
+        try {
 
-        if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
-            nombreCategoria = dto.getNuevaCategoria();
-        } else {
-            nombreCategoria = dto.getCategoriaNombre();
+            Producto datos = new Producto();
+            datos.setProductName(dto.getProductName());
+            datos.setPrice(dto.getPrice());
+            datos.setDescription(dto.getDescription());
+            datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
+
+            if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
+                datos.setCategoria(
+                    categoriaService.obtenerOCrearCategoria(dto.getNuevaCategoria())
+                );
+            } else {
+                datos.setCategoria(
+                    categoriaService.obtenerPorId(dto.getCategoriaId())
+                );
+            }
+
+            productoService.actualizarProductoCompleto(
+                    id,
+                    datos,
+                    nuevasImagenes,
+                    dto.getImagenesEliminar(),
+                    dto.getVariantes()
+            );
+
+            return "redirect:/VerProductos";
+
+        } catch (Exception e) {
+
+            result.reject("error.producto", "Error al actualizar producto");
+
+            model.addAttribute("categorias", categoriaService.obtenerTodas());
+
+            return "EditarProducto";
         }
+    }
+    @PostMapping("/variantes/{id}/stock")
+    public String actualizarStock(
+            @PathVariable Long id,
+            @RequestParam Integer stock) {
 
-        datos.setCategoria(
-            categoriaService.obtenerOCrearCategoria(nombreCategoria)
-        );
-
-        productoService.actualizarProductoCompleto(
-                id,
-                datos,
-                nuevasImagenes,
-                dto.getImagenesExistentes()
-        );
+        productoService.actualizarStockVariante(id, stock);
 
         return "redirect:/VerProductos";
     }
 
-
     @GetMapping("/modificar-precios")
     public String vistaModificarPrecios(Model model) {
 
-        model.addAttribute("productos", productoService.obtenerTodosLosProductos());
+        model.addAttribute("productos", productoService.obtenerProductosCompletos()); // DTO
         model.addAttribute("categorias", productoService.obtenerCategorias());
-
 
         return "modificar-precios";
     }

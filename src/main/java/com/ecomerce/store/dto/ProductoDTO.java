@@ -24,40 +24,64 @@ public class ProductoDTO {
     private Long categoriaId;
     private String categoriaNombre;
     private String nuevaCategoria;
-    
-    private String imageUrl;
-    private Integer stockTotal;
 
-    // 🔥 VARIANTES (modelo Amazon)
+    private String imageUrl;
+    private Integer stockTotal = 0;
+
+    
+    //  VARIANTES (modelo Amazon)
     private List<ProductoVarianteDTO> variantes = new ArrayList<>();
 
-    private Double porcentajeDescuento = 0.0;
 
-    private Boolean visibleEnMenu = true;
+    private Double porcentajeDescuento = 0.0;
+    private boolean visibleEnMenu = true;
     private Boolean tienePromocion = false;
 
+    //  PRECIOS CALCULADOS (clave para frontend limpio)
+    private BigDecimal precioFinal;
+    private BigDecimal precioMinimo;
+
+    // IMÁGENES EXISTENTES
     private List<Long> imagenesExistentes = new ArrayList<>();
     private List<String> urlsImagenesExistentes = new ArrayList<>();
+    private List<Long> imagenesEliminar;
     
-    public boolean getTieneVariantes() {
+    public BigDecimal getPrecioConDescuento() {
+        if (tienePromocion != null && tienePromocion && porcentajeDescuento != null && porcentajeDescuento > 0) {
+
+            BigDecimal descuento = precio
+                    .multiply(BigDecimal.valueOf(porcentajeDescuento))
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+            return precio.subtract(descuento);
+        }
+        return precio;
+    }
+
+    // =========================
+    // HELPERS (IMPORTANTE)
+    // =========================
+
+    public boolean isTieneVariantes() {
         return variantes != null && !variantes.isEmpty();
     }
+    
+    public boolean getTieneVariantes() {
+        return isTieneVariantes();
+    }
+
+    public boolean tieneStock() {
+        return stockTotal != null && stockTotal > 0;
+    }
+
     public int getTotalVariantes() {
         return variantes != null ? variantes.size() : 0;
     }
-    // -----------------------------
+
+    // =========================
     // GETTERS / SETTERS
-    // -----------------------------
+    // =========================
 
-    public boolean isVisibleEnMenu() {
-        return visibleEnMenu;
-    }
-
-    public void setVisibleEnMenu(boolean visibleEnMenu) {
-        this.visibleEnMenu = visibleEnMenu;
-    }
-    
-    
     public Long getId() {
         return id;
     }
@@ -74,6 +98,10 @@ public class ProductoDTO {
         this.productName = productName;
     }
 
+    public BigDecimal getPrecio() {
+        return precio;
+    }
+
     public BigDecimal getPrice() {
         return precio;
     }
@@ -81,6 +109,12 @@ public class ProductoDTO {
     public void setPrice(BigDecimal price) {
         this.precio = price != null
                 ? price.setScale(2, RoundingMode.HALF_UP)
+                : null;
+    }
+
+    public void setPrecio(BigDecimal precio) {
+        this.precio = precio != null
+                ? precio.setScale(2, RoundingMode.HALF_UP)
                 : null;
     }
 
@@ -92,7 +126,21 @@ public class ProductoDTO {
         this.description = description;
     }
 
+    public Long getCategoriaId() {
+        return categoriaId;
+    }
 
+    public void setCategoriaId(Long categoriaId) {
+        this.categoriaId = categoriaId;
+    }
+
+    public String getCategoriaNombre() {
+        return categoriaNombre;
+    }
+
+    public void setCategoriaNombre(String categoriaNombre) {
+        this.categoriaNombre = categoriaNombre;
+    }
 
     public String getNuevaCategoria() {
         return nuevaCategoria;
@@ -102,8 +150,24 @@ public class ProductoDTO {
         this.nuevaCategoria = nuevaCategoria;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Integer getStockTotal() {
+        return stockTotal;
+    }
+
+    public void setStockTotal(Integer stockTotal) {
+        this.stockTotal = stockTotal != null ? stockTotal : 0;
+    }
+
     public List<ProductoVarianteDTO> getVariantes() {
-        return variantes;
+        return variantes != null ? variantes : new ArrayList<>();
     }
 
     public void setVariantes(List<ProductoVarianteDTO> variantes) {
@@ -117,7 +181,6 @@ public class ProductoDTO {
     public void setPorcentajeDescuento(Double porcentajeDescuento) {
         this.porcentajeDescuento = porcentajeDescuento;
     }
-    
 
     public Boolean getTienePromocion() {
         return tienePromocion;
@@ -125,6 +188,25 @@ public class ProductoDTO {
 
     public void setTienePromocion(Boolean tienePromocion) {
         this.tienePromocion = tienePromocion;
+    }
+
+
+  
+
+    public BigDecimal getPrecioFinal() {
+        return precioFinal;
+    }
+
+    public void setPrecioFinal(BigDecimal precioFinal) {
+        this.precioFinal = precioFinal;
+    }
+
+    public BigDecimal getPrecioMinimo() {
+        return precioMinimo;
+    }
+
+    public void setPrecioMinimo(BigDecimal precioMinimo) {
+        this.precioMinimo = precioMinimo;
     }
 
     public List<Long> getImagenesExistentes() {
@@ -142,29 +224,20 @@ public class ProductoDTO {
     public void setUrlsImagenesExistentes(List<String> urlsImagenesExistentes) {
         this.urlsImagenesExistentes = urlsImagenesExistentes;
     }
+    public boolean isVisibleEnMenu() {
+        return visibleEnMenu;
+    }
 
-	public String getImageUrl() {
-		return imageUrl;
+    public void setVisibleEnMenu(boolean visibleEnMenu) {
+        this.visibleEnMenu = visibleEnMenu;
+    }
+
+	public List<Long> getImagenesEliminar() {
+		return imagenesEliminar;
 	}
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
+
+	public void setImagenesEliminar(List<Long> imagenesEliminar) {
+		this.imagenesEliminar = imagenesEliminar;
 	}
-	public Integer getStockTotal() {
-		return stockTotal;
-	}
-	public void setStockTotal(Integer stockTotal) {
-		this.stockTotal = stockTotal;
-	}
-	public Long getCategoriaId() {
-		return categoriaId;
-	}
-	public void setCategoriaId(Long categoriaId) {
-		this.categoriaId = categoriaId;
-	}
-	public String getCategoriaNombre() {
-		return categoriaNombre;
-	}
-	public void setCategoriaNombre(String categoriaNombre) {
-		this.categoriaNombre = categoriaNombre;
-	}
+    
 }

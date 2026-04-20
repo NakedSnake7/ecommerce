@@ -52,13 +52,7 @@ body { background-color: #2c2c2c; color: #fff; font-family: 'Arial', sans-serif;
         <!-- Precio -->
         <div class="form-group">
             <label>Precio</label>
-            <input type="number" step="0.01" th:field="*{price}" class="form-control" required />
-        </div>
-
-        <!-- Stock -->
-        <div class="form-group">
-            <label>Stock</label>
-            <input type="number" th:field="*{stock}" class="form-control" th:value="0" required />
+        <input type="number" step="0.01" th:field="*{price}" class="form-control" required />
         </div>
 
         <!-- Descripción -->
@@ -70,10 +64,13 @@ body { background-color: #2c2c2c; color: #fff; font-family: 'Arial', sans-serif;
         <!-- Categoría existente -->
         <div class="form-group">
             <label>Categoría</label>
-            <select id="categoria" class="form-control" th:field="*{categoriaNombre}">
-                <option value="">Selecciona una categoría</option>
-                <option th:each="cat : ${categorias}" th:value="${cat.nombre}" th:text="${cat.nombre}"></option>
-            </select>
+            <select class="form-control" th:field="*{categoriaId}">
+    <option value="">Selecciona una categoría</option>
+    <option th:each="cat : ${categorias}"
+            th:value="${cat.id}"
+            th:text="${cat.nombre}">
+    </option>
+</select>
         </div>
 
         <!-- Nueva categoría -->
@@ -82,6 +79,14 @@ body { background-color: #2c2c2c; color: #fff; font-family: 'Arial', sans-serif;
 <input type="text" class="form-control" th:field="*{nuevaCategoria}" id="nuevaCategoria" />
 
         </div>
+        
+<h4 class="mt-4">Variantes del producto</h4>
+
+<div id="variantes-container"></div>
+
+<button type="button" class="btn btn-info mt-2" onclick="agregarVariante()">
+    + Agregar Variante
+</button>
 
         <!-- Porcentaje de descuento -->
         <div class="form-group">
@@ -107,15 +112,105 @@ body { background-color: #2c2c2c; color: #fff; font-family: 'Arial', sans-serif;
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+
+
+
+
+<script>
+let index = 0;
+
+function agregarVariante() {
+    const container = document.getElementById("variantes-container");
+
+    const html = `
+    <div class="variante border p-3 mt-3 rounded">
+
+        <h5>Variante #${index + 1}</h5>
+
+        <input type="text"
+            name="variantes[${index}].nombre"
+            placeholder="Nombre visual (opcional)"
+            class="form-control mb-2">
+
+        <input type="number" step="0.01"
+            name="variantes[${index}].precio"
+            placeholder="Precio"
+            class="form-control mb-2">
+
+        <input type="number"
+            name="variantes[${index}].stock"
+            placeholder="Stock"
+            class="form-control mb-2" required>
+
+        <div id="atributos-${index}" class="mb-2"></div>
+
+        <button type="button" class="btn btn-sm btn-secondary mb-2"
+            onclick="agregarAtributo(${index})">
+            + Atributo
+        </button>
+
+        <button type="button" class="btn btn-danger"
+            onclick="this.parentElement.remove()">
+            Eliminar
+        </button>
+    </div>
+    `;
+
+    container.insertAdjacentHTML("beforeend", html);
+    index++;
+}
+
+function agregarAtributo(indexVariante) {
+    const container = document.getElementById(`atributos-${indexVariante}`);
+
+    const html = `
+    <div class="d-flex mb-2 align-items-center">
+
+        <input type="text"
+            placeholder="Nombre (Color, Talla)"
+            class="form-control mr-2 key-input">
+
+        <input type="text"
+            placeholder="Valor (Rojo, M)"
+            class="form-control mr-2 value-input">
+
+        <button type="button"
+            class="btn btn-danger btn-sm"
+            onclick="this.parentElement.remove()">X</button>
+    </div>
+    `;
+
+    container.insertAdjacentHTML("beforeend", html);
+
+    actualizarNames(indexVariante);
+}
+function actualizarNames(indexVariante) {
+    const container = document.getElementById(`atributos-${indexVariante}`);
+    const filas = container.children;
+
+    Array.from(filas).forEach(fila => {
+        const keyInput = fila.querySelector(".key-input");
+        const valueInput = fila.querySelector(".value-input");
+
+        if (keyInput.value) {
+            valueInput.name = `variantes[${indexVariante}].atributos[${keyInput.value}]`;
+        }
+
+        keyInput.addEventListener("input", () => {
+            valueInput.name = `variantes[${indexVariante}].atributos[${keyInput.value}]`;
+        });
+    });
+}
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("productoForm");
 
     // Campos reales según tu DTO
     const productName = document.querySelector("input[name='productName']");
-    const descripcion = document.querySelector("textarea[name='descripcion']");
-    const categoriaSelect = document.getElementById("categoria");
-    const nuevaCategoria = document.getElementById("nuevaCategoria");
+const descripcion = document.querySelector("textarea[name='description']");
+const categoriaSelect = document.querySelector("select[name='categoriaId']");
+const nuevaCategoria = document.querySelector("input[name='nuevaCategoria']");
 
     form.addEventListener("submit", function(e) {
         let errores = [];
