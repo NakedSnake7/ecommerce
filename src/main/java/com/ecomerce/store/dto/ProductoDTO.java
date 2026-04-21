@@ -26,7 +26,7 @@ public class ProductoDTO {
     private String nuevaCategoria;
 
     private String imageUrl;
-    private Integer stockTotal = 0;
+    private Integer stockSimple;
 
     
     //  VARIANTES (modelo Amazon)
@@ -71,7 +71,7 @@ public class ProductoDTO {
     }
 
     public boolean tieneStock() {
-        return stockTotal != null && stockTotal > 0;
+        return getStockSimple() > 0;
     }
 
     public int getTotalVariantes() {
@@ -158,12 +158,12 @@ public class ProductoDTO {
         this.imageUrl = imageUrl;
     }
 
-    public Integer getStockTotal() {
-        return stockTotal;
+    public Integer getStockSimple() {
+        return stockSimple != null ? stockSimple : 0;
     }
 
-    public void setStockTotal(Integer stockTotal) {
-        this.stockTotal = stockTotal != null ? stockTotal : 0;
+    public void setStockSimple(Integer stockSimple) {
+        this.stockSimple = stockSimple != null ? stockSimple : 0;
     }
 
     public List<ProductoVarianteDTO> getVariantes() {

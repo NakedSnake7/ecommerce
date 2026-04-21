@@ -2,169 +2,234 @@ package com.ecomerce.store.mapper;
 
 import com.ecomerce.store.dto.ProductoDTO;
 import com.ecomerce.store.dto.ProductoVarianteDTO;
+import com.ecomerce.store.model.ImagenProducto;
 import com.ecomerce.store.model.Producto;
 import com.ecomerce.store.model.ProductoVariante;
-import com.ecomerce.store.model.ImagenProducto;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class ProductoMapper {
+public final class ProductoMapper {
 
+    private static final String IMG_DEFAULT = "/imgs/default.png";
+    private static final BigDecimal CIEN = BigDecimal.valueOf(100);
+
+    private ProductoMapper() {
+    }
+
+    // =========================================================
+    // MAIN MAPPER
+    // =========================================================
     public static ProductoDTO toDTO(Producto producto) {
 
         ProductoDTO dto = new ProductoDTO();
 
+        // =========================
+        // DATOS BASE
+        // =========================
         dto.setId(producto.getId());
         dto.setProductName(producto.getProductName());
         dto.setDescription(producto.getDescription());
+        dto.setVisibleEnMenu(producto.isVisibleEnMenu());
+        dto.setTienePromocion(Boolean.TRUE.equals(producto.getTienePromocion()));
+        dto.setPorcentajeDescuento(producto.getPorcentajeDescuento());
 
         // =========================
         // IMAGEN
         // =========================
-        String imagen = (producto.getImagenes() != null && !producto.getImagenes().isEmpty())
-                ? producto.getImagenes().stream()
-                    .map(ImagenProducto::getImageUrl)
-                    .findFirst()
-                    .orElse("/imgs/default.png")
-                : "/imgs/default.png";
+        dto.setImageUrl(obtenerImagenPrincipal(producto));
+        
+        if (producto.getImagenes() != null) {
 
-        dto.setImageUrl(imagen);
+            producto.getImagenes().forEach(img -> {
+                dto.getImagenesExistentes().add(img.getId());
+                dto.getUrlsImagenesExistentes().add(img.getImageUrl());
+            });
+
+        }
 
         // =========================
         // CATEGORIA
         // =========================
-        if (producto.getCategoria() != null) {
-            dto.setCategoriaId(producto.getCategoria().getId());
-            dto.setCategoriaNombre(producto.getCategoria().getNombre());
-        } else {
-            dto.setCategoriaNombre("Sin categoría");
-        }
-
-        dto.setTienePromocion(producto.getTienePromocion());
-        dto.setPorcentajeDescuento(producto.getPorcentajeDescuento());
-        dto.setVisibleEnMenu(producto.isVisibleEnMenu());
+        mapCategoria(producto, dto);
 
         // =========================
         // VARIANTES
         // =========================
-        List<ProductoVarianteDTO> variantesDTO = mapVariantes(producto);
-        dto.setVariantes(variantesDTO);
+        List<ProductoVarianteDTO> variantes = mapVariantes(producto);
+        dto.setVariantes(variantes);
 
-        boolean tieneVariantes = !variantesDTO.isEmpty();
+        boolean tieneVariantes = !variantes.isEmpty();
 
         // =========================
-        // PRECIO BASE
+        // PRECIO BASE REAL PRODUCTO
         // =========================
-        ProductoVariante variante = getVariantePrincipal(producto);
-
-        BigDecimal precioBase = (variante != null && variante.getPrecio() != null)
-                ? variante.getPrecio()
-                : producto.getPrice();
-
+        BigDecimal precioBase = nvl(producto.getPrice());
         dto.setPrice(precioBase);
 
         // =========================
-        // PRECIO FINAL (DESCUENTO)
+        // PRECIO MÍNIMO / MÁXIMO
         // =========================
-        BigDecimal precioFinal = precioBase;
+        BigDecimal precioMinimo = precioBase;
+        BigDecimal precioMaximo = precioBase;
 
-        if (Boolean.TRUE.equals(producto.getTienePromocion())
-                && producto.getPorcentajeDescuento() != null
-                && producto.getPorcentajeDescuento() > 0) {
-
-            BigDecimal descuento = precioBase
-                    .multiply(BigDecimal.valueOf(producto.getPorcentajeDescuento()))
-                    .divide(BigDecimal.valueOf(100));
-
-            precioFinal = precioBase.subtract(descuento);
-        }
-
-        dto.setPrecioFinal(precioFinal);
-
-        // =========================
-        // PRECIO MINIMO
-        // =========================
         if (tieneVariantes) {
-            BigDecimal min = producto.getVariantes().stream()
-                    .map(v -> v.getPrecio() != null ? v.getPrecio() : producto.getPrice())
-                    .min(BigDecimal::compareTo)
-                    .orElse(producto.getPrice());
 
-            dto.setPrecioMinimo(min);
-        } else {
-            dto.setPrecioMinimo(precioFinal);
+            List<BigDecimal> precios = producto.getVariantes().stream()
+                    .map(v -> nvl(v.getPrecio(), precioBase))
+                    .toList();
+
+            precioMinimo = precios.stream()
+                    .min(Comparator.naturalOrder())
+                    .orElse(precioBase);
+
+            precioMaximo = precios.stream()
+                    .max(Comparator.naturalOrder())
+                    .orElse(precioBase);
         }
+
+        dto.setPrecioMinimo(scale(precioMinimo));
+
+        // si tu DTO tiene setter:
+        // dto.setPrecioMaximo(scale(precioMaximo));
+
+        // =========================
+        // PRECIO FINAL CON DESCUENTO
+        // =========================
+        BigDecimal precioFinal;
+
+        if (dto.getTienePromocion()
+                && dto.getPorcentajeDescuento() != null
+                && dto.getPorcentajeDescuento() > 0) {
+
+            BigDecimal basePromo = tieneVariantes
+                    ? precioMinimo
+                    : precioBase;
+
+            precioFinal = aplicarDescuento(
+                    basePromo,
+                    dto.getPorcentajeDescuento()
+            );
+
+        } else {
+            precioFinal = tieneVariantes
+                    ? precioMinimo
+                    : precioBase;
+        }
+
+        dto.setPrecioFinal(scale(precioFinal));
 
         // =========================
         // STOCK TOTAL
         // =========================
-        int stockTotal = (producto.getVariantes() != null)
-                ? producto.getVariantes()
-                    .stream()
-                    .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
-                    .sum()
-                : 0;
-
-        dto.setStockTotal(stockTotal);
-
+        dto.setStockSimple(calcularStock(producto));
+        
         return dto;
     }
 
-    // =========================
-    // VARIANTES LIST
-    // =========================
+    // =========================================================
+    // VARIANTES
+    // =========================================================
     private static List<ProductoVarianteDTO> mapVariantes(Producto producto) {
 
         if (producto.getVariantes() == null || producto.getVariantes().isEmpty()) {
             return List.of();
         }
 
-        return producto.getVariantes()
-                .stream()
+        return producto.getVariantes().stream()
                 .map(ProductoMapper::toVarianteDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    // =========================
-    // VARIANTE → DTO
-    // =========================
-    private static ProductoVarianteDTO toVarianteDTO(ProductoVariante v) {
+    private static ProductoVarianteDTO toVarianteDTO(ProductoVariante variante) {
 
         ProductoVarianteDTO dto = new ProductoVarianteDTO();
 
-        dto.setId(v.getId());
-        dto.setNombre(v.getNombreVisual());
-        dto.setPrecio(v.getPrecioFinal());
-        dto.setStock(v.getStock() != null ? v.getStock() : 0);
+        dto.setId(variante.getId());
+        dto.setNombre(variante.getNombreVisual());
+        dto.setStock(variante.getStock() != null ? variante.getStock() : 0);
+        dto.setPrecio(scale(variante.getPrecioFinal()));
 
-        Map<String, String> atributosMap = v.getAtributos()
+        Map<String, String> atributos = variante.getAtributos()
                 .stream()
                 .collect(Collectors.toMap(
-                        attr -> attr.getNombre(),
-                        attr -> attr.getValor()
+                        a -> a.getNombre(),
+                        a -> a.getValor(),
+                        (a, b) -> a
                 ));
 
-        dto.setAtributos(atributosMap);
+        dto.setAtributos(atributos);
 
         return dto;
     }
 
-    // =========================
-    // VARIANTE PRINCIPAL
-    // =========================
-    private static ProductoVariante getVariantePrincipal(Producto producto) {
+    // =========================================================
+    // HELPERS
+    // =========================================================
+    private static void mapCategoria(Producto producto, ProductoDTO dto) {
 
-        if (producto.getVariantes() == null || producto.getVariantes().isEmpty()) {
-            return null;
+        if (producto.getCategoria() != null) {
+            dto.setCategoriaId(producto.getCategoria().getId());
+            dto.setCategoriaNombre(producto.getCategoria().getNombre());
+        } else {
+            dto.setCategoriaNombre("Sin categoría");
+        }
+    }
+
+    private static String obtenerImagenPrincipal(Producto producto) {
+
+        if (producto.getImagenes() == null || producto.getImagenes().isEmpty()) {
+            return IMG_DEFAULT;
         }
 
-        return producto.getVariantes()
-                .stream()
-                .filter(v -> Boolean.TRUE.equals(v.getPrincipal()))
+        return producto.getImagenes().stream()
+                .map(ImagenProducto::getImageUrl)
+                .filter(Objects::nonNull)
                 .findFirst()
-                .orElse(producto.getVariantes().get(0));
+                .orElse(IMG_DEFAULT);
+    }
+
+    private static int calcularStock(Producto producto) {
+
+        // Producto simple
+        if (producto.getVariantes() == null || producto.getVariantes().isEmpty()) {
+            return producto.getStockSimple() != null
+                    ? producto.getStockSimple()
+                    : 0;
+        }
+
+        // Producto con variantes
+        return producto.getVariantes().stream()
+                .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
+                .sum();
+    }
+
+    private static BigDecimal aplicarDescuento(
+            BigDecimal precio,
+            Double porcentaje
+    ) {
+
+        BigDecimal descuento = precio
+                .multiply(BigDecimal.valueOf(porcentaje))
+                .divide(CIEN, 2, RoundingMode.HALF_UP);
+
+        return precio.subtract(descuento);
+    }
+
+    private static BigDecimal nvl(BigDecimal valor) {
+        return valor != null ? valor : BigDecimal.ZERO;
+    }
+
+    private static BigDecimal nvl(BigDecimal valor, BigDecimal fallback) {
+        return valor != null ? valor : fallback;
+    }
+
+    private static BigDecimal scale(BigDecimal valor) {
+        return valor.setScale(2, RoundingMode.HALF_UP);
     }
 }

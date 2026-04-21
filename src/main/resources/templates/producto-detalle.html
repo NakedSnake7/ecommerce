@@ -1,634 +1,615 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/stride.css">
+<html lang="es"
+xmlns:th="http://www.thymeleaf.org"
+th:replace="~{layout/main :: layout(
+    ${producto.productName},
+    ~{::section}
+)}">
 
-<title th:text="${producto.productName}">Producto</title>
-
-<link rel="stylesheet" href="/assets/css/stride.css">
+<section>
 
 <style>
+/* ========= ORIGINAL DARK PREMIUM ========= */
 
-.product-detail {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 60px;
-  padding: 80px 6%;
+.product-wrap{
+  max-width:1400px;
+  margin:auto;
+  padding:60px 5%;
 }
 
-.product-gallery {
-  position: sticky;
-  top: 100px;
+.product-detail{
+  display:grid;
+  grid-template-columns:1.08fr 1fr;
+  gap:70px;
 }
 
-.main-image {
-  width: 100%;
-  border-radius: 16px;
-  transition: transform .4s ease;
+/* ===== GALERIA ===== */
+
+.product-gallery{
+  position:sticky;
+  top:110px;
 }
 
-.main-image:hover {
-  transform: scale(1.05);
+.gallery-box{
+  background:#111;
+  border-radius:22px;
+  overflow:hidden;
 }
 
-.product-info h1 {
-  font-size: 32px;
-  margin-bottom: 10px;
+.main-image{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  cursor:zoom-in;
+  transition:transform .25s ease;
 }
 
-.category {
-  color: #777;
-  font-size: 14px;
-  margin-bottom: 10px;
+.main-image.zoom{
+  transform:scale(1.65);
+  cursor:zoom-out;
 }
 
-.price-container {
-  margin: 20px 0;
+.thumbs{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+  overflow:auto;
 }
 
-.price-old {
-  text-decoration: line-through;
-  color: #999;
-  margin-right: 10px;
+.thumb{
+  width:72px;
+  height:72px;
+  border-radius:14px;
+  object-fit:cover;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:.2s;
 }
 
-.price-final {
-  font-size: 32px;
-  font-weight: bold;
+.thumb.active{
+  border-color:#000;
 }
 
-.discount-badge {
-  background: #111;
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  margin-left: 10px;
+/* ===== INFO ===== */
+
+.category{
+  color:#777;
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:1px;
 }
 
-.stock {
-  margin: 10px 0;
-  font-size: 14px;
+.product-info h1{
+  font-size:40px;
+  line-height:1.05;
+  margin:10px 0 20px;
+  color:#111;
 }
 
-/* 🔥 MICRO UX */
-.variant-group button:hover {
-  transform: scale(1.05);
+.price-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
 }
 
-#btnComprar:disabled {
-  background: #999;
-  cursor: not-allowed;
+.price-old{
+  text-decoration:line-through;
+  color:#999;
+  font-size:18px;
 }
 
-/* VARIANTES */
-.variant-group {
-  margin: 25px 0;
+.price-final{
+  font-size:38px;
+  font-weight:800;
+  color:#111;
 }
 
-.variant-group p {
-  font-weight: bold;
-  margin-bottom: 8px;
+.discount-badge{
+  background:#111;
+  color:#fff;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
 }
 
-.variant-group button {
-  margin: 5px;
-  padding: 10px 16px;
-  border-radius: 30px;
-  border: 1px solid #ddd;
-  background: white;
-  cursor: pointer;
-  transition: all .2s ease;
+.stock{
+  margin:18px 0;
+  font-size:14px;
+  font-weight:600;
 }
 
-.variant-group button:hover {
-  border-color: black;
+.stock.ok{color:#0c8a38;}
+.stock.low{color:#d32f2f;}
+
+.urgency{
+  background:#fff4f4;
+  color:#d32f2f;
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:700;
+  margin:15px 0;
 }
 
-.variant-group button.active {
-  background: black;
-  color: white;
+/* ===== VARIANTES ===== */
+
+.variant-group{
+  margin:26px 0;
 }
 
-.variant-group button:disabled {
-  opacity: .3;
+.variant-group p{
+  font-weight:700;
+  margin-bottom:10px;
 }
 
-#btnComprar {
-  margin-top: 30px;
-  padding: 16px;
-  width: 100%;
-  background: black;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: .3s;
+.variant-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
 }
 
-#btnComprar:hover {
-  background: #222;
-  transform: translateY(-2px);
-  
-  /* =========================
-📱 MOBILE FIRST
-========================= */
+.variant-options button{
+  padding:11px 16px;
+  border-radius:999px;
+  border:1px solid #ddd;
+  background:#fff;
+  cursor:pointer;
+  transition:.2s;
+}
 
-@media (max-width: 768px) {
+.variant-options button:hover{
+  border-color:#000;
+}
 
-  .product-detail {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    padding: 30px 5%;
+.variant-options button.active{
+  background:#000;
+  color:#fff;
+}
+
+.variant-options button:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+/* ===== CTA ===== */
+
+.cta-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:28px;
+}
+
+.btn-main,
+.btn-wa{
+  border:none;
+  padding:16px;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.btn-main{
+  background:#000;
+  color:#fff;
+}
+
+.btn-main:hover{
+  background:#1a1a1a;
+}
+
+.btn-wa{
+  background:#25D366;
+  color:#fff;
+}
+
+.btn-wa:hover{
+  filter:brightness(.95);
+}
+
+/* ===== INFO CARDS ===== */
+
+.info-box{
+  margin-top:26px;
+  padding:22px;
+  border:1px solid #eee;
+  border-radius:18px;
+}
+
+.info-box h3{
+  margin-bottom:10px;
+}
+
+.info-box p{
+  color:#555;
+  line-height:1.7;
+}
+
+.info-box ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:grid;
+  gap:10px;
+}
+
+/* ===== MOBILE STICKY ===== */
+
+.mobile-bar{
+  display:none;
+}
+
+@media(max-width:768px){
+
+  .product-wrap{
+    padding:25px 4%;
   }
 
-  .product-gallery {
-    position: relative;
-    top: 0;
+  .product-detail{
+    grid-template-columns:1fr;
+    gap:30px;
   }
 
-  .main-image {
-    border-radius: 12px;
+  .product-gallery{
+    position:relative;
+    top:0;
   }
 
-  .product-info h1 {
-    font-size: 24px;
+  .product-info h1{
+    font-size:28px;
   }
 
-  .price-final {
-    font-size: 26px;
+  .price-final{
+    font-size:30px;
   }
 
-  .variant-group button {
-    padding: 10px 12px;
-    font-size: 14px;
+  .variant-options{
+    flex-wrap:nowrap;
+    overflow:auto;
+    padding-bottom:6px;
   }
 
-  /* 🛒 BOTÓN FIJO */
-  #btnComprar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    border-radius: 0;
-    z-index: 1000;
+  .cta-grid{
+    grid-template-columns:1fr;
   }
 
-  body {
-    padding-bottom: 80px; /* evita que el botón tape contenido */
+  .mobile-bar{
+    display:flex;
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    background:#fff;
+    padding:10px;
+    gap:10px;
+    z-index:999;
+    box-shadow:0 -8px 20px rgba(0,0,0,.08);
   }
 
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-
-  .product-detail {
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    padding: 50px 5%;
+  .mobile-bar button{
+    flex:1;
+    border:none;
+    padding:14px;
+    border-radius:12px;
+    font-weight:700;
   }
 
-  .product-info h1 {
-    font-size: 28px;
+  .mobile-cart{
+    background:#000;
+    color:#fff;
   }
 
-}
-
-
-@media (min-width: 1400px) {
-
-  .product-detail {
-    max-width: 1300px;
-    margin: auto;
+  .mobile-wa{
+    background:#25D366;
+    color:#fff;
   }
 
-}
-}
-@media (max-width: 768px) {
-  .variant-group {
-    overflow-x: auto;
-    white-space: nowrap;
+  body{
+    padding-bottom:90px;
   }
 
-  .variant-group button {
-    display: inline-block;
-  }
-}
-.product-info {
-  animation: fadeIn .6s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 </style>
 
-</head>
-<body>
-<!-- ============ NAVBAR ============ -->
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="product-wrap">
 
 <div class="product-detail">
 
-  <div class="product-gallery">
+<!-- ===== GALERIA ===== -->
+<div class="product-gallery">
+
+  <div class="gallery-box">
     <img id="mainImage"
          class="main-image"
-         th:src="${producto.imageUrl != null ? producto.imageUrl : '/img/default.jpg'}">
+         th:src="${producto.imageUrl}"
+         th:alt="${producto.productName}">
   </div>
 
-  <div class="product-info">
+  <div class="thumbs">
 
-    <p class="category" th:text="${producto.categoriaNombre}"></p>
+    <img class="thumb active"
+         th:src="${producto.imageUrl}">
 
-    <h1 th:text="${producto.productName}"></h1>
-
-    <!-- 💰 PRECIO -->
-    <div class="price-container">
-
-      <span class="price-old"
-            th:if="${producto.tienePromocion}"
-            th:text="|$${producto.precio}|"></span>
-
-      <span id="price" class="price-final"></span>
-
-      <span class="discount-badge"
-            th:if="${producto.tienePromocion}">
-        -[[${producto.porcentajeDescuento}]]%
-      </span>
-
-      <!-- 💰 AHORRO -->
-      <div th:if="${producto.tienePromocion}">
-        <p style="color:green; font-size:14px;">
-          Ahorras 
-          <strong>
-            $[[${producto.precio.subtract(producto.precioConDescuento)}]]
-          </strong>
-        </p>
-      </div>
-
-    </div>
-
-    <!-- 📦 STOCK -->
-    <p id="stock" class="stock"></p>
-
-    <!-- 🔥 URGENCIA -->
-    <p th:if="${producto.stockTotal > 0 && producto.stockTotal <= 5}"
-       style="color:#d32f2f; font-weight:bold;">
-       🔥 ¡Quedan pocas unidades!
-    </p>
-
-    <p th:if="${producto.stockTotal == 0}"
-       style="color:#999; font-weight:bold;">
-       Producto agotado
-    </p>
-
-    <!-- 🔥 VARIANTES -->
-    <div id="variantsContainer"></div>
-
-    <!-- 🛒 BOTÓN PRO -->
-    <button id="btnComprar">
-      🛒 Agregar al carrito
-      <span style="display:block; font-size:12px; opacity:.7;">
-        Compra ahora antes de que se agote
-      </span>
-    </button>
-
-    <!-- 🧾 DESCRIPCIÓN -->
-    <div style="margin-top:25px;">
-      <h3 style="font-size:16px;">Descripción</h3>
-      <p th:text="${producto.description}"
-         style="color:#555; line-height:1.6;">
-      </p>
-    </div>
-
-    <!-- 🛡️ CONFIANZA -->
-    <div style="margin-top:20px; font-size:14px;">
-      <ul style="list-style:none; padding:0;">
-        <li>🚚 Envío rápido a todo México</li>
-        <li>🔒 Compra 100% segura</li>
-        <li>💳 Pagos con tarjeta / transferencia</li>
-      </ul>
-    </div>
-
+    <img class="thumb"
+         th:each="img : ${producto.urlsImagenesExistentes}"
+         th:src="${img}">
   </div>
 
 </div>
 
+<!-- ===== INFO ===== -->
+<div class="product-info">
+
+<p class="category" th:text="${producto.categoriaNombre}"></p>
+
+<h1 th:text="${producto.productName}"></h1>
+
+<div class="price-row">
+
+<span class="price-old"
+      th:if="${producto.tienePromocion}"
+      th:text="|$${producto.precio}|"></span>
+
+<span class="price-final" id="price"></span>
+
+<span class="discount-badge"
+      th:if="${producto.tienePromocion}">
+  -[[${producto.porcentajeDescuento}]]%
+</span>
+
+</div>
+
+<p id="stock" class="stock"></p>
+
+<div id="urgencyBox" class="urgency"></div>
+
+<!-- VARIANTES -->
+<div id="variantsContainer"></div>
+
+<!-- CTA -->
+<div class="cta-grid">
+
+<button id="btnComprar" class="btn-main">
+🛒 Agregar al carrito
+</button>
+
+<button id="btnWhatsapp" class="btn-wa">
+Comprar por WhatsApp
+</button>
+
+</div>
+
+<!-- DESC -->
+<div class="info-box">
+<h3>Descripción</h3>
+<p th:text="${producto.description}"></p>
+</div>
+
+<!-- TRUST -->
+<div class="info-box">
+<ul>
+<li>🚚 Envíos rápidos a todo México</li>
+<li>🔒 Compra segura</li>
+<li>💳 Tarjeta / Transferencia</li>
+<li>↩️ Garantía de satisfacción</li>
+</ul>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MOBILE BAR -->
+<div class="mobile-bar">
+<button class="mobile-cart" id="mobileCart">Agregar</button>
+<button class="mobile-wa" id="mobileWa">WhatsApp</button>
+</div>
+
 <script th:inline="javascript">
 const variantes = /*[[${producto.variantes}]]*/ [];
-const tienePromo = /*[[${producto.tienePromocion}]]*/ false;
-const descuento = /*[[${producto.porcentajeDescuento}]]*/ 0;
 const precioBase = /*[[${producto.precioConDescuento}]]*/ 0;
+const descuento = /*[[${producto.porcentajeDescuento}]]*/ 0;
+const tienePromo = /*[[${producto.tienePromocion}]]*/ false;
+const productoNombre = /*[[${producto.productName}]]*/ '';
 </script>
 
 <script>
-// ============ NAVBAR SCROLL ============
-const Navbar = {
-  el: document.getElementById('navbar'),
-  init() {
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        this.el.classList.add('scrolled');
-      } else {
-        this.el.classList.remove('scrolled');
-      }
-    }, { passive: true });
-  }
-};
-
-// ============ SCROLL INDICATOR ============
-const ScrollIndicator = {
-  el: document.getElementById('scroll-indicator'),
-  init() {
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 80) {
-        this.el.classList.add('hidden');
-      } else {
-        this.el.classList.remove('hidden');
-      }
-    }, { passive: true });
-  }
-};
-
-// ============ MOBILE MENU ============
-const MobileMenu = {
-  btn: document.getElementById('hamburger'),
-  menu: document.getElementById('mobile-menu'),
-  open: false,
-  init() {
-    this.btn.addEventListener('click', () => {
-      this.open = !this.open;
-      this.menu.classList.toggle('open', this.open);
-      this.btn.classList.toggle('open', this.open);
-    });
-    // Close on link click
-    this.menu.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => {
-        this.open = false;
-        this.menu.classList.remove('open');
-        this.btn.classList.remove('open');
-      });
-    });
-  }
-};
-
-// ============ CART ============
-const Cart = {
-  count: 0,
-  badge: document.getElementById('cart-badge'),
-  add(btn) {
-    if (btn.disabled) return;
-    // Button state change
-    const original = btn.textContent;
-    btn.textContent = '✓ Añadido';
-    btn.classList.add('added');
-    btn.disabled = true;
-    setTimeout(() => {
-      btn.textContent = original;
-      btn.classList.remove('added');
-      btn.disabled = false;
-    }, 900);
-    // Increment
-    this.count++;
-    this.updateBadge();
-    this.animateBadge();
-  },
-  updateBadge() {
-    this.badge.textContent = this.count;
-  },
-  animateBadge() {
-    this.badge.classList.remove('pop');
-    void this.badge.offsetWidth; // reflow
-    this.badge.classList.add('pop');
-  }
-};
-
-// ============ COUNTDOWN ============
-const Countdown = {
-  hours: document.getElementById('cd-hours'),
-  mins: document.getElementById('cd-mins'),
-  secs: document.getElementById('cd-secs'),
-  end: null,
-  init() {
-    const key = 'strideCountdownEnd';
-    const stored = localStorage.getItem(key);
-    const now = Date.now();
-    if (stored && parseInt(stored) > now) {
-      this.end = parseInt(stored);
-    } else {
-      this.end = now + 72 * 60 * 60 * 1000;
-      localStorage.setItem(key, this.end);
-    }
-    this.tick();
-    setInterval(() => this.tick(), 1000);
-  },
-  tick() {
-    const diff = this.end - Date.now();
-    if (diff <= 0) {
-      // Reinicia 24h
-      this.end = Date.now() + 24 * 60 * 60 * 1000;
-      localStorage.setItem('strideCountdownEnd', this.end);
-      return;
-    }
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    this.hours.textContent = String(h).padStart(2, '0');
-    this.mins.textContent = String(m).padStart(2, '0');
-    this.secs.textContent = String(s).padStart(2, '0');
-  }
-};
-
-// ============ SCROLL REVEAL ============
-const ScrollReveal = {
-  init() {
-    const els = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible');
-          observer.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    els.forEach(el => observer.observe(el));
-  }
-};
-
-// ============ NEWSLETTER ============
-const Newsletter = {
-  input: document.getElementById('newsletter-input'),
-  form: document.getElementById('newsletter-form'),
-  error: document.getElementById('newsletter-error'),
-  success: document.getElementById('newsletter-success'),
-  wrap: document.getElementById('newsletter-form-wrap'),
-  validate(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  },
-  submit() {
-    const val = this.input.value.trim();
-    if (!this.validate(val)) {
-      this.form.classList.add('error');
-      this.error.classList.add('show');
-      this.input.focus();
-      return;
-    }
-    this.form.classList.remove('error');
-    this.error.classList.remove('show');
-    this.wrap.style.display = 'none';
-    this.success.style.display = 'block';
-  },
-  init() {
-    this.input.addEventListener('input', () => {
-      this.form.classList.remove('error');
-      this.error.classList.remove('show');
-    });
-    this.input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') this.submit();
-    });
-  }
-};
-
-// ============ INIT ALL ============
-document.addEventListener('DOMContentLoaded', () => {
-  Navbar.init();
-  ScrollIndicator.init();
-  MobileMenu.init();
-  Countdown.init();
-  ScrollReveal.init();
-  Newsletter.init();
-});
-</script>
-<script>
-
 const priceEl = document.getElementById("price");
 const stockEl = document.getElementById("stock");
+const urgencyBox = document.getElementById("urgencyBox");
 const container = document.getElementById("variantsContainer");
-const btnComprar = document.getElementById("btnComprar");
 
 let selected = {};
 
-// 🔥 PRECIO INICIAL
-priceEl.innerText = `$${precioBase}`;
+const money = n => "$" + Number(n).toFixed(2);
 
-// 🔥 NORMALIZAR
-const variantesNormalizadas = variantes.map(v => ({
-    id: v.id,
-    precio: v.precio,
-    stock: v.stock,
-    atributos: v.atributos
+priceEl.textContent = money(precioBase);
+
+/* ===== ZOOM ===== */
+const mainImage = document.getElementById("mainImage");
+
+mainImage.onclick = ()=>{
+  mainImage.classList.toggle("zoom");
+};
+
+/* ===== GALLERY ===== */
+document.querySelectorAll(".thumb").forEach(t=>{
+  t.onclick = ()=>{
+    mainImage.src = t.src;
+
+    document.querySelectorAll(".thumb")
+      .forEach(x=>x.classList.remove("active"));
+
+    t.classList.add("active");
+  };
+});
+
+/* ===== VARIANTES ===== */
+
+const vars = variantes.map(v=>({
+  id:v.id,
+  precio:Number(v.precio),
+  stock:Number(v.stock),
+  atributos:v.atributos
 }));
 
-const atributosDisponibles = {};
+const attrs = {};
 
-variantesNormalizadas.forEach(v => {
-    Object.entries(v.atributos).forEach(([k, val]) => {
-        if (!atributosDisponibles[k]) atributosDisponibles[k] = new Set();
-        atributosDisponibles[k].add(val);
-    });
+vars.forEach(v=>{
+  Object.entries(v.atributos).forEach(([k,val])=>{
+    if(!attrs[k]) attrs[k] = new Set();
+    attrs[k].add(val);
+  });
 });
 
-function renderVariants() {
+function renderVariants(){
 
-    Object.entries(atributosDisponibles).forEach(([nombre, valores]) => {
+container.innerHTML="";
 
-        const group = document.createElement("div");
-        group.classList.add("variant-group");
+Object.entries(attrs).forEach(([name,vals])=>{
 
-        const title = document.createElement("p");
-        title.innerText = nombre;
+ const g = document.createElement("div");
+ g.className="variant-group";
 
-        group.appendChild(title);
+ g.innerHTML=`<p>${name}</p>`;
 
-        valores.forEach(valor => {
+ const wrap = document.createElement("div");
+ wrap.className="variant-options";
 
-            const btn = document.createElement("button");
-            btn.innerText = valor;
+ vals.forEach(v=>{
 
-            btn.onclick = () => {
-                selected[nombre] = valor;
-                updateUI();
-                updateActive();
-            };
+   const b = document.createElement("button");
+   b.textContent=v;
 
-            btn.dataset.attr = nombre;
-            btn.dataset.value = valor;
+   b.onclick=()=>{
+     selected[name]=v;
+     updateUI();
+     updateActive();
+   };
 
-            group.appendChild(btn);
-        });
+   b.dataset.attr=name;
+   b.dataset.value=v;
 
-        container.appendChild(group);
-    });
-}
+   wrap.appendChild(b);
+ });
 
-function findVariant() {
-    return variantesNormalizadas.find(v =>
-        Object.entries(selected).every(([k,vv]) => v.atributos[k] === vv)
-    );
-}
+ g.appendChild(wrap);
+ container.appendChild(g);
 
-function updateUI() {
-
-    const v = findVariant();
-
-    if (!v) {
-        stockEl.innerText = "Selecciona una opción";
-        btnComprar.disabled = true;
-        return;
-    }
-
-    let precio = v.precio;
-
-    if (tienePromo && descuento > 0) {
-        precio = precio - (precio * (descuento / 100));
-    }
-
-    priceEl.innerText = `$${precio.toFixed(2)}`;
-
-    if (v.stock > 0) {
-        stockEl.innerText = `Disponible (${v.stock})`;
-        btnComprar.disabled = false;
-    } else {
-        stockEl.innerText = "Agotado";
-        btnComprar.disabled = true;
-    }
-}
-
-function updateActive() {
-    document.querySelectorAll(".variant-group button").forEach(btn => {
-        const a = btn.dataset.attr;
-        const v = btn.dataset.value;
-        btn.classList.toggle("active", selected[a] === v);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    renderVariants();
-
-    if (variantesNormalizadas.length > 0) {
-        selected = {...variantesNormalizadas[0].atributos};
-    }
-
-    updateUI();
-    updateActive();
 });
 
+}
+
+function findVariant(){
+ return vars.find(v =>
+   Object.entries(selected)
+   .every(([k,val]) => v.atributos[k]===val)
+ );
+}
+
+function updateUI(){
+
+ const v = findVariant();
+
+ if(!v){
+   stockEl.textContent="Selecciona variante";
+   return;
+ }
+
+ let price = v.precio;
+
+ if(tienePromo){
+   price = price - (price*descuento/100);
+ }
+
+ priceEl.textContent = money(price);
+
+ if(v.stock > 5){
+   stockEl.textContent=`Disponible (${v.stock})`;
+   stockEl.className="stock ok";
+   urgencyBox.textContent=`${Math.floor(Math.random()*7)+2} personas viendo este producto`;
+ }
+
+ else if(v.stock > 0){
+   stockEl.textContent=`Últimas piezas (${v.stock})`;
+   stockEl.className="stock low";
+   urgencyBox.textContent=`Solo quedan ${v.stock} disponibles`;
+ }
+
+ else{
+   stockEl.textContent="Agotado";
+   stockEl.className="stock low";
+   urgencyBox.textContent="Sin stock";
+ }
+
+}
+
+function updateActive(){
+document.querySelectorAll(".variant-options button")
+.forEach(btn=>{
+ btn.classList.toggle(
+   "active",
+   selected[btn.dataset.attr]===btn.dataset.value
+ );
+});
+}
+
+renderVariants();
+
+if(vars.length){
+ selected = {...vars[0].atributos};
+ updateUI();
+ updateActive();
+}
+
+/* ===== AJAX CART ===== */
+
+async function addCart(){
+
+ const v = findVariant();
+
+ const body = {
+   productoId: v ? v.id : null,
+   cantidad:1
+ };
+
+ try{
+   const r = await fetch("/carrito/agregar",{
+     method:"POST",
+     headers:{
+       "Content-Type":"application/json"
+     },
+     body:JSON.stringify(body)
+   });
+
+   if(r.ok){
+     alert("Producto agregado");
+   }
+ }catch(e){
+   alert("Error");
+ }
+
+}
+
+document.getElementById("btnComprar").onclick = addCart;
+document.getElementById("mobileCart").onclick = addCart;
+
+/* ===== WHATSAPP ===== */
+
+function wa(){
+
+ const txt = `Hola quiero comprar: ${productoNombre}`;
+ const url = `https://wa.me/5210000000000?text=${encodeURIComponent(txt)}`;
+ window.open(url,"_blank");
+
+}
+
+document.getElementById("btnWhatsapp").onclick = wa;
+document.getElementById("mobileWa").onclick = wa;
 </script>
 
-</body>
+</section>
 </html>

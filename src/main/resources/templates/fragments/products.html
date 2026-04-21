@@ -1,11 +1,13 @@
 <section id="products" th:fragment="products">
   <div class="container">
 
+    <!-- HEADER -->
     <div class="section-header reveal">
       <h2 class="section-title">Destacados De La Temporada</h2>
       <p class="section-sub">Selección curada por nuestro equipo</p>
     </div>
 
+    <!-- GRID -->
     <div class="products-grid">
 
       <div class="product-card reveal"
@@ -16,18 +18,20 @@
 
         <!-- IMAGEN -->
         <div class="product-img-wrap">
+
           <img th:src="${product.imageUrl}"
                th:alt="${product.productName}"
                loading="lazy">
 
-          <!-- BADGES -->
+          <!-- BADGE PROMO -->
           <span class="product-badge badge-sale"
                 th:if="${product.tienePromocion}">
             OFERTA
           </span>
 
+          <!-- BADGE AGOTADO -->
           <span class="product-badge badge-sold"
-                th:if="${product.stockTotal == 0}">
+                th:if="${product.stockSimple == 0}">
             SOLD OUT
           </span>
 
@@ -36,12 +40,13 @@
                   onclick="event.stopPropagation(); this.classList.toggle('active')">
             ❤️
           </button>
+
         </div>
 
         <!-- INFO -->
         <div class="product-info">
 
-          <!-- CATEGORÍA -->
+          <!-- CATEGORIA -->
           <p class="product-brand"
              th:text="${product.categoriaNombre}">
           </p>
@@ -57,22 +62,71 @@
             <span class="rating-count">(0 reseñas)</span>
           </div>
 
-          <!-- 💰 PRECIO -->
-          <div class="product-prices">
+    <!-- PRECIOS -->
+<div class="product-prices">
 
-            <!-- Precio simple desde DTO -->
-            <span class="price-real"
-                  th:text="|$${product.price}|">
-            </span>
+  <!-- ========================= -->
+  <!-- PRODUCTO CON PROMOCIÓN -->
+  <!-- ========================= -->
+  <div th:if="${product.tienePromocion}">
 
-          </div>
+    <!-- con variantes -->
+    <div th:if="${product.variantes != null and !#lists.isEmpty(product.variantes)}">
 
-          <!-- BOTÓN -->
+      <!-- precio original mínimo -->
+      <span class="price-old"
+            th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
+      </span>
+
+      <!-- precio final con descuento aplicado al mínimo -->
+      <span class="price-real text-success"
+            th:text="|$${#numbers.formatDecimal(product.precioFinal,1,2)}|">
+      </span>
+
+    </div>
+
+    <!-- sin variantes -->
+    <div th:if="${product.variantes == null or #lists.isEmpty(product.variantes)}">
+
+      <span class="price-old"
+            th:text="|$${#numbers.formatDecimal(product.price,1,2)}|">
+      </span>
+
+      <span class="price-real text-success"
+            th:text="|$${#numbers.formatDecimal(product.precioFinal,1,2)}|">
+      </span>
+
+    </div>
+
+  </div>
+
+  <!-- ========================= -->
+  <!-- PRODUCTO NORMAL -->
+  <!-- ========================= -->
+  <div th:if="${!product.tienePromocion}">
+
+    <!-- con variantes -->
+    <span class="price-real"
+          th:if="${product.variantes != null and !#lists.isEmpty(product.variantes)}"
+          th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
+    </span>
+
+    <!-- sin variantes -->
+    <span class="price-real"
+          th:if="${product.variantes == null or #lists.isEmpty(product.variantes)}"
+          th:text="|$${#numbers.formatDecimal(product.price,1,2)}|">
+    </span>
+
+  </div>
+
+</div>
+          <!-- CTA -->
           <a th:href="@{/producto-detalle/{id}(id=${product.id})}"
-   class="btn-cart"
-   onclick="event.stopPropagation();">
-  Ver producto
-</a>
+             class="btn-cart"
+             onclick="event.stopPropagation();">
+             Ver producto
+          </a>
+
         </div>
 
       </div>

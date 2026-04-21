@@ -3,332 +3,545 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Subir Producto</title>
+<title>Subir Producto PRO</title>
 
-<!-- Bootstrap 4 (CDN) para diseño moderno -->
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- Iconos y estilos personalizados -->
-<link rel="stylesheet" href="/assets/vendors/themify-icons/css/themify-icons.css">
-<link rel="stylesheet" href="/assets/vendors/animate/animate.css">
-<link rel="stylesheet" href="/assets/css/custom-styles.css">
+<link rel="stylesheet"
+href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
 <style>
-body { background-color: #2c2c2c; color: #fff; font-family: 'Arial', sans-serif; }
-.form-container { max-width: 800px; margin: 50px auto; padding: 30px; background-color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-radius: 8px; }
-.form-container h2 { text-align: center; color: #fff; margin-bottom: 30px; }
-.form-group label { font-weight: bold; color: #ccc; }
-.form-group input, .form-group textarea, .form-group select { border-radius: 8px; padding: 12px; width: 100%; border: 1px solid #555; font-size: 16px; background-color: #444; color: #fff; }
-.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #4CAF50; outline: none; }
-.form-group textarea { height: 150px; }
-.btn-custom { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
-.btn-custom:hover { background-color: #45a049; }
-.ver-productos-btn { position: fixed; bottom: 10px; right: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 16px; box-shadow: 0px 4px 6px rgba(0,0,0,0.3); }
-.ver-productos-btn:hover { background-color: #45a049; }
+body{
+    background:#1f1f1f;
+    color:#fff;
+    font-family:Arial, sans-serif;
+}
+
+#particles-js{
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+.form-container{
+    max-width:900px;
+    margin:40px auto;
+    background:#2c2c2c;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 20px rgba(0,0,0,.4);
+}
+
+.form-control{
+    background:#3a3a3a;
+    color:#fff;
+    border:1px solid #555;
+}
+
+.form-control:focus{
+    background:#3a3a3a;
+    color:#fff;
+    border-color:#28a745;
+    box-shadow:none;
+}
+
+label{
+    font-weight:bold;
+}
+
+.variante-box{
+    background:#232323;
+    border:1px solid #444;
+    border-radius:10px;
+    padding:15px;
+    margin-top:15px;
+}
+
+.talla-row{
+    background:#303030;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:10px;
+}
+
+.btn-block{
+    width:100%;
+}
+
+.flotante{
+    position:fixed;
+    right:15px;
+    bottom:15px;
+}
 </style>
 </head>
+
 <body>
+
 <div id="particles-js"></div>
 
+<a href="/VerProductos" class="btn btn-success flotante">
+Ver Productos
+</a>
 
 <div class="container">
-    <a href="/VerProductos" class="btn btn-primary ver-productos-btn">Ver Productos</a>
-</div>
-
-<div th:if="${#lists.isEmpty(categorias)}">
-    <p>No se cargaron categorías. Asegúrate de acceder desde /nuevo.</p>
-</div>
 
 <div class="form-container">
-    <h2>Formulario para Subir Productos</h2>
 
-<form id="productoForm" th:action="@{/nuevo}" th:object="${producto}" method="post" enctype="multipart/form-data">
-        <!-- Nombre -->
-        <div class="form-group">
-            <label>Nombre del producto</label>
-<input type="text" th:field="*{productName}" class="form-control" required />
-        </div>
+<h2 class="text-center mb-4">
+Subir Producto Profesional
+</h2>
 
-        <!-- Precio -->
-        <div class="form-group">
-            <label>Precio</label>
-        <input type="number" step="0.01" th:field="*{price}" class="form-control" required />
-        </div>
+<form id="productoForm"
+th:action="@{/nuevo}"
+th:object="${producto}"
+method="post"
+enctype="multipart/form-data">
 
-        <!-- Descripción -->
-        <div class="form-group">
-            <label>Descripción</label>
-            <textarea th:field="*{description}" rows="4" class="form-control"></textarea>
-        </div>
+<!-- NOMBRE -->
+<div class="form-group">
+<label>Nombre del producto</label>
+<input type="text"
+th:field="*{productName}"
+class="form-control"
+required>
+</div>
 
-        <!-- Categoría existente -->
-        <div class="form-group">
-            <label>Categoría</label>
-            <select class="form-control" th:field="*{categoriaId}">
-    <option value="">Selecciona una categoría</option>
-    <option th:each="cat : ${categorias}"
-            th:value="${cat.id}"
-            th:text="${cat.nombre}">
-    </option>
+<!-- PRECIO -->
+<div class="form-group">
+<label>Precio base</label>
+<input type="number"
+step="0.01"
+th:field="*{price}"
+class="form-control"
+required>
+</div>
+
+<!-- STOCK GENERAL -->
+<div class="form-group" id="stockGeneralBox">
+<label>Stock general</label>
+<input type="number"
+min="0"
+th:field="*{stockSimple}"
+class="form-control">
+</div>
+
+<!-- DESCRIPCION -->
+<div class="form-group">
+<label>Descripción</label>
+<textarea
+th:field="*{description}"
+rows="4"
+class="form-control"></textarea>
+</div>
+
+<!-- CATEGORIA -->
+<div class="form-group">
+<label>Categoría</label>
+
+<select class="form-control"
+th:field="*{categoriaId}"
+id="categoriaSelect">
+
+<option value="">Selecciona</option>
+
+<option th:each="cat : ${categorias}"
+th:value="${cat.id}"
+th:text="${cat.nombre}">
+</option>
+
 </select>
-        </div>
+</div>
 
-        <!-- Nueva categoría -->
-        <div class="form-group">
-            <label>O crear nueva categoría</label>
-<input type="text" class="form-control" th:field="*{nuevaCategoria}" id="nuevaCategoria" />
+<!-- NUEVA -->
+<div class="form-group">
+<label>Nueva categoría</label>
+<input type="text"
+th:field="*{nuevaCategoria}"
+class="form-control">
+</div>
 
-        </div>
-        
-<h4 class="mt-4">Variantes del producto</h4>
+<!-- ATRIBUTOS -->
+<div class="form-group">
+<label>Atributos sugeridos</label>
+<div id="atributosCategoria"></div>
+</div>
+
+<hr>
+
+<h4>Variantes Color + Talla</h4>
 
 <div id="variantes-container"></div>
 
-<button type="button" class="btn btn-info mt-2" onclick="agregarVariante()">
-    + Agregar Variante
+<button type="button"
+class="btn btn-info mt-2"
+onclick="agregarColor()">
+
++ Agregar Color
 </button>
 
-        <!-- Porcentaje de descuento -->
-        <div class="form-group">
-            <label>Porcentaje de Descuento (opcional)</label>
-<input type="number" min="0" max="100" th:field="*{porcentajeDescuento}" class="form-control" step="1" placeholder="Ej. 15">
-        </div>
+<hr>
 
-        <!-- Imágenes -->
-        <div class="form-group">
-            <label>Imágenes</label>
-            <input type="file" class="form-control" name="imagenes" multiple />
-        </div>
-
-        <button type="submit" class="btn btn-success btn-custom">Subir producto</button>
-    </form>
+<div class="form-group">
+<label>Descuento %</label>
+<input type="number"
+min="0"
+max="100"
+th:field="*{porcentajeDescuento}"
+class="form-control">
 </div>
 
-<div th:if="${param.success}" class="alert alert-success mt-3">Producto subido correctamente.</div>
-<div th:if="${param.error}" class="alert alert-danger mt-3">Error al subir el producto.</div>
+<div class="form-group">
+<label>Imágenes</label>
+<input type="file"
+name="imagenes"
+multiple
+class="form-control">
+</div>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<button type="submit"
+class="btn btn-success btn-lg btn-block">
 
+Guardar Producto
+</button>
 
-
-
+</form>
+</div>
+</div>
 
 <script>
-let index = 0;
+/* ======================================
+ATRIBUTOS AUTOMÁTICOS
+====================================== */
+const atributosPorCategoria = {
+    ropa: ["Color", "Talla", "Material", "Género"],
+    zapatos: ["Color", "Número", "Material"],
+    tenis: ["Color", "Número", "Deporte"],
+    celular: ["Color", "RAM", "Almacenamiento"],
+    laptop: ["RAM", "SSD", "Procesador"],
+    reloj: ["Color", "Correa", "Tamaño"],
+    perfume: ["Aroma", "ML", "Género"]
+};
 
-function agregarVariante() {
-    const container = document.getElementById("variantes-container");
+document.addEventListener("DOMContentLoaded", () => {
 
-    const html = `
-    <div class="variante border p-3 mt-3 rounded">
+    const categoria = document.getElementById("categoriaSelect");
 
-        <h5>Variante #${index + 1}</h5>
+    if (categoria) {
+        categoria.addEventListener("change", cargarAtributos);
+        cargarAtributos();
+    }
 
-        <input type="text"
-            name="variantes[${index}].nombre"
-            placeholder="Nombre visual (opcional)"
-            class="form-control mb-2">
+    const form = document.getElementById("productoForm");
 
-        <input type="number" step="0.01"
-            name="variantes[${index}].precio"
-            placeholder="Precio"
-            class="form-control mb-2">
+    if (form) {
+        form.addEventListener("submit", sincronizarTodoAntesDeEnviar);
+    }
+});
 
-        <input type="number"
-            name="variantes[${index}].stock"
-            placeholder="Stock"
-            class="form-control mb-2" required>
+function cargarAtributos() {
 
-        <div id="atributos-${index}" class="mb-2"></div>
+    const select = document.getElementById("categoriaSelect");
+    const box = document.getElementById("atributosCategoria");
 
-        <button type="button" class="btn btn-sm btn-secondary mb-2"
-            onclick="agregarAtributo(${index})">
-            + Atributo
-        </button>
+    if (!select || !box) return;
 
-        <button type="button" class="btn btn-danger"
-            onclick="this.parentElement.remove()">
-            Eliminar
-        </button>
-    </div>
-    `;
+    const texto =
+        select.options[select.selectedIndex]
+        ?.text
+        .toLowerCase()
+        .trim();
 
-    container.insertAdjacentHTML("beforeend", html);
-    index++;
-}
+    box.innerHTML = "";
 
-function agregarAtributo(indexVariante) {
-    const container = document.getElementById(`atributos-${indexVariante}`);
+    let lista = [];
 
-    const html = `
-    <div class="d-flex mb-2 align-items-center">
-
-        <input type="text"
-            placeholder="Nombre (Color, Talla)"
-            class="form-control mr-2 key-input">
-
-        <input type="text"
-            placeholder="Valor (Rojo, M)"
-            class="form-control mr-2 value-input">
-
-        <button type="button"
-            class="btn btn-danger btn-sm"
-            onclick="this.parentElement.remove()">X</button>
-    </div>
-    `;
-
-    container.insertAdjacentHTML("beforeend", html);
-
-    actualizarNames(indexVariante);
-}
-function actualizarNames(indexVariante) {
-    const container = document.getElementById(`atributos-${indexVariante}`);
-    const filas = container.children;
-
-    Array.from(filas).forEach(fila => {
-        const keyInput = fila.querySelector(".key-input");
-        const valueInput = fila.querySelector(".value-input");
-
-        if (keyInput.value) {
-            valueInput.name = `variantes[${indexVariante}].atributos[${keyInput.value}]`;
+    for (let key in atributosPorCategoria) {
+        if (texto.includes(key)) {
+            lista = atributosPorCategoria[key];
+            break;
         }
+    }
 
-        keyInput.addEventListener("input", () => {
-            valueInput.name = `variantes[${indexVariante}].atributos[${keyInput.value}]`;
-        });
+    if (lista.length === 0) {
+        box.innerHTML =
+            '<small class="text-muted">Sin atributos sugeridos</small>';
+        return;
+    }
+
+    lista.forEach(attr => {
+        box.innerHTML += `
+        <span class="badge badge-success mr-2 mb-2 p-2">
+            ${attr}
+        </span>`;
     });
 }
 </script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const form = document.getElementById("productoForm");
+/* ======================================
+VARIANTES COLOR + TALLA
+====================================== */
+let colorIndex = 0;
+let varianteIndex = 0;
 
-    // Campos reales según tu DTO
-    const productName = document.querySelector("input[name='productName']");
-const descripcion = document.querySelector("textarea[name='description']");
-const categoriaSelect = document.querySelector("select[name='categoriaId']");
-const nuevaCategoria = document.querySelector("input[name='nuevaCategoria']");
+function agregarColor() {
 
-    form.addEventListener("submit", function(e) {
-        let errores = [];
+    const stockGeneral =
+        document.getElementById("stockGeneralBox");
 
-        // Validar nombre
-        if (!productName.value.trim()) {
-            errores.push("Debes ingresar el nombre del producto.");
-            productName.style.border = "2px solid #ff5555";
-        } else {
-            productName.style.border = "1px solid #555";
-        }
-
-        // Validar descripción
-        if (!descripcion.value.trim()) {
-            errores.push("Debes ingresar una descripción.");
-            descripcion.style.border = "2px solid #ff5555";
-        } else {
-            descripcion.style.border = "1px solid #555";
-        }
-
-        // Validar categoría o nueva categoría
-        if (!nuevaCategoria.value.trim() && !categoriaSelect.value.trim()) {
-            errores.push("Selecciona una categoría o escribe una nueva.");
-            categoriaSelect.style.border = "2px solid #ff5555";
-        } else {
-            categoriaSelect.style.border = "1px solid #555";
-        }
-
-        // Si hay errores, evitar el envío
-        if (errores.length > 0) {
-            e.preventDefault();
-            mostrarAlerta(errores.join(" "), true);
-        }
-    });
-
-    // Mostrar alerta visual
-    function mostrarAlerta(mensaje, error = false) {
-        const alertDiv = document.createElement("div");
-        alertDiv.className = `alert ${error ? 'alert-danger' : 'alert-success'} mt-3`;
-        alertDiv.textContent = mensaje;
-
-        const existingAlert = document.querySelector(".alert");
-        if (existingAlert) existingAlert.remove();
-
-        form.parentNode.insertBefore(alertDiv, form);
-        setTimeout(() => alertDiv.remove(), 4000);
+    if (stockGeneral) {
+        stockGeneral.style.display = "none";
     }
-});
+
+    const container =
+        document.getElementById("variantes-container");
+
+    container.insertAdjacentHTML(
+        "beforeend",
+        `
+<div class="variante-box border rounded p-3 mt-3 bg-dark">
+
+    <div class="d-flex justify-content-between mb-3">
+        <h5 class="m-0 text-success">
+            Color #${colorIndex + 1}
+        </h5>
+
+        <button type="button"
+            class="btn btn-danger btn-sm"
+            onclick="eliminarColor(this)">
+            Eliminar
+        </button>
+    </div>
+
+    <input type="text"
+        class="form-control mb-3 nombre-color"
+        placeholder="Ej: Negro">
+
+    <div class="tallas-box"></div>
+
+    <button type="button"
+        class="btn btn-secondary btn-sm"
+        onclick="agregarTalla(this)">
+        + Agregar Talla
+    </button>
+
+</div>
+`
+    );
+
+    colorIndex++;
+}
+
+function eliminarColor(btn) {
+
+    btn.closest(".variante-box").remove();
+
+    const quedan =
+        document.querySelectorAll(".variante-box");
+
+    if (quedan.length === 0) {
+        const stockGeneral =
+            document.getElementById("stockGeneralBox");
+
+        if (stockGeneral) {
+            stockGeneral.style.display = "block";
+        }
+    }
+}
+
+function agregarTalla(btn) {
+
+    const box =
+        btn.closest(".variante-box");
+
+    const tallas =
+        box.querySelector(".tallas-box");
+
+    tallas.insertAdjacentHTML(
+        "beforeend",
+        `
+<div class="talla-row border rounded p-2 mb-2">
+
+    <div class="row">
+
+        <div class="col-md-3 mb-2">
+            <input type="text"
+                class="form-control talla-input"
+                placeholder="Talla">
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <input type="number"
+                min="0"
+                class="form-control stock-input"
+                placeholder="Stock">
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <input type="number"
+                min="0"
+                step="0.01"
+                class="form-control precio-input"
+                placeholder="Precio">
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <button type="button"
+                class="btn btn-danger btn-block"
+                onclick="eliminarTalla(this)">
+                X
+            </button>
+        </div>
+
+    </div>
+
+    <input type="hidden"
+        name="variantes[${varianteIndex}].atributos[Color]"
+        class="hidden-color">
+
+    <input type="hidden"
+        name="variantes[${varianteIndex}].atributos[Talla]"
+        class="hidden-talla">
+
+    <input type="hidden"
+        name="variantes[${varianteIndex}].stock"
+        class="hidden-stock">
+
+    <input type="hidden"
+        name="variantes[${varianteIndex}].precio"
+        class="hidden-precio">
+
+</div>
+`
+    );
+
+    const row = tallas.lastElementChild;
+
+    const colorInput = box.querySelector(".nombre-color");
+    const talla = row.querySelector(".talla-input");
+    const stock = row.querySelector(".stock-input");
+    const precio = row.querySelector(".precio-input");
+
+    const hColor = row.querySelector(".hidden-color");
+    const hTalla = row.querySelector(".hidden-talla");
+    const hStock = row.querySelector(".hidden-stock");
+    const hPrecio = row.querySelector(".hidden-precio");
+
+    function sync() {
+        hColor.value = colorInput.value.trim();
+        hTalla.value = talla.value.trim();
+        hStock.value = stock.value;
+        hPrecio.value = precio.value;
+    }
+
+    colorInput.addEventListener("input", sync);
+    talla.addEventListener("input", sync);
+    stock.addEventListener("input", sync);
+    precio.addEventListener("input", sync);
+
+    sync();
+
+    varianteIndex++;
+}
+
+function eliminarTalla(btn) {
+    btn.closest(".talla-row").remove();
+}
+
+/* ======================================
+SYNC GLOBAL ANTES DE SUBMIT
+====================================== */
+function sincronizarTodoAntesDeEnviar() {
+
+    document.querySelectorAll(".talla-row").forEach(row => {
+
+        const box =
+            row.closest(".variante-box");
+
+        row.querySelector(".hidden-color").value =
+            box.querySelector(".nombre-color").value.trim();
+
+        row.querySelector(".hidden-talla").value =
+            row.querySelector(".talla-input").value.trim();
+
+        row.querySelector(".hidden-stock").value =
+            row.querySelector(".stock-input").value;
+
+        row.querySelector(".hidden-precio").value =
+            row.querySelector(".precio-input").value;
+    });
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
 <script>
-particlesJS("particles-js", {
-  "particles": {
-    "number": {
-      "value": 90,
-      "density": { "enable": true, "value_area": 900 }
-    },
-    "color": {
-      "value": ["#00ffcc", "#2bff99", "#00e6b8"]
-    },
-    "shape": { "type": "circle" },
-    "opacity": {
-      "value": 0.35,
-      "random": true,
-      "anim": {
-        "enable": true,
-        "speed": 0.8,
-        "opacity_min": 0.05,
-        "sync": false
-      }
-    },
-    "size": {
-      "value": 4,
-      "random": true,
-      "anim": {
-        "enable": true,
-        "speed": 2,
-        "size_min": 0.6,
-        "sync": false
-      }
-    },
-    "line_linked": {
-      "enable": true,
-      "distance": 150,
-      "color": "#00ffcc",
-      "opacity": 0.35,
-      "width": 1
-    },
-    "move": {
-      "enable": true,
-      "speed": 1.3,
-      "direction": "none",
-      "random": true,
-      "straight": false,
-      "out_mode": "out",
-      "bounce": false
-    }
-  },
-  "interactivity": {
-    "detect_on": "canvas",
-    "events": {
-      "onhover": { "enable": true, "mode": "grab" },
-      "onclick": { "enable": false },
-      "resize": true
-    },
-    "modes": {
-      "grab": { 
-        "distance": 200,
-        "line_linked": { "opacity": 0.8 }
-      }
-    }
-  },
-  "retina_detect": true
-});
+particlesJS("particles-js",{
+	  "particles": {
+		    "number": {
+		      "value": 90,
+		      "density": { "enable": true, "value_area": 900 }
+		    },
+		    "color": {
+		      "value": ["#00ffcc", "#2bff99", "#00e6b8"]
+		    },
+		    "shape": { "type": "circle" },
+		    "opacity": {
+		      "value": 0.35,
+		      "random": true,
+		      "anim": {
+		        "enable": true,
+		        "speed": 0.8,
+		        "opacity_min": 0.05,
+		        "sync": false
+		      }
+		    },
+		    "size": {
+		      "value": 4,
+		      "random": true,
+		      "anim": {
+		        "enable": true,
+		        "speed": 2,
+		        "size_min": 0.6,
+		        "sync": false
+		      }
+		    },
+		    "line_linked": {
+		      "enable": true,
+		      "distance": 150,
+		      "color": "#00ffcc",
+		      "opacity": 0.35,
+		      "width": 1
+		    },
+		    "move": {
+		      "enable": true,
+		      "speed": 1.3,
+		      "direction": "none",
+		      "random": true,
+		      "straight": false,
+		      "out_mode": "out",
+		      "bounce": false
+		    }
+		  },
+		  "interactivity": {
+		    "detect_on": "canvas",
+		    "events": {
+		      "onhover": { "enable": true, "mode": "grab" },
+		      "onclick": { "enable": false },
+		      "resize": true
+		    },
+		    "modes": {
+		      "grab": { 
+		        "distance": 200,
+		        "line_linked": { "opacity": 0.8 }
+		      }
+		    }
+		  },
+		  "retina_detect": true
+		});
 </script>
-
 
 </body>
 </html>

@@ -58,44 +58,57 @@ public class ProductoController {
     public Map<String, Object> actualizarProducto(
             @PathVariable Long id,
             @Valid @ModelAttribute ProductoDTO dto,
-            @RequestParam(value = "imagenes", required = false) List<MultipartFile> nuevasImagenes,
-            @RequestParam(value = "eliminarImagenes", required = false) List<Long> eliminarImagenes
+            @RequestParam(value = "imagenes", required = false)
+            List<MultipartFile> nuevasImagenes,
+
+            @RequestParam(value = "eliminarImagenes", required = false)
+            List<Long> eliminarImagenes
     ) {
 
         Producto datos = new Producto();
+
         datos.setProductName(dto.getProductName());
         datos.setPrice(dto.getPrice());
         datos.setDescription(dto.getDescription());
         datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
-        
+        datos.setStockSimple(dto.getStockSimple());
 
-        if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
+        // Categoría
+        if (dto.getNuevaCategoria() != null &&
+            !dto.getNuevaCategoria().isBlank()) {
 
             datos.setCategoria(
-                categoriaService.obtenerOCrearCategoria(dto.getNuevaCategoria())
+                categoriaService.obtenerOCrearCategoria(
+                    dto.getNuevaCategoria()
+                )
             );
 
         } else if (dto.getCategoriaId() != null) {
 
             datos.setCategoria(
-                categoriaService.obtenerPorId(dto.getCategoriaId())
+                categoriaService.obtenerPorId(
+                    dto.getCategoriaId()
+                )
             );
 
         } else {
-            throw new IllegalArgumentException("Debe seleccionar o crear una categoría");
+            throw new IllegalArgumentException(
+                "Debe seleccionar categoría"
+            );
         }
 
-        Producto actualizado = productoService.actualizarProductoCompleto(
+        Producto actualizado =
+            productoService.actualizarProductoCompleto(
                 id,
                 datos,
                 nuevasImagenes,
                 eliminarImagenes,
-                dto.getVariantes() // ✅ AQUÍ ESTÁ LA CLAVE
-        );
+                dto.getVariantes()
+            );
 
         return Map.of(
-                "success", true,
-                "productoId", actualizado.getId()
+            "success", true,
+            "productoId", actualizado.getId()
         );
     }
 

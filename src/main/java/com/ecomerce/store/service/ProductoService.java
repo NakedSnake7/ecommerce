@@ -243,59 +243,95 @@ public class ProductoService {
                 }
             }
 
-            // =========================
-            // 4. SINCRONIZAR VARIANTES
-            // =========================
-            if (variantesDTO != null) {
+         // =========================
+         // 4. SINCRONIZAR VARIANTES
+         // =========================
+         if (variantesDTO != null && !variantesDTO.isEmpty()) {
 
-                Map<Long, ProductoVariante> existentes = producto.getVariantes()
-                        .stream()
-                        .collect(Collectors.toMap(ProductoVariante::getId, v -> v));
+             Map<Long, ProductoVariante> existentes = producto.getVariantes()
+                     .stream()
+                     .collect(Collectors.toMap(
+                             ProductoVariante::getId,
+                             v -> v
+                     ));
 
-                List<ProductoVariante> nuevasLista = new ArrayList<>();
+             List<ProductoVariante> nuevasLista = new ArrayList<>();
 
-                for (ProductoVarianteDTO dto : variantesDTO) {
+             for (ProductoVarianteDTO dto : variantesDTO) {
 
-                    ProductoVariante variante;
+                 ProductoVariante variante;
 
-                    // EXISTENTE
-                    if (dto.getId() != null && existentes.containsKey(dto.getId())) {
-                        variante = existentes.get(dto.getId());
-                    } else {
-                        // NUEVA
-                        variante = new ProductoVariante();
-                        variante.setProducto(producto);
-                    }
+                 // EXISTENTE
+                 if (dto.getId() != null &&
+                     existentes.containsKey(dto.getId())) {
 
-                    variante.setPrecio(dto.getPrecio());
-                    variante.setStock(dto.getStock());
+                     variante = existentes.get(dto.getId());
 
-                    // =========================
-                    // ATRIBUTOS
-                    // =========================
-                    if (variante.getAtributos() == null) {
-                        variante.setAtributos(new LinkedHashSet<>());
-                    } else {
-                        variante.getAtributos().clear();
-                    }
+                 } else {
 
-                    if (dto.getAtributos() != null) {
-                        dto.getAtributos().forEach((key, value) -> {
-                            VarianteAtributo attr = new VarianteAtributo();
-                            attr.setNombre(key);
-                            attr.setValor(value);
-                            attr.setVariante(variante);
-                            variante.getAtributos().add(attr);
-                        });
-                    }
+                     // NUEVA
+                     variante = new ProductoVariante();
+                     variante.setProducto(producto);
+                 }
 
-                    nuevasLista.add(variante);
-                }
+                 variante.setPrecio(dto.getPrecio());
 
-                // reemplazo completo
-                producto.getVariantes().clear();
-                producto.getVariantes().addAll(nuevasLista);
-            }
+                 variante.setStock(
+                     dto.getStock() != null
+                         ? dto.getStock()
+                         : 0
+                 );
+
+                 // =========================
+                 // ATRIBUTOS
+                 // =========================
+                 if (variante.getAtributos() == null) {
+                     variante.setAtributos(
+                         new LinkedHashSet<>()
+                     );
+                 } else {
+                     variante.getAtributos().clear();
+                 }
+
+                 if (dto.getAtributos() != null) {
+
+                     dto.getAtributos()
+                     .forEach((key, value) -> {
+
+                         VarianteAtributo attr =
+                             new VarianteAtributo();
+
+                         attr.setNombre(key);
+                         attr.setValor(value);
+                         attr.setVariante(variante);
+
+                         variante.getAtributos()
+                                 .add(attr);
+                     });
+                 }
+
+                 nuevasLista.add(variante);
+             }
+
+             // reemplazo completo
+             producto.getVariantes().clear();
+             producto.getVariantes().addAll(nuevasLista);
+
+             // 🔥 Si tiene variantes,
+             // stock simple se desactiva
+             producto.setStockSimple(0);
+
+         } else {
+
+             // 🔥 Producto simple sin variantes
+             producto.getVariantes().clear();
+
+             producto.setStockSimple(
+                 datos.getStockSimple() != null
+                     ? datos.getStockSimple()
+                     : 0
+             );
+         }
 
             // =========================
             // 5. GUARDAR
@@ -573,9 +609,15 @@ public class ProductoService {
     }
     
     @Transactional
-    public Producto crearProducto(ProductoDTO dto, List<MultipartFile> imagenes) {
+    public Producto crearProducto(
+            ProductoDTO dto,
+            List<MultipartFile> imagenes) {
 
         Producto producto = new Producto();
+
+        // =====================================
+        // DATOS BASE
+        // =====================================
         producto.setProductName(dto.getProductName());
         producto.setPrice(dto.getPrice());
         producto.setDescription(dto.getDescription());
@@ -584,14 +626,43 @@ public class ProductoService {
             categoriaService.obtenerPorId(dto.getCategoriaId())
         );
 
-        if (dto.getVariantes() != null) {
-            for (var vDto : dto.getVariantes()) {
+        producto.setVisibleEnMenu(true);
 
-                ProductoVariante variante = new ProductoVariante();
+        // =====================================
+        // PROMOCIÓN
+        // =====================================
+        producto.setPorcentajeDescuento(
+            dto.getPorcentajeDescuento()
+        );
+
+        producto.setTienePromocion(
+            dto.getPorcentajeDescuento() != null &&
+            dto.getPorcentajeDescuento() > 0
+        );
+
+        // =====================================
+        // VARIANTES O PRODUCTO SIMPLE
+        // =====================================
+        if (dto.getVariantes() != null &&
+            !dto.getVariantes().isEmpty()) {
+
+            // Si tiene variantes, ignoramos stockSimple
+            producto.setStockSimple(0);
+
+            for (ProductoVarianteDTO vDto : dto.getVariantes()) {
+
+                ProductoVariante variante =
+                    new ProductoVariante();
+
                 variante.setProducto(producto);
                 variante.setPrecio(vDto.getPrecio());
-                variante.setStock(vDto.getStock());
+                variante.setStock(
+                    vDto.getStock() != null
+                    ? vDto.getStock()
+                    : 0
+                );
 
+                // Atributos
                 if (vDto.getAtributos() != null) {
                     vDto.getAtributos().forEach((k, v) -> {
                         variante.agregarAtributo(k, v);
@@ -600,15 +671,34 @@ public class ProductoService {
 
                 producto.agregarVariante(variante);
             }
+
+        } else {
+
+            // Producto simple SIN variantes
+            producto.setStockSimple(
+            		dto.getStockSimple() != null
+                ? dto.getStockSimple()
+                : 0
+            );
         }
 
-        Producto saved = productoRepository.save(producto);
+        // =====================================
+        // GUARDAR
+        // =====================================
+        Producto saved =
+            productoRepository.save(producto);
 
-        subirImagenesProducto(saved.getId(), imagenes);
+        // =====================================
+        // IMÁGENES
+        // =====================================
+        subirImagenesProducto(
+            saved.getId(),
+            imagenes
+        );
 
         return saved;
     }
-
+    
     @Transactional(readOnly = true)
     public List<ProductoResumenDTO> obtenerProductosIndexOptimizado() {
 

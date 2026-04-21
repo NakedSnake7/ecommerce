@@ -266,6 +266,22 @@ name="price"
 th:value="${productoDTO.price}">
 </div>
 
+<!-- STOCK SIMPLE (solo productos sin variantes) -->
+<div class="col-md-3 mb-3"
+     id="stockSimpleBox"
+     th:style="${productoDTO.tieneVariantes} ? 'display:none;' : 'display:block;'">
+
+<label>Stock General</label>
+
+<input type="number"
+       min="0"
+       class="form-control"
+       name="stockSimple"
+       id="stockSimple"
+       th:value="${productoDTO.stockSimple}">
+</div>
+
+
 <div class="col-md-6 mb-3">
 <label>Categoría</label>
 
@@ -391,20 +407,24 @@ Eliminar
 <div class="row">
 
 <div class="col-md-4"
-th:each="img,iter : ${productoDTO.urlsImagenesExistentes}">
+     th:each="img,iter : ${productoDTO.urlsImagenesExistentes}">
 
-<div class="img-box">
-<img th:src="${img}">
-<div class="img-actions">
-<label class="btn btn-danger btn-sm mb-0">
-<input type="checkbox"
-hidden
-name="eliminarImagenes"
-th:value="${productoDTO.imagenesExistentes[iter.index]}">
-Eliminar
-</label>
-</div>
-</div>
+    <div class="img-box imagen-item">
+
+        <img th:src="${img}">
+
+        <div class="img-actions">
+
+            <button type="button"
+                    class="btn btn-danger btn-sm btnEliminarImagen"
+                    th:data-id="${productoDTO.imagenesExistentes[iter.index]}"
+                    th:data-producto="${productoDTO.id}">
+                Eliminar
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -460,13 +480,13 @@ const toast = (msg, type = 'success') => {
 
 
 /* =========================
-   BADGE STOCK
+   BADGE STOCK VARIANTES
 ========================= */
 function actualizarBadgeStock(input) {
 
     const badge = input
         .closest('.variant-card')
-        .querySelector('.badge-stock');
+        ?.querySelector('.badge-stock');
 
     if (!badge) return;
 
@@ -481,62 +501,106 @@ function actualizarBadgeStock(input) {
 
 
 /* =========================
+   BADGE STOCK SIMPLE
+========================= */
+function actualizarBadgeSimple() {
+
+    const input =
+        document.getElementById('stockSimple');
+
+    const badge =
+        document.getElementById('badgeStockSimple');
+
+    if (!input || !badge) return;
+
+    if (Number(input.value) > 0) {
+        badge.innerText = 'Con stock';
+        badge.className = 'badge-stock in';
+    } else {
+        badge.innerText = 'Agotado';
+        badge.className = 'badge-stock out';
+    }
+}
+
+
+/* =========================
+   MOSTRAR / OCULTAR STOCK SIMPLE
+========================= */
+function controlarStockSimple() {
+
+    const bloque =
+        document.getElementById('stockSimpleBox');
+
+    const variantes =
+        document.querySelectorAll('.variant-card');
+
+    if (!bloque) return;
+
+    if (variantes.length === 0) {
+        bloque.style.display = 'block';
+    } else {
+        bloque.style.display = 'none';
+    }
+}
+
+
+/* =========================
    REINDEX VARIANTES
 ========================= */
 function reindexVariantes() {
 
-    const cards = document.querySelectorAll('.variant-card');
+    const cards =
+        document.querySelectorAll('.variant-card');
 
     cards.forEach((card, index) => {
 
         card.dataset.index = index;
 
-        // =========================
-        // INPUTS PRINCIPALES
-        // =========================
         card.querySelectorAll('input').forEach(input => {
 
             if (!input.name) return;
 
-            // Reindex variantes[]
             input.name = input.name.replace(
                 /variantes\[\d+]/,
                 `variantes[${index}]`
             );
         });
 
-        // =========================
-        // ATRIBUTOS (CLAVE DEL FIX)
-        // =========================
-        const attrRows = card.querySelectorAll('.attr-row');
+        const attrRows =
+            card.querySelectorAll('.attr-row');
 
         attrRows.forEach((row, attrIndex) => {
 
-            const inputs = row.querySelectorAll('input');
+            const inputs =
+                row.querySelectorAll('input');
 
             if (inputs.length < 2) return;
 
-            // KEY
             inputs[0].name =
                 `variantes[${index}].atributosKeys[${attrIndex}]`;
 
-            // VALUE
             inputs[1].name =
                 `variantes[${index}].atributosValues[${attrIndex}]`;
 
         });
 
     });
+
+    controlarStockSimple();
 }
 
 
 /* =========================
-   STOCK EVENTS EXISTENTES
+   INPUT EVENTS
 ========================= */
 document.addEventListener('input', e => {
 
     if (e.target.classList.contains('stock-input')) {
         actualizarBadgeStock(e.target);
+    }
+
+    if (e.target.id === 'stockSimple') {
+        actualizarBadgeSimple();
     }
 
 });
@@ -546,7 +610,7 @@ document.addEventListener('input', e => {
    AGREGAR VARIANTE
 ========================= */
 document.getElementById('addVariante')
-.addEventListener('click', () => {
+?.addEventListener('click', () => {
 
     const wrap =
         document.getElementById('variantesWrap');
@@ -602,6 +666,8 @@ document.getElementById('addVariante')
     </div>
     `);
 
+    controlarStockSimple();
+
 });
 
 
@@ -614,12 +680,11 @@ document.addEventListener('click', e => {
     if (e.target.classList.contains('removeVariante')) {
 
         e.target
-         .closest('.variant-card')
-         .remove();
+            .closest('.variant-card')
+            .remove();
 
         reindexVariantes();
     }
-
 
     /* AGREGAR ATRIBUTO */
     if (e.target.classList.contains('addAttr')) {
@@ -627,7 +692,8 @@ document.addEventListener('click', e => {
         const card =
             e.target.closest('.variant-card');
 
-        const index = card.dataset.index;
+        const index =
+            card.dataset.index;
 
         const container =
             card.querySelector('.atributos-container');
@@ -668,35 +734,39 @@ const input =
 const preview =
     document.getElementById('preview');
 
-dz.addEventListener('click', () => {
-    input.click();
-});
+if (dz && input) {
 
-input.addEventListener('change', () => {
-
-    preview.innerHTML = '';
-
-    [...input.files].forEach(file => {
-
-        const reader = new FileReader();
-
-        reader.onload = e => {
-
-            preview.insertAdjacentHTML('beforeend', `
-
-            <div class="col-md-3 mb-3">
-                <div class="img-box">
-                    <img src="${e.target.result}">
-                </div>
-            </div>
-
-            `);
-        };
-
-        reader.readAsDataURL(file);
+    dz.addEventListener('click', () => {
+        input.click();
     });
 
-});
+    input.addEventListener('change', () => {
+
+        preview.innerHTML = '';
+
+        [...input.files].forEach(file => {
+
+            const reader = new FileReader();
+
+            reader.onload = e => {
+
+                preview.insertAdjacentHTML('beforeend', `
+
+                <div class="col-md-3 mb-3">
+                    <div class="img-box">
+                        <img src="${e.target.result}">
+                    </div>
+                </div>
+
+                `);
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+    });
+
+}
 
 
 /* =========================
@@ -726,10 +796,10 @@ document.getElementById('formEditar')
         });
 
         const data = await resp.json();
-        
+
         if (!resp.ok) {
-        	   throw new Error("Error servidor");
-        	}
+            throw new Error("Error servidor");
+        }
 
         if (data.success) {
 
@@ -765,6 +835,15 @@ document.getElementById('formEditar')
         'Guardar Cambios';
 
 });
+
+
+/* =========================
+   INIT
+========================= */
+document.addEventListener('DOMContentLoaded', () => {
+    controlarStockSimple();
+    actualizarBadgeSimple();
+});
 </script>
 <!-- PARTICLES -->
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -789,6 +868,47 @@ particlesJS("particles-js", {
         events: { onhover: { enable: true, mode: "grab" } }
     },
     retina_detect: true
+});
+</script>
+<script>
+document.addEventListener('click', async e => {
+
+    if (!e.target.classList.contains('btnEliminarImagen')) return;
+
+    const btn = e.target;
+
+    const idImagen = btn.dataset.id;
+    const productoId = btn.dataset.producto;
+
+    if (!confirm("¿Eliminar imagen definitivamente?")) return;
+
+    try {
+
+        const resp = await fetch(
+            `/api/productos/${productoId}/eliminar-imagen/${idImagen}`,
+            {
+                method: 'DELETE'
+            }
+        );
+
+        if (resp.ok) {
+
+            btn.closest('.col-md-4').remove();
+
+            toast('Imagen eliminada 🔥');
+
+        } else {
+
+            toast('No se pudo eliminar', 'error');
+
+        }
+
+    } catch (error) {
+
+        toast('Error de conexión', 'error');
+
+    }
+
 });
 </script>
 </body>

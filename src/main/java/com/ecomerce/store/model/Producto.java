@@ -1,6 +1,6 @@
 package com.ecomerce.store.model;
 
-import java.math.BigDecimal;
+import java.math.BigDecimal; 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +36,8 @@ public class Producto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
- 
+    @Column(name = "stock_simple")
+    private Integer stockSimple = 0;
 	
 	private String sku;
 	
@@ -101,12 +102,16 @@ public class Producto {
     }
     
     public int getStockDisponible() {
+
+        // Si tiene variantes
         if (variantes != null && !variantes.isEmpty()) {
             return variantes.stream()
                     .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
                     .sum();
         }
-        return 0;
+
+        // Producto simple sin variantes
+        return stockSimple != null ? stockSimple : 0;
     }
     
     public boolean tieneVariantes() {
@@ -281,6 +286,13 @@ public class Producto {
 
 	public void setImagenUrl(String imagenUrl) {
 		this.imagenUrl = imagenUrl;
+	}
+	public Integer getStockSimple() {
+	    return stockSimple;
+	}
+
+	public void setStockSimple(Integer stockSimple) {
+	    this.stockSimple = stockSimple;
 	}
     
 }

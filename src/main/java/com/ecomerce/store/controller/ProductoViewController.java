@@ -1,7 +1,6 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.ProductoDTO;
-import com.ecomerce.store.dto.ProductoVarianteDTO;
+import com.ecomerce.store.dto.ProductoDTO; 
 import com.ecomerce.store.model.Producto;
 
 import com.ecomerce.store.service.ProductoService;
@@ -89,50 +88,20 @@ public class ProductoViewController {
     @GetMapping("/editar/{id}")
     public String formularioEditar(@PathVariable Long id, Model model) {
 
-        Producto producto = productoService.obtenerProducto(id);
+        //  Obtener DTO ya mapeado correctamente
+        ProductoDTO dto = productoService.obtenerProductoDTO(id);
 
-        ProductoDTO dto = new ProductoDTO();
+        //  Cargar categorías para el select
+        model.addAttribute(
+            "categorias",
+            categoriaService.obtenerTodas()
+        );
 
-        dto.setId(producto.getId());
-        dto.setProductName(producto.getProductName());
-        dto.setPrice(producto.getPrice());
-        dto.setDescription(producto.getDescription());
-        dto.setCategoriaId(producto.getCategoria().getId());
-        dto.setCategoriaNombre(producto.getCategoria().getNombre());
-        dto.setPorcentajeDescuento(producto.getPorcentajeDescuento());
-        dto.setTienePromocion(producto.getTienePromocion());
-
-        /* =========================
-           IMÁGENES
-        ========================= */
-        producto.getImagenes().forEach(img -> {
-            dto.getImagenesExistentes().add(img.getId());
-            dto.getUrlsImagenesExistentes().add(img.getImageUrl());
-        });
-
-        /* =========================
-           VARIANTES
-        ========================= */
-        producto.getVariantes().forEach(variante -> {
-
-            ProductoVarianteDTO vdto =
-                    new ProductoVarianteDTO();
-
-            vdto.setId(variante.getId());
-            vdto.setStock(variante.getStock());
-            vdto.setPrecio(variante.getPrecio());
-
-            variante.getAtributos().forEach(attr -> {
-                vdto.getAtributos()
-                    .put(attr.getNombre(), attr.getValor());
-            });
-
-            dto.getVariantes().add(vdto);
-        });
-
-        model.addAttribute("productoDTO", dto);
-        model.addAttribute("categorias",
-                categoriaService.obtenerTodas());
+        //  Enviar producto al formulario
+        model.addAttribute(
+            "productoDTO",
+            dto
+        );
 
         return "EditarProducto";
     }
@@ -145,47 +114,72 @@ public class ProductoViewController {
             @PathVariable Long id,
             @Valid @ModelAttribute("productoDTO") ProductoDTO dto,
             BindingResult result,
-            @RequestParam(value = "imagenes", required = false) List<MultipartFile> nuevasImagenes,
+            @RequestParam(value = "imagenes", required = false)
+            List<MultipartFile> nuevasImagenes,
             Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("categorias", categoriaService.obtenerTodas());
+            model.addAttribute("categorias",
+                categoriaService.obtenerTodas());
+
             return "EditarProducto";
         }
 
         try {
 
             Producto datos = new Producto();
+
             datos.setProductName(dto.getProductName());
             datos.setPrice(dto.getPrice());
             datos.setDescription(dto.getDescription());
-            datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
+            datos.setPorcentajeDescuento(
+                dto.getPorcentajeDescuento()
+            );
 
-            if (dto.getNuevaCategoria() != null && !dto.getNuevaCategoria().isBlank()) {
+            // 🔥 FIX STOCK SIMPLE
+            datos.setStockSimple(
+                dto.getStockSimple()
+            );
+
+            if (dto.getNuevaCategoria() != null &&
+                !dto.getNuevaCategoria().isBlank()) {
+
                 datos.setCategoria(
-                    categoriaService.obtenerOCrearCategoria(dto.getNuevaCategoria())
+                    categoriaService.obtenerOCrearCategoria(
+                        dto.getNuevaCategoria()
+                    )
                 );
+
             } else {
+
                 datos.setCategoria(
-                    categoriaService.obtenerPorId(dto.getCategoriaId())
+                    categoriaService.obtenerPorId(
+                        dto.getCategoriaId()
+                    )
                 );
             }
 
             productoService.actualizarProductoCompleto(
-                    id,
-                    datos,
-                    nuevasImagenes,
-                    dto.getImagenesEliminar(),
-                    dto.getVariantes()
+                id,
+                datos,
+                nuevasImagenes,
+                dto.getImagenesEliminar(),
+                dto.getVariantes()
             );
 
             return "redirect:/VerProductos";
 
         } catch (Exception e) {
 
-            result.reject("error.producto", "Error al actualizar producto");
+            result.reject(
+                "error.producto",
+                "Error al actualizar producto"
+            );
 
-            model.addAttribute("categorias", categoriaService.obtenerTodas());
+            model.addAttribute(
+                "categorias",
+                categoriaService.obtenerTodas()
+            );
 
             return "EditarProducto";
         }
