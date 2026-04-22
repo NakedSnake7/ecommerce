@@ -1,6 +1,6 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.dto.CategoriaGrupoDTO;     
+import com.ecomerce.store.dto.CategoriaGrupoDTO;      
 
 import com.ecomerce.store.dto.CloudinaryUploadResult;
 import com.ecomerce.store.dto.ProductoDTO;

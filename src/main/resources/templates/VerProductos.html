@@ -424,10 +424,18 @@ th:id="'var-' + ${producto.id}">
 
 <td>
 
-<span th:each="attr : ${var.atributos}">
+<span th:if="${var.atributos != null and !var.atributos.isEmpty()}"
+      th:each="attr,attrStat : ${var.atributos.entrySet()}">
+
 <b th:text="${attr.key}"></b>:
 <span th:text="${attr.value}"></span>
-|
+
+<span th:if="${!attrStat.last}"> | </span>
+
+</span>
+
+<span th:if="${var.atributos == null or var.atributos.isEmpty()}">
+Sin atributos
 </span>
 
 </td>
@@ -440,7 +448,6 @@ $
 </td>
 
 </tr>
-
 </tbody>
 </table>
 
