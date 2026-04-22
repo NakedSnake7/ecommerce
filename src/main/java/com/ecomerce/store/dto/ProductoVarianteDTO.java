@@ -21,6 +21,9 @@ public class ProductoVarianteDTO {
 
     private BigDecimal precio;
 
+    private String color;
+
+    private String talla;
     //  atributos dinámicos tipo Amazon
     @NotEmpty(message = "Debe tener al menos un atributo")
     private Map<String, String> atributos = new HashMap<>();
@@ -110,5 +113,21 @@ public class ProductoVarianteDTO {
 
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
+	}
+
+	public String getTalla() {
+		return talla;
+	}
+
+	public void setTalla(String talla) {
+		this.talla = talla;
 	}
 }

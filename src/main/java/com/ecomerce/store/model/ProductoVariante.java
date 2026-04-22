@@ -22,14 +22,11 @@ public class ProductoVariante {
 	
 
 	public String getNombreVisual() {
+	    Map<String,String> map = getAtributosMap();
 
-	    if (atributos == null || atributos.isEmpty()) {
-	        return "Variante";
-	    }
-
-	    return atributos.stream()
-	            .map(VarianteAtributo::getValor)
-	            .collect(Collectors.joining(" - "));
+	    return map.getOrDefault("Color","") +
+	           " " +
+	           map.getOrDefault("Talla","");
 	}
 
     @Id

@@ -88,11 +88,68 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public List<ProductoDTO> obtenerProductosCompletos(){
 
-        List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
+        return productoRepository
+            .findProductosVisiblesConTodo()
+            .stream()
+            .map(producto -> {
 
-        return productos.stream()
-                .map(ProductoMapper::toDTO)
-                .toList();
+                ProductoDTO dto = ProductoMapper.toDTO(producto);
+
+                // ===============================
+                // VARIANTES CON ATRIBUTOS REALES
+                // ===============================
+                if(producto.getVariantes() != null &&
+                   !producto.getVariantes().isEmpty()){
+
+                    List<ProductoVarianteDTO> variantes =
+                        producto.getVariantes()
+                        .stream()
+                        .map(v -> {
+
+                            ProductoVarianteDTO vd =
+                                new ProductoVarianteDTO();
+
+                            vd.setId(v.getId());
+                            vd.setNombre(v.getNombreVisual());
+                            vd.setStock(v.getStock());
+                            vd.setPrecio(v.getPrecio());
+
+                            // 🔥 CLAVE DEL PROBLEMA
+                            vd.setAtributos(
+                                v.getAtributosMap()
+                            );
+
+                            return vd;
+                        })
+                        .toList();
+
+                    dto.setVariantes(variantes);
+
+                    // ===============================
+                    // PRECIO MINIMO
+                    // ===============================
+                    dto.setPrecioMinimo(
+                        variantes.stream()
+                        .map(x ->
+                            x.getPrecio() != null
+                            ? x.getPrecio()
+                            : dto.getPrecio()
+                        )
+                        .min(BigDecimal::compareTo)
+                        .orElse(dto.getPrecio())
+                    );
+                }
+
+                // ===============================
+                // PRECIO FINAL PROMO
+                // ===============================
+                dto.setPrecioFinal(
+                    dto.getPrecioConDescuento()
+                );
+
+                return dto;
+            })
+            .toList();
     }
     @Transactional(readOnly = true)
     public List<ProductoDTO> obtenerProductosParaPrecios() {
@@ -477,6 +534,7 @@ public class ProductoService {
     // HELPERS
     // ============================================================
 
+
     private void validarProducto(Producto producto) {
 
         if (producto.getProductName() == null || producto.getProductName().isBlank()) {
@@ -618,12 +676,22 @@ public class ProductoService {
         // =====================================
         // DATOS BASE
         // =====================================
-        producto.setProductName(dto.getProductName());
-        producto.setPrice(dto.getPrice());
-        producto.setDescription(dto.getDescription());
+        producto.setProductName(
+            dto.getProductName().trim()
+        );
+
+        producto.setPrice(
+            dto.getPrecio()
+        );
+
+        producto.setDescription(
+            dto.getDescription()
+        );
 
         producto.setCategoria(
-            categoriaService.obtenerPorId(dto.getCategoriaId())
+            categoriaService.obtenerPorId(
+                dto.getCategoriaId()
+            )
         );
 
         producto.setVisibleEnMenu(true);
@@ -631,59 +699,91 @@ public class ProductoService {
         // =====================================
         // PROMOCIÓN
         // =====================================
+        Double descuento =
+            dto.getPorcentajeDescuento() != null
+            ? dto.getPorcentajeDescuento()
+            : 0.0;
+
         producto.setPorcentajeDescuento(
-            dto.getPorcentajeDescuento()
+            descuento
         );
 
         producto.setTienePromocion(
-            dto.getPorcentajeDescuento() != null &&
-            dto.getPorcentajeDescuento() > 0
+            descuento > 0
         );
 
         // =====================================
-        // VARIANTES O PRODUCTO SIMPLE
+        // VARIANTES JSON PRO
         // =====================================
-        if (dto.getVariantes() != null &&
-            !dto.getVariantes().isEmpty()) {
+        if(dto.getVariantes() != null &&
+           !dto.getVariantes().isEmpty()){
 
-            // Si tiene variantes, ignoramos stockSimple
             producto.setStockSimple(0);
 
-            for (ProductoVarianteDTO vDto : dto.getVariantes()) {
+            for(ProductoVarianteDTO vDto :
+                dto.getVariantes()){
+
+                // ignorar basura vacía
+                if(vDto.getStock() == null &&
+                   vDto.getPrecio() == null){
+                    continue;
+                }
 
                 ProductoVariante variante =
                     new ProductoVariante();
 
                 variante.setProducto(producto);
-                variante.setPrecio(vDto.getPrecio());
+
                 variante.setStock(
                     vDto.getStock() != null
                     ? vDto.getStock()
                     : 0
                 );
 
-                // Atributos
-                if (vDto.getAtributos() != null) {
-                    vDto.getAtributos().forEach((k, v) -> {
-                        variante.agregarAtributo(k, v);
+                variante.setPrecio(
+                    vDto.getPrecio() != null
+                    ? vDto.getPrecio()
+                    : dto.getPrecio()
+                );
+
+              
+
+                // atributos dinámicos
+                if(vDto.getAtributos()!=null){
+
+                    vDto.getAtributos()
+                    .forEach((k,v)->{
+
+                        if(v != null &&
+                           !v.isBlank()){
+
+                            variante
+                            .agregarAtributo(
+                                k.trim(),
+                                v.trim()
+                            );
+                        }
+
                     });
                 }
 
-                producto.agregarVariante(variante);
+                producto.agregarVariante(
+                    variante
+                );
             }
 
-        } else {
+        }else{
 
-            // Producto simple SIN variantes
+            // simple product
             producto.setStockSimple(
-            		dto.getStockSimple() != null
+                dto.getStockSimple() != null
                 ? dto.getStockSimple()
                 : 0
             );
         }
 
         // =====================================
-        // GUARDAR
+        // SAVE
         // =====================================
         Producto saved =
             productoRepository.save(producto);
@@ -691,10 +791,14 @@ public class ProductoService {
         // =====================================
         // IMÁGENES
         // =====================================
-        subirImagenesProducto(
-            saved.getId(),
-            imagenes
-        );
+        if(imagenes != null &&
+           !imagenes.isEmpty()){
+
+            subirImagenesProducto(
+                saved.getId(),
+                imagenes
+            );
+        }
 
         return saved;
     }

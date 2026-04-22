@@ -1,9 +1,12 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.ProductoDTO; 
+import com.ecomerce.store.dto.ProductoDTO;
+import com.ecomerce.store.dto.ProductoVarianteDTO;
 import com.ecomerce.store.model.Producto;
 
 import com.ecomerce.store.service.ProductoService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ecomerce.store.service.CategoriaService;
 
 import jakarta.validation.Valid;
@@ -55,33 +58,73 @@ public class ProductoViewController {
     // ==================================================
     // GUARDAR NUEVO
     // ==================================================
+ // CONTROLLER PRO JSON STRIDE
+
     @PostMapping("/nuevo")
     public String guardarProducto(
+
             @Valid @ModelAttribute("producto") ProductoDTO dto,
             BindingResult result,
-            @RequestParam(value = "imagenes", required = false) List<MultipartFile> imagenes,
+
+            @RequestParam(value="imagenes",required=false)
+            List<MultipartFile> imagenes,
+
+            @RequestParam(value="variantesJson",required=false)
+            String variantesJson,
+
             Model model) {
 
-        if (result.hasErrors()) {
-            model.addAttribute("categorias", categoriaService.obtenerTodas());
+        if(result.hasErrors()){
+
+            model.addAttribute(
+                "categorias",
+                categoriaService.obtenerTodas()
+            );
+
             return "subirProducto";
         }
 
-        try {
+        try{
 
-            productoService.crearProducto(dto, imagenes);
+            // convertir JSON -> lista variantes
+            if(variantesJson != null &&
+               !variantesJson.isBlank()){
+
+                ObjectMapper mapper =
+                    new ObjectMapper();
+
+                List<ProductoVarianteDTO> variantes =
+                    mapper.readValue(
+                        variantesJson,
+                        new TypeReference<
+                          List<ProductoVarianteDTO>>() {}
+                    );
+
+                dto.setVariantes(variantes);
+            }
+
+            productoService.crearProducto(dto,imagenes);
 
             return "redirect:/VerProductos";
 
-        } catch (Exception e) {
+        }catch(Exception e){
 
-            result.reject("error.producto", "Error al guardar el producto");
+            e.printStackTrace();
 
-            model.addAttribute("categorias", categoriaService.obtenerTodas());
+            result.reject(
+                "error.producto",
+                "Error al guardar producto"
+            );
+
+            model.addAttribute(
+                "categorias",
+                categoriaService.obtenerTodas()
+            );
 
             return "subirProducto";
         }
     }
+    
     // ==================================================
     // FORMULARIO EDITAR
     // ==================================================

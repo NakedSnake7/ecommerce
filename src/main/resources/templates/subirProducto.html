@@ -3,95 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Subir Producto PRO</title>
+<title>STRIDE Product Manager</title>
 
 <link rel="stylesheet"
 href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
 <style>
 body{
-    background:#1f1f1f;
-    color:#fff;
-    font-family:Arial, sans-serif;
+background:#111;
+color:#fff;
+font-family:Arial,sans-serif;
 }
 
-#particles-js{
-    position:fixed;
-    width:100%;
-    height:100%;
-    top:0;
-    left:0;
-    z-index:-1;
+.wrap{
+max-width:1250px;
+margin:auto;
+padding:40px 20px;
 }
 
-.form-container{
-    max-width:900px;
-    margin:40px auto;
-    background:#2c2c2c;
-    padding:30px;
-    border-radius:10px;
-    box-shadow:0 0 20px rgba(0,0,0,.4);
+.box{
+background:#1b1b1b;
+padding:28px;
+border-radius:18px;
+margin-bottom:25px;
+box-shadow:0 0 25px rgba(0,0,0,.35);
 }
 
-.form-control{
-    background:#3a3a3a;
-    color:#fff;
-    border:1px solid #555;
-}
-
-.form-control:focus{
-    background:#3a3a3a;
-    color:#fff;
-    border-color:#28a745;
-    box-shadow:none;
+.title{
+font-size:34px;
+font-weight:800;
+margin-bottom:25px;
 }
 
 label{
-    font-weight:bold;
+font-weight:700;
+margin-bottom:8px;
 }
 
-.variante-box{
-    background:#232323;
-    border:1px solid #444;
-    border-radius:10px;
-    padding:15px;
-    margin-top:15px;
+input,textarea,select{
+background:#262626 !important;
+color:#fff !important;
+border:1px solid #444 !important;
 }
 
-.talla-row{
-    background:#303030;
-    padding:10px;
-    border-radius:8px;
-    margin-bottom:10px;
+input:focus,textarea:focus,select:focus{
+box-shadow:none !important;
+border-color:#888 !important;
 }
 
-.btn-block{
-    width:100%;
+.color-box{
+background:#232323;
+border:1px solid #333;
+border-radius:16px;
+padding:20px;
+margin-bottom:18px;
 }
 
-.flotante{
-    position:fixed;
-    right:15px;
-    bottom:15px;
+.size-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(78px,1fr));
+gap:10px;
+margin-top:16px;
+}
+
+.size-chip{
+padding:11px;
+border-radius:10px;
+text-align:center;
+cursor:pointer;
+font-weight:700;
+border:1px solid #555;
+transition:.2s;
+}
+
+.size-chip:hover{
+transform:translateY(-2px);
+}
+
+.size-chip.active{
+background:#fff;
+color:#000;
+border-color:#fff;
+}
+
+.table-stock{
+margin-top:18px;
+}
+
+.table-stock td{
+vertical-align:middle;
+padding:8px;
+}
+
+.btn-main{
+background:#fff;
+color:#000;
+border:none;
+font-weight:800;
+padding:15px;
+border-radius:12px;
+width:100%;
+}
+
+.counter{
+font-size:13px;
+color:#aaa;
+margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="particles-js"></div>
-
-<a href="/VerProductos" class="btn btn-success flotante">
-Ver Productos
-</a>
-
-<div class="container">
-
-<div class="form-container">
-
-<h2 class="text-center mb-4">
-Subir Producto Profesional
-</h2>
+<div class="wrap">
 
 <form id="productoForm"
 th:action="@{/nuevo}"
@@ -99,97 +123,67 @@ th:object="${producto}"
 method="post"
 enctype="multipart/form-data">
 
-<!-- NOMBRE -->
+<!-- JSON -->
+<input type="hidden"
+name="variantesJson"
+id="variantesJson">
+
+<!-- INFO -->
+<div class="box">
+
+<div class="title">PRODUCT MANAGER</div>
+
 <div class="form-group">
-<label>Nombre del producto</label>
+<label>Nombre Producto</label>
 <input type="text"
 th:field="*{productName}"
 class="form-control"
 required>
 </div>
 
-<!-- PRECIO -->
+<div class="row">
+
+<div class="col-md-4">
 <div class="form-group">
-<label>Precio base</label>
+<label>Precio Base</label>
 <input type="number"
 step="0.01"
+id="precioBase"
 th:field="*{price}"
-class="form-control"
-required>
-</div>
-
-<!-- STOCK GENERAL -->
-<div class="form-group" id="stockGeneralBox">
-<label>Stock general</label>
-<input type="number"
-min="0"
-th:field="*{stockSimple}"
 class="form-control">
 </div>
-
-<!-- DESCRIPCION -->
-<div class="form-group">
-<label>Descripción</label>
-<textarea
-th:field="*{description}"
-rows="4"
-class="form-control"></textarea>
 </div>
 
-<!-- CATEGORIA -->
+<div class="col-md-4">
 <div class="form-group">
 <label>Categoría</label>
-
 <select class="form-control"
-th:field="*{categoriaId}"
-id="categoriaSelect">
-
+th:field="*{categoriaId}">
 <option value="">Selecciona</option>
-
-<option th:each="cat : ${categorias}"
+<option th:each="cat:${categorias}"
 th:value="${cat.id}"
 th:text="${cat.nombre}">
 </option>
-
 </select>
 </div>
-
-<!-- NUEVA -->
-<div class="form-group">
-<label>Nueva categoría</label>
-<input type="text"
-th:field="*{nuevaCategoria}"
-class="form-control">
 </div>
 
-<!-- ATRIBUTOS -->
-<div class="form-group">
-<label>Atributos sugeridos</label>
-<div id="atributosCategoria"></div>
-</div>
-
-<hr>
-
-<h4>Variantes Color + Talla</h4>
-
-<div id="variantes-container"></div>
-
-<button type="button"
-class="btn btn-info mt-2"
-onclick="agregarColor()">
-
-+ Agregar Color
-</button>
-
-<hr>
-
+<div class="col-md-4">
 <div class="form-group">
 <label>Descuento %</label>
 <input type="number"
-min="0"
-max="100"
 th:field="*{porcentajeDescuento}"
 class="form-control">
+</div>
+</div>
+
+</div>
+
+<div class="form-group">
+<label>Descripción</label>
+<textarea rows="4"
+th:field="*{description}"
+class="form-control"></textarea>
 </div>
 
 <div class="form-group">
@@ -200,347 +194,240 @@ multiple
 class="form-control">
 </div>
 
-<button type="submit"
-class="btn btn-success btn-lg btn-block">
+</div>
 
-Guardar Producto
+<!-- VARIANTES -->
+<div class="box">
+
+<h4>Variantes Premium</h4>
+
+<div id="colorsWrap"></div>
+
+<button type="button"
+class="btn btn-success mt-2"
+onclick="addColor()">
+
++ Agregar Color
+
 </button>
+
+<div class="counter"
+id="counterInfo">
+0 variantes creadas
+</div>
+
+</div>
+
+<!-- SAVE -->
+<div class="box">
+<button class="btn-main">
+GUARDAR PRODUCTO
+</button>
+</div>
 
 </form>
 </div>
-</div>
 
 <script>
-/* ======================================
-ATRIBUTOS AUTOMÁTICOS
-====================================== */
-const atributosPorCategoria = {
-    ropa: ["Color", "Talla", "Material", "Género"],
-    zapatos: ["Color", "Número", "Material"],
-    tenis: ["Color", "Número", "Deporte"],
-    celular: ["Color", "RAM", "Almacenamiento"],
-    laptop: ["RAM", "SSD", "Procesador"],
-    reloj: ["Color", "Correa", "Tamaño"],
-    perfume: ["Aroma", "ML", "Género"]
-};
+const tallas=[
+"22","22.5","23","23.5",
+"24","24.5","25","25.5",
+"26","26.5","27","27.5",
+"28","28.5","29"
+];
 
-document.addEventListener("DOMContentLoaded", () => {
+let variantes=[];
 
-    const categoria = document.getElementById("categoriaSelect");
+function addColor(){
 
-    if (categoria) {
-        categoria.addEventListener("change", cargarAtributos);
-        cargarAtributos();
-    }
+const wrap=document.getElementById("colorsWrap");
 
-    const form = document.getElementById("productoForm");
+wrap.insertAdjacentHTML("beforeend",`
 
-    if (form) {
-        form.addEventListener("submit", sincronizarTodoAntesDeEnviar);
-    }
+<div class="color-box">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+<input type="text"
+class="form-control color-name mr-2"
+placeholder="Nombre color">
+
+<button type="button"
+class="btn btn-danger btn-sm"
+onclick="removeColor(this)">
+
+Eliminar
+
+</button>
+
+</div>
+
+<div class="size-grid"></div>
+
+<table class="table table-dark table-stock">
+<thead>
+<tr>
+<th>Talla</th>
+<th>Stock</th>
+<th>Precio</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+
+`);
+
+const box=wrap.lastElementChild;
+const grid=box.querySelector(".size-grid");
+
+tallas.forEach(t=>{
+
+const chip=document.createElement("div");
+chip.className="size-chip";
+chip.textContent=t;
+
+chip.onclick=()=>toggleSize(box,t,chip);
+
+grid.appendChild(chip);
+
 });
 
-function cargarAtributos() {
-
-    const select = document.getElementById("categoriaSelect");
-    const box = document.getElementById("atributosCategoria");
-
-    if (!select || !box) return;
-
-    const texto =
-        select.options[select.selectedIndex]
-        ?.text
-        .toLowerCase()
-        .trim();
-
-    box.innerHTML = "";
-
-    let lista = [];
-
-    for (let key in atributosPorCategoria) {
-        if (texto.includes(key)) {
-            lista = atributosPorCategoria[key];
-            break;
-        }
-    }
-
-    if (lista.length === 0) {
-        box.innerHTML =
-            '<small class="text-muted">Sin atributos sugeridos</small>';
-        return;
-    }
-
-    lista.forEach(attr => {
-        box.innerHTML += `
-        <span class="badge badge-success mr-2 mb-2 p-2">
-            ${attr}
-        </span>`;
-    });
-}
-</script>
-
-<script>
-/* ======================================
-VARIANTES COLOR + TALLA
-====================================== */
-let colorIndex = 0;
-let varianteIndex = 0;
-
-function agregarColor() {
-
-    const stockGeneral =
-        document.getElementById("stockGeneralBox");
-
-    if (stockGeneral) {
-        stockGeneral.style.display = "none";
-    }
-
-    const container =
-        document.getElementById("variantes-container");
-
-    container.insertAdjacentHTML(
-        "beforeend",
-        `
-<div class="variante-box border rounded p-3 mt-3 bg-dark">
-
-    <div class="d-flex justify-content-between mb-3">
-        <h5 class="m-0 text-success">
-            Color #${colorIndex + 1}
-        </h5>
-
-        <button type="button"
-            class="btn btn-danger btn-sm"
-            onclick="eliminarColor(this)">
-            Eliminar
-        </button>
-    </div>
-
-    <input type="text"
-        class="form-control mb-3 nombre-color"
-        placeholder="Ej: Negro">
-
-    <div class="tallas-box"></div>
-
-    <button type="button"
-        class="btn btn-secondary btn-sm"
-        onclick="agregarTalla(this)">
-        + Agregar Talla
-    </button>
-
-</div>
-`
-    );
-
-    colorIndex++;
 }
 
-function eliminarColor(btn) {
+function toggleSize(box,talla,chip){
 
-    btn.closest(".variante-box").remove();
+chip.classList.toggle("active");
 
-    const quedan =
-        document.querySelectorAll(".variante-box");
+const tbody=box.querySelector("tbody");
 
-    if (quedan.length === 0) {
-        const stockGeneral =
-            document.getElementById("stockGeneralBox");
+if(chip.classList.contains("active")){
 
-        if (stockGeneral) {
-            stockGeneral.style.display = "block";
-        }
-    }
+tbody.insertAdjacentHTML("beforeend",`
+
+<tr data-size="${talla}">
+
+<td>${talla}</td>
+
+<td>
+<input type="number"
+class="form-control stock"
+min="0"
+value="0">
+</td>
+
+<td>
+<input type="number"
+class="form-control price"
+step="0.01"
+value="${document.getElementById('precioBase').value || 0}">
+</td>
+
+<td>
+<button type="button"
+class="btn btn-danger btn-sm"
+onclick="removeRow(this,'${talla}')">
+
+X
+
+</button>
+</td>
+
+</tr>
+
+`);
+
+bindInputs(box);
+
+}else{
+
+const row=tbody.querySelector('[data-size="'+talla+'"]');
+if(row) row.remove();
+
 }
 
-function agregarTalla(btn) {
+syncVariantes();
 
-    const box =
-        btn.closest(".variante-box");
-
-    const tallas =
-        box.querySelector(".tallas-box");
-
-    tallas.insertAdjacentHTML(
-        "beforeend",
-        `
-<div class="talla-row border rounded p-2 mb-2">
-
-    <div class="row">
-
-        <div class="col-md-3 mb-2">
-            <input type="text"
-                class="form-control talla-input"
-                placeholder="Talla">
-        </div>
-
-        <div class="col-md-3 mb-2">
-            <input type="number"
-                min="0"
-                class="form-control stock-input"
-                placeholder="Stock">
-        </div>
-
-        <div class="col-md-3 mb-2">
-            <input type="number"
-                min="0"
-                step="0.01"
-                class="form-control precio-input"
-                placeholder="Precio">
-        </div>
-
-        <div class="col-md-3 mb-2">
-            <button type="button"
-                class="btn btn-danger btn-block"
-                onclick="eliminarTalla(this)">
-                X
-            </button>
-        </div>
-
-    </div>
-
-    <input type="hidden"
-        name="variantes[${varianteIndex}].atributos[Color]"
-        class="hidden-color">
-
-    <input type="hidden"
-        name="variantes[${varianteIndex}].atributos[Talla]"
-        class="hidden-talla">
-
-    <input type="hidden"
-        name="variantes[${varianteIndex}].stock"
-        class="hidden-stock">
-
-    <input type="hidden"
-        name="variantes[${varianteIndex}].precio"
-        class="hidden-precio">
-
-</div>
-`
-    );
-
-    const row = tallas.lastElementChild;
-
-    const colorInput = box.querySelector(".nombre-color");
-    const talla = row.querySelector(".talla-input");
-    const stock = row.querySelector(".stock-input");
-    const precio = row.querySelector(".precio-input");
-
-    const hColor = row.querySelector(".hidden-color");
-    const hTalla = row.querySelector(".hidden-talla");
-    const hStock = row.querySelector(".hidden-stock");
-    const hPrecio = row.querySelector(".hidden-precio");
-
-    function sync() {
-        hColor.value = colorInput.value.trim();
-        hTalla.value = talla.value.trim();
-        hStock.value = stock.value;
-        hPrecio.value = precio.value;
-    }
-
-    colorInput.addEventListener("input", sync);
-    talla.addEventListener("input", sync);
-    stock.addEventListener("input", sync);
-    precio.addEventListener("input", sync);
-
-    sync();
-
-    varianteIndex++;
 }
 
-function eliminarTalla(btn) {
-    btn.closest(".talla-row").remove();
+function removeRow(btn,talla){
+
+const row=btn.closest("tr");
+const box=btn.closest(".color-box");
+
+row.remove();
+
+box.querySelectorAll(".size-chip").forEach(ch=>{
+if(ch.textContent===talla){
+ch.classList.remove("active");
+}
+});
+
+syncVariantes();
+
 }
 
-/* ======================================
-SYNC GLOBAL ANTES DE SUBMIT
-====================================== */
-function sincronizarTodoAntesDeEnviar() {
+function removeColor(btn){
 
-    document.querySelectorAll(".talla-row").forEach(row => {
+btn.closest(".color-box").remove();
 
-        const box =
-            row.closest(".variante-box");
+syncVariantes();
 
-        row.querySelector(".hidden-color").value =
-            box.querySelector(".nombre-color").value.trim();
-
-        row.querySelector(".hidden-talla").value =
-            row.querySelector(".talla-input").value.trim();
-
-        row.querySelector(".hidden-stock").value =
-            row.querySelector(".stock-input").value;
-
-        row.querySelector(".hidden-precio").value =
-            row.querySelector(".precio-input").value;
-    });
 }
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+function bindInputs(box){
 
-<script>
-particlesJS("particles-js",{
-	  "particles": {
-		    "number": {
-		      "value": 90,
-		      "density": { "enable": true, "value_area": 900 }
-		    },
-		    "color": {
-		      "value": ["#00ffcc", "#2bff99", "#00e6b8"]
-		    },
-		    "shape": { "type": "circle" },
-		    "opacity": {
-		      "value": 0.35,
-		      "random": true,
-		      "anim": {
-		        "enable": true,
-		        "speed": 0.8,
-		        "opacity_min": 0.05,
-		        "sync": false
-		      }
-		    },
-		    "size": {
-		      "value": 4,
-		      "random": true,
-		      "anim": {
-		        "enable": true,
-		        "speed": 2,
-		        "size_min": 0.6,
-		        "sync": false
-		      }
-		    },
-		    "line_linked": {
-		      "enable": true,
-		      "distance": 150,
-		      "color": "#00ffcc",
-		      "opacity": 0.35,
-		      "width": 1
-		    },
-		    "move": {
-		      "enable": true,
-		      "speed": 1.3,
-		      "direction": "none",
-		      "random": true,
-		      "straight": false,
-		      "out_mode": "out",
-		      "bounce": false
-		    }
-		  },
-		  "interactivity": {
-		    "detect_on": "canvas",
-		    "events": {
-		      "onhover": { "enable": true, "mode": "grab" },
-		      "onclick": { "enable": false },
-		      "resize": true
-		    },
-		    "modes": {
-		      "grab": { 
-		        "distance": 200,
-		        "line_linked": { "opacity": 0.8 }
-		      }
-		    }
-		  },
-		  "retina_detect": true
-		});
+box.querySelectorAll("input").forEach(i=>{
+i.oninput=syncVariantes;
+});
+
+}
+
+function syncVariantes(){
+
+variantes=[];
+
+document.querySelectorAll(".color-box").forEach(box=>{
+
+const color=
+box.querySelector(".color-name").value.trim();
+
+box.querySelectorAll("tbody tr").forEach(row=>{
+
+variantes.push({
+
+color:color || "Sin color",
+talla:row.dataset.size,
+stock:Number(row.querySelector(".stock").value || 0),
+precio:Number(row.querySelector(".price").value || 0)
+
+});
+
+});
+
+});
+
+document.getElementById("variantesJson").value=
+JSON.stringify(variantes);
+
+document.getElementById("counterInfo").textContent=
+variantes.length+" variantes creadas";
+
+console.log(variantes);
+
+}
+
+document
+.getElementById("productoForm")
+.addEventListener("submit",function(){
+
+syncVariantes();
+
+});
+
+addColor();
 </script>
 
 </body>

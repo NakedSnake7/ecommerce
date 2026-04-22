@@ -1,615 +1,68 @@
 <!DOCTYPE html>
 <html lang="es"
 xmlns:th="http://www.thymeleaf.org"
-th:replace="~{layout/main :: layout(
-    ${producto.productName},
-    ~{::section}
-)}">
-
+th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
 <section>
-
 <style>
-/* ========= ORIGINAL DARK PREMIUM ========= */
-
-.product-wrap{
-  max-width:1400px;
-  margin:auto;
-  padding:60px 5%;
-}
-
-.product-detail{
-  display:grid;
-  grid-template-columns:1.08fr 1fr;
-  gap:70px;
-}
-
-/* ===== GALERIA ===== */
-
-.product-gallery{
-  position:sticky;
-  top:110px;
-}
-
-.gallery-box{
-  background:#111;
-  border-radius:22px;
-  overflow:hidden;
-}
-
-.main-image{
-  width:100%;
-  aspect-ratio:1/1;
-  object-fit:cover;
-  cursor:zoom-in;
-  transition:transform .25s ease;
-}
-
-.main-image.zoom{
-  transform:scale(1.65);
-  cursor:zoom-out;
-}
-
-.thumbs{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-  overflow:auto;
-}
-
-.thumb{
-  width:72px;
-  height:72px;
-  border-radius:14px;
-  object-fit:cover;
-  cursor:pointer;
-  border:2px solid transparent;
-  transition:.2s;
-}
-
-.thumb.active{
-  border-color:#000;
-}
-
-/* ===== INFO ===== */
-
-.category{
-  color:#777;
-  font-size:13px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
-.product-info h1{
-  font-size:40px;
-  line-height:1.05;
-  margin:10px 0 20px;
-  color:#111;
-}
-
-.price-row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-}
-
-.price-old{
-  text-decoration:line-through;
-  color:#999;
-  font-size:18px;
-}
-
-.price-final{
-  font-size:38px;
-  font-weight:800;
-  color:#111;
-}
-
-.discount-badge{
-  background:#111;
-  color:#fff;
-  padding:5px 10px;
-  border-radius:999px;
-  font-size:12px;
-}
-
-.stock{
-  margin:18px 0;
-  font-size:14px;
-  font-weight:600;
-}
-
-.stock.ok{color:#0c8a38;}
-.stock.low{color:#d32f2f;}
-
-.urgency{
-  background:#fff4f4;
-  color:#d32f2f;
-  padding:10px 14px;
-  border-radius:12px;
-  font-size:13px;
-  font-weight:700;
-  margin:15px 0;
-}
-
-/* ===== VARIANTES ===== */
-
-.variant-group{
-  margin:26px 0;
-}
-
-.variant-group p{
-  font-weight:700;
-  margin-bottom:10px;
-}
-
-.variant-options{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-}
-
-.variant-options button{
-  padding:11px 16px;
-  border-radius:999px;
-  border:1px solid #ddd;
-  background:#fff;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.variant-options button:hover{
-  border-color:#000;
-}
-
-.variant-options button.active{
-  background:#000;
-  color:#fff;
-}
-
-.variant-options button:disabled{
-  opacity:.35;
-  cursor:not-allowed;
-}
-
-/* ===== CTA ===== */
-
-.cta-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:28px;
-}
-
-.btn-main,
-.btn-wa{
-  border:none;
-  padding:16px;
-  border-radius:14px;
-  font-size:15px;
-  font-weight:700;
-  cursor:pointer;
-  transition:.25s;
-}
-
-.btn-main{
-  background:#000;
-  color:#fff;
-}
-
-.btn-main:hover{
-  background:#1a1a1a;
-}
-
-.btn-wa{
-  background:#25D366;
-  color:#fff;
-}
-
-.btn-wa:hover{
-  filter:brightness(.95);
-}
-
-/* ===== INFO CARDS ===== */
-
-.info-box{
-  margin-top:26px;
-  padding:22px;
-  border:1px solid #eee;
-  border-radius:18px;
-}
-
-.info-box h3{
-  margin-bottom:10px;
-}
-
-.info-box p{
-  color:#555;
-  line-height:1.7;
-}
-
-.info-box ul{
-  list-style:none;
-  padding:0;
-  margin:0;
-  display:grid;
-  gap:10px;
-}
-
-/* ===== MOBILE STICKY ===== */
-
-.mobile-bar{
-  display:none;
-}
-
-@media(max-width:768px){
-
-  .product-wrap{
-    padding:25px 4%;
-  }
-
-  .product-detail{
-    grid-template-columns:1fr;
-    gap:30px;
-  }
-
-  .product-gallery{
-    position:relative;
-    top:0;
-  }
-
-  .product-info h1{
-    font-size:28px;
-  }
-
-  .price-final{
-    font-size:30px;
-  }
-
-  .variant-options{
-    flex-wrap:nowrap;
-    overflow:auto;
-    padding-bottom:6px;
-  }
-
-  .cta-grid{
-    grid-template-columns:1fr;
-  }
-
-  .mobile-bar{
-    display:flex;
-    position:fixed;
-    left:0;
-    right:0;
-    bottom:0;
-    background:#fff;
-    padding:10px;
-    gap:10px;
-    z-index:999;
-    box-shadow:0 -8px 20px rgba(0,0,0,.08);
-  }
-
-  .mobile-bar button{
-    flex:1;
-    border:none;
-    padding:14px;
-    border-radius:12px;
-    font-weight:700;
-  }
-
-  .mobile-cart{
-    background:#000;
-    color:#fff;
-  }
-
-  .mobile-wa{
-    background:#25D366;
-    color:#fff;
-  }
-
-  body{
-    padding-bottom:90px;
-  }
-
-}
+:root{--bg:#ffffff;--text:#111;--muted:#777;--line:#ececec;--brand:#000;--soft:#f7f7f7;--radius:18px}
+.product-wrap{max-width:1450px;margin:auto;padding:40px 5%}
+.breadcrumbs{font-size:13px;color:var(--muted);margin-bottom:20px}
+.product-detail{display:grid;grid-template-columns:100px 1fr 1fr;gap:28px}
+.thumbs{display:flex;flex-direction:column;gap:10px}.thumb{width:88px;height:88px;object-fit:cover;border:1px solid var(--line);border-radius:16px;cursor:pointer}.thumb.active{border-color:#000}
+.gallery-box{background:var(--soft);border-radius:24px;overflow:hidden;position:sticky;top:100px}.main-image{width:100%;aspect-ratio:1/1;object-fit:cover;transition:.3s}.gallery-box:hover .main-image{transform:scale(1.12)}
+.badges{display:flex;gap:8px;margin-bottom:12px}.badge{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}.hot{background:#111;color:#fff}.sale{background:#eaf8ec;color:#0b8a35}
+.product-info h1{font-size:42px;line-height:1.05;margin:8px 0 18px}.price-final{font-size:38px;font-weight:800}.price-old{text-decoration:line-through;color:#999;margin-right:10px}.stars{color:#f5a623;font-size:14px;margin:10px 0}
+.progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin:14px 0}.progress>span{display:block;height:100%;width:78%;background:#111}
+.variant-group{margin:24px 0}.variant-group p{font-weight:700;margin-bottom:10px}.variant-options{display:flex;gap:10px;flex-wrap:wrap}.variant-options button{border:1px solid var(--line);background:#fff;padding:14px 10px;border-radius:4px;cursor:pointer;font-weight:700;min-height:52px;position:relative}.variant-options button.out{color:#999;background:#f3f3f3}.variant-options button.out:after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(to top right,transparent 48%,#bdbdbd 49%,#bdbdbd 51%,transparent 52%)}.variant-options button.active{background:#111;color:#fff}
+.qty-row{display:flex;gap:12px;align-items:center;margin:18px 0}.qty{display:flex;border:1px solid var(--line);border-radius:14px;overflow:hidden}.qty button,.qty input{border:none;background:#fff;height:46px}.qty button{width:46px;cursor:pointer}.qty input{width:52px;text-align:center}
+.cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{padding:16px;border:none;border-radius:14px;font-weight:800;cursor:pointer}.btn-main{background:#000;color:#fff}.btn-wa{background:#25D366;color:#fff}
+.tabs{margin-top:28px;border:1px solid var(--line);border-radius:20px;overflow:hidden}.tab-head{display:grid;grid-template-columns:repeat(3,1fr)}.tab-head button{padding:14px;border:none;background:#fff;border-bottom:1px solid var(--line);cursor:pointer}.tab-head button.active{background:#111;color:#fff}.tab-body{padding:22px}
+.sticky-buy{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 4%;display:none;gap:10px;z-index:999}
+@media(max-width:900px){.product-detail{grid-template-columns:1fr}.thumbs{order:2;flex-direction:row;overflow:auto}.gallery-box{position:relative;top:0}.product-info h1{font-size:30px}.cta-grid{grid-template-columns:1fr}.sticky-buy{display:flex}.product-wrap{padding-bottom:90px}}
 </style>
-
-<div class="product-wrap">
-
-<div class="product-detail">
-
-<!-- ===== GALERIA ===== -->
-<div class="product-gallery">
-
-  <div class="gallery-box">
-    <img id="mainImage"
-         class="main-image"
-         th:src="${producto.imageUrl}"
-         th:alt="${producto.productName}">
-  </div>
-
-  <div class="thumbs">
-
-    <img class="thumb active"
-         th:src="${producto.imageUrl}">
-
-    <img class="thumb"
-         th:each="img : ${producto.urlsImagenesExistentes}"
-         th:src="${img}">
-  </div>
-
+<div class='product-wrap'>
+<div class='breadcrumbs'>Inicio / Tenis / <span th:text='${producto.productName}'></span></div>
+<div class='product-detail'>
+<div class='thumbs'>
+<img class='thumb active' th:src='${producto.imageUrl}'>
+<img class='thumb' th:each='img:${producto.urlsImagenesExistentes}' th:src='${img}'>
 </div>
-
-<!-- ===== INFO ===== -->
-<div class="product-info">
-
-<p class="category" th:text="${producto.categoriaNombre}"></p>
-
-<h1 th:text="${producto.productName}"></h1>
-
-<div class="price-row">
-
-<span class="price-old"
-      th:if="${producto.tienePromocion}"
-      th:text="|$${producto.precio}|"></span>
-
-<span class="price-final" id="price"></span>
-
-<span class="discount-badge"
-      th:if="${producto.tienePromocion}">
-  -[[${producto.porcentajeDescuento}]]%
-</span>
-
+<div class='gallery-box'><img id='mainImage' class='main-image' th:src='${producto.imageUrl}'></div>
+<div class='product-info'>
+<div class='badges'><span class='badge hot'>STRIDE HOT</span><span class='badge sale' th:if='${producto.tienePromocion}'>OFERTA</span></div>
+<h1 th:text='${producto.productName}'></h1>
+<div class='stars'>★★★★★ <span style='color:#777'>(124 reseñas)</span></div>
+<div><span class='price-old' th:if='${producto.tienePromocion}'>$<span th:text='${producto.price}'></span></span><span id='price' class='price-final'></span></div>
+<div class='progress'><span></span></div><small>78% vendido esta semana</small>
+<p id='stock'></p>
+<div class='variant-group'><p>Opciones disponibles</p><div id='variantsContainer' th:if='${producto.tieneVariantes}' class='variant-options' style='display:grid;grid-template-columns:repeat(4,1fr);gap:10px'></div><div id='sizeUrgency' style='margin-top:14px;color:#e53935;font-weight:700'></div><div style='height:6px;background:#eee;border-radius:999px;margin-top:10px;overflow:hidden'><div id='stockBar' style='height:100%;width:20%;background:#111'></div></div></div>
+<div class='qty-row'><strong>Cantidad</strong><div class='qty'><button onclick='chg(-1)'>-</button><input id='qty' value='1'><button onclick='chg(1)'>+</button></div></div>
+<div class='cta-grid'><button id='btnComprar' class='btn btn-main'>Agregar al carrito</button><button id='btnWhatsapp' class='btn btn-wa'>WhatsApp</button></div>
+<div class='info-box' style='margin-top:24px;border:1px solid #ececec;border-radius:20px;padding:22px'>
+<h3 style='margin-top:0'>Guía de Tallas STRIDE</h3>
+<table style='width:100%;border-collapse:collapse;font-size:14px'>
+<tr style='background:#f7f7f7'><th style='padding:10px;text-align:left'>MX</th><th style='padding:10px;text-align:left'>US</th><th style='padding:10px;text-align:left'>CM</th></tr>
+<tr><td style='padding:10px;border-top:1px solid #eee'>25</td><td style='padding:10px;border-top:1px solid #eee'>7</td><td style='padding:10px;border-top:1px solid #eee'>25 cm</td></tr>
+<tr><td style='padding:10px;border-top:1px solid #eee'>26</td><td style='padding:10px;border-top:1px solid #eee'>8</td><td style='padding:10px;border-top:1px solid #eee'>26 cm</td></tr>
+<tr><td style='padding:10px;border-top:1px solid #eee'>27</td><td style='padding:10px;border-top:1px solid #eee'>9</td><td style='padding:10px;border-top:1px solid #eee'>27 cm</td></tr>
+<tr><td style='padding:10px;border-top:1px solid #eee'>28</td><td style='padding:10px;border-top:1px solid #eee'>10</td><td style='padding:10px;border-top:1px solid #eee'>28 cm</td></tr>
+<tr><td style='padding:10px;border-top:1px solid #eee'>29</td><td style='padding:10px;border-top:1px solid #eee'>11</td><td style='padding:10px;border-top:1px solid #eee'>29 cm</td></tr>
+</table>
+<small style='color:#777'>Tip: si estás entre dos tallas, elige la mayor.</small>
 </div>
-
-<p id="stock" class="stock"></p>
-
-<div id="urgencyBox" class="urgency"></div>
-
-<!-- VARIANTES -->
-<div id="variantsContainer"></div>
-
-<!-- CTA -->
-<div class="cta-grid">
-
-<button id="btnComprar" class="btn-main">
-🛒 Agregar al carrito
-</button>
-
-<button id="btnWhatsapp" class="btn-wa">
-Comprar por WhatsApp
-</button>
-
-</div>
-
-<!-- DESC -->
-<div class="info-box">
-<h3>Descripción</h3>
-<p th:text="${producto.description}"></p>
-</div>
-
-<!-- TRUST -->
-<div class="info-box">
-<ul>
-<li>🚚 Envíos rápidos a todo México</li>
-<li>🔒 Compra segura</li>
-<li>💳 Tarjeta / Transferencia</li>
-<li>↩️ Garantía de satisfacción</li>
-</ul>
-</div>
-
-</div>
-</div>
-</div>
-
-<!-- MOBILE BAR -->
-<div class="mobile-bar">
-<button class="mobile-cart" id="mobileCart">Agregar</button>
-<button class="mobile-wa" id="mobileWa">WhatsApp</button>
-</div>
-
-<script th:inline="javascript">
-const variantes = /*[[${producto.variantes}]]*/ [];
-const precioBase = /*[[${producto.precioConDescuento}]]*/ 0;
-const descuento = /*[[${producto.porcentajeDescuento}]]*/ 0;
-const tienePromo = /*[[${producto.tienePromocion}]]*/ false;
-const productoNombre = /*[[${producto.productName}]]*/ '';
-</script>
-
+<div class='tabs'><div class='tab-head'><button class='active' onclick='tab(0,this)'>Descripción</button><button onclick='tab(1,this)'>Envíos</button><button onclick='tab(2,this)'>Cambios</button></div><div class='tab-body' id='tabBody' th:text='${producto.description}'></div></div>
+</div></div></div>
+<div class='sticky-buy'><button class='btn btn-main' style='flex:1' onclick='addCart()'>Comprar ahora</button><button class='btn btn-wa' onclick='wa()'>WA</button></div>
+<script th:inline='javascript'>const variantes=/*[[${producto.variantes}]]*/[];const precioBase=/*[[${producto.precioFinal}]]*/0;const tienePromo=/*[[${producto.tienePromocion}]]*/false;const descuento=/*[[${producto.porcentajeDescuento}]]*/0;const productoId=/*[[${producto.id}]]*/0;const productoNombre=/*[[${producto.productName}]]*/'';</script>
 <script>
-const priceEl = document.getElementById("price");
-const stockEl = document.getElementById("stock");
-const urgencyBox = document.getElementById("urgencyBox");
-const container = document.getElementById("variantsContainer");
-
-let selected = {};
-
-const money = n => "$" + Number(n).toFixed(2);
-
-priceEl.textContent = money(precioBase);
-
-/* ===== ZOOM ===== */
-const mainImage = document.getElementById("mainImage");
-
-mainImage.onclick = ()=>{
-  mainImage.classList.toggle("zoom");
-};
-
-/* ===== GALLERY ===== */
-document.querySelectorAll(".thumb").forEach(t=>{
-  t.onclick = ()=>{
-    mainImage.src = t.src;
-
-    document.querySelectorAll(".thumb")
-      .forEach(x=>x.classList.remove("active"));
-
-    t.classList.add("active");
-  };
-});
-
-/* ===== VARIANTES ===== */
-
-const vars = variantes.map(v=>({
-  id:v.id,
-  precio:Number(v.precio),
-  stock:Number(v.stock),
-  atributos:v.atributos
-}));
-
-const attrs = {};
-
-vars.forEach(v=>{
-  Object.entries(v.atributos).forEach(([k,val])=>{
-    if(!attrs[k]) attrs[k] = new Set();
-    attrs[k].add(val);
-  });
-});
-
-function renderVariants(){
-
-container.innerHTML="";
-
-Object.entries(attrs).forEach(([name,vals])=>{
-
- const g = document.createElement("div");
- g.className="variant-group";
-
- g.innerHTML=`<p>${name}</p>`;
-
- const wrap = document.createElement("div");
- wrap.className="variant-options";
-
- vals.forEach(v=>{
-
-   const b = document.createElement("button");
-   b.textContent=v;
-
-   b.onclick=()=>{
-     selected[name]=v;
-     updateUI();
-     updateActive();
-   };
-
-   b.dataset.attr=name;
-   b.dataset.value=v;
-
-   wrap.appendChild(b);
- });
-
- g.appendChild(wrap);
- container.appendChild(g);
-
-});
-
-}
-
-function findVariant(){
- return vars.find(v =>
-   Object.entries(selected)
-   .every(([k,val]) => v.atributos[k]===val)
- );
-}
-
-function updateUI(){
-
- const v = findVariant();
-
- if(!v){
-   stockEl.textContent="Selecciona variante";
-   return;
- }
-
- let price = v.precio;
-
- if(tienePromo){
-   price = price - (price*descuento/100);
- }
-
- priceEl.textContent = money(price);
-
- if(v.stock > 5){
-   stockEl.textContent=`Disponible (${v.stock})`;
-   stockEl.className="stock ok";
-   urgencyBox.textContent=`${Math.floor(Math.random()*7)+2} personas viendo este producto`;
- }
-
- else if(v.stock > 0){
-   stockEl.textContent=`Últimas piezas (${v.stock})`;
-   stockEl.className="stock low";
-   urgencyBox.textContent=`Solo quedan ${v.stock} disponibles`;
- }
-
- else{
-   stockEl.textContent="Agotado";
-   stockEl.className="stock low";
-   urgencyBox.textContent="Sin stock";
- }
-
-}
-
-function updateActive(){
-document.querySelectorAll(".variant-options button")
-.forEach(btn=>{
- btn.classList.toggle(
-   "active",
-   selected[btn.dataset.attr]===btn.dataset.value
- );
-});
-}
-
-renderVariants();
-
-if(vars.length){
- selected = {...vars[0].atributos};
- updateUI();
- updateActive();
-}
-
-/* ===== AJAX CART ===== */
-
-async function addCart(){
-
- const v = findVariant();
-
- const body = {
-   productoId: v ? v.id : null,
-   cantidad:1
- };
-
- try{
-   const r = await fetch("/carrito/agregar",{
-     method:"POST",
-     headers:{
-       "Content-Type":"application/json"
-     },
-     body:JSON.stringify(body)
-   });
-
-   if(r.ok){
-     alert("Producto agregado");
-   }
- }catch(e){
-   alert("Error");
- }
-
-}
-
-document.getElementById("btnComprar").onclick = addCart;
-document.getElementById("mobileCart").onclick = addCart;
-
-/* ===== WHATSAPP ===== */
-
-function wa(){
-
- const txt = `Hola quiero comprar: ${productoNombre}`;
- const url = `https://wa.me/5210000000000?text=${encodeURIComponent(txt)}`;
- window.open(url,"_blank");
-
-}
-
-document.getElementById("btnWhatsapp").onclick = wa;
-document.getElementById("mobileWa").onclick = wa;
+const money=n=>'$'+Number(n).toFixed(2);const priceEl=document.getElementById('price');const stockEl=document.getElementById('stock');priceEl.textContent=money(precioBase);
+document.querySelectorAll('.thumb').forEach(t=>t.onclick=()=>{mainImage.src=t.src;document.querySelectorAll('.thumb').forEach(x=>x.classList.remove('active'));t.classList.add('active')});
+function chg(n){let q=document.getElementById('qty');q.value=Math.max(1,(+q.value||1)+n)}
+function tab(i,el){document.querySelectorAll('.tab-head button').forEach(b=>b.classList.remove('active'));el.classList.add('active');const arr=[''+document.getElementById('tabBody').dataset.desc,'Envíos 2 a 5 días hábiles en México.','30 días para cambios por defecto de fábrica.'];document.getElementById('tabBody').innerHTML=arr[i]||document.getElementById('tabBody').innerHTML}
+async function addCart(){await fetch('/carrito/agregar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productoId:productoId,cantidad:+document.getElementById('qty').value})});alert('Agregado al carrito')}
+function wa(){window.open('https://wa.me/5210000000000?text='+encodeURIComponent('Hola quiero comprar '+productoNombre),'_blank')}
+function renderSizes(){const c=document.getElementById('variantsContainer');if(!c||!variantes.length)return;c.innerHTML='';variantes.forEach(v=>{const b=document.createElement('button');b.textContent=(v.atributos.Talla||v.atributos.talla||v.atributos.SIZE||v.atributos.size||'N/A');if(+v.stock<=0){b.classList.add('out');b.disabled=true}else{b.onclick=()=>{document.querySelectorAll('#variantsContainer button').forEach(x=>x.classList.remove('active'));b.classList.add('active');priceEl.textContent=money(v.precio);const u=document.getElementById('sizeUrgency');const bar=document.getElementById('stockBar');if(+v.stock<=2){u.textContent='🔴 '+v.stock+' disponibles - ¡Casi agotado!';bar.style.width='8%'}else if(+v.stock<=5){u.textContent='🟠 Quedan pocas piezas';bar.style.width='25%'}else{u.textContent='🟢 Disponible';bar.style.width='65%'}}}c.appendChild(b)});}function getLabel(v){const a=v.atributos||{};return a.Talla||a.talla||a.numero||a.Numero||a.size||a.SIZE||a.medida||a.numeracion||a.color||a.Color||v.nombre||'Variante'}
+function renderSizes(){const c=document.getElementById('variantsContainer');if(!c||!variantes.length)return;c.innerHTML='';variantes.forEach(v=>{const talla=getLabel(v);const stock=Number(v.stock||0);const precio=Number(v.precio||precioBase);const b=document.createElement('button');b.innerHTML=talla+'<br><small style="font-weight:600">'+(stock>0?stock+' pzs':'Agotado')+'</small>';if(stock<=0){b.classList.add('out');b.disabled=true}else{b.onclick=()=>{document.querySelectorAll('#variantsContainer button').forEach(x=>x.classList.remove('active'));b.classList.add('active');priceEl.textContent=money(precio);const u=document.getElementById('sizeUrgency');const bar=document.getElementById('stockBar');if(stock<=2){u.textContent='🔴 '+stock+' disponibles - ¡Casi agotado!';bar.style.width='10%'}else if(stock<=5){u.textContent='🟠 '+stock+' disponibles';bar.style.width='30%'}else{u.textContent='🟢 '+stock+' disponibles';bar.style.width='70%'}}}c.appendChild(b)});const first=c.querySelector('button:not(.out)');if(first)first.click()}
+renderSizes();document.getElementById('btnComprar').onclick=addCart;document.getElementById('btnWhatsapp').onclick=wa;
 </script>
-
-</section>
-</html>
+</section></html>
