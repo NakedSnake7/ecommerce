@@ -47,8 +47,14 @@ public class Producto {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="marca_id")
+    private Marca marca;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+   
+
+	@Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     // 🔥 CAMBIO IMPORTANTE: LAZY para evitar N+1
@@ -294,5 +300,11 @@ public class Producto {
 	public void setStockSimple(Integer stockSimple) {
 	    this.stockSimple = stockSimple;
 	}
-    
+	 public Marca getMarca() {
+			return marca;
+		}
+
+		public void setMarca(Marca marca) {
+			this.marca = marca;
+		}
 }

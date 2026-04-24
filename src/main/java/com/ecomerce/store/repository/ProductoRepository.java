@@ -30,13 +30,14 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
     
     @Query("""
-    	    SELECT DISTINCT p FROM Producto p
-    	    LEFT JOIN FETCH p.categoria
-    	    LEFT JOIN FETCH p.variantes
-    	    LEFT JOIN FETCH p.imagenes
-    	    WHERE p.visibleEnMenu = true
-    	""")
-    	List<Producto> findProductosVisiblesConTodo();
+    		SELECT DISTINCT p FROM Producto p
+    		LEFT JOIN FETCH p.categoria
+    		LEFT JOIN FETCH p.imagenes
+    		LEFT JOIN FETCH p.variantes v
+    		LEFT JOIN FETCH v.atributos
+    		WHERE p.visibleEnMenu = true
+    		""")
+    		List<Producto> findProductosVisiblesConTodo();
     
     @Query("""
     		SELECT new com.ecomerce.store.dto.ProductoResumenDTO(

@@ -14,6 +14,9 @@ public class ProductoDTO {
     @NotBlank
     @Size(min = 3, max = 80)
     private String productName;
+    
+    private Long marcaId;
+    private String marcaNombre;
 
     @NotNull
     @DecimalMin("0.01")
@@ -238,6 +241,22 @@ public class ProductoDTO {
 
 	public void setImagenesEliminar(List<Long> imagenesEliminar) {
 		this.imagenesEliminar = imagenesEliminar;
+	}
+	
+	public Long getMarcaId() {
+	    return marcaId;
+	}
+
+	public void setMarcaId(Long marcaId) {
+	    this.marcaId = marcaId;
+	}
+
+	public String getMarcaNombre() {
+	    return marcaNombre;
+	}
+
+	public void setMarcaNombre(String marcaNombre) {
+	    this.marcaNombre = marcaNombre;
 	}
     
 }

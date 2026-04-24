@@ -1,6 +1,6 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.ProductoDTO;
+import com.ecomerce.store.dto.ProductoDTO; 
 import com.ecomerce.store.dto.ProductoVarianteDTO;
 import com.ecomerce.store.model.Producto;
 
@@ -8,6 +8,7 @@ import com.ecomerce.store.service.ProductoService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ecomerce.store.service.CategoriaService;
+import com.ecomerce.store.service.MarcaService;
 
 import jakarta.validation.Valid;
 
@@ -26,7 +27,8 @@ public class ProductoViewController {
 
     @Autowired private ProductoService productoService;
     @Autowired private CategoriaService categoriaService;
-
+    @Autowired
+    private MarcaService marcaService;
 
     // ==================================================
     // LISTA DE PRODUCTOS
@@ -50,8 +52,19 @@ public class ProductoViewController {
     // ==================================================
     @GetMapping("/nuevo")
     public String formularioNuevoProducto(Model model) {
+
         model.addAttribute("producto", new ProductoDTO());
-        model.addAttribute("categorias", categoriaService.obtenerTodas());
+
+        model.addAttribute(
+            "categorias",
+            categoriaService.obtenerTodas()
+        );
+
+        model.addAttribute(
+            "marcas",
+            marcaService.obtenerTodas()
+        );
+
         return "subirProducto";
     }
 
@@ -74,15 +87,20 @@ public class ProductoViewController {
 
             Model model) {
 
-        if(result.hasErrors()){
+    	if (result.hasErrors()) {
 
-            model.addAttribute(
-                "categorias",
-                categoriaService.obtenerTodas()
-            );
+    	    model.addAttribute(
+    	        "categorias",
+    	        categoriaService.obtenerTodas()
+    	    );
 
-            return "subirProducto";
-        }
+    	    model.addAttribute(
+    	        "marcas",
+    	        marcaService.obtenerTodas()
+    	    );
+
+    	    return "EditarProducto";
+    	}
 
         try{
 
@@ -120,6 +138,11 @@ public class ProductoViewController {
                 "categorias",
                 categoriaService.obtenerTodas()
             );
+            
+            model.addAttribute(
+            	    "marcas",
+            	    marcaService.obtenerTodas()
+            	);
 
             return "subirProducto";
         }
@@ -129,21 +152,26 @@ public class ProductoViewController {
     // FORMULARIO EDITAR
     // ==================================================
     @GetMapping("/editar/{id}")
-    public String formularioEditar(@PathVariable Long id, Model model) {
+    public String formularioEditar(
+            @PathVariable Long id,
+            Model model) {
 
-        //  Obtener DTO ya mapeado correctamente
-        ProductoDTO dto = productoService.obtenerProductoDTO(id);
+        ProductoDTO dto =
+            productoService.obtenerProductoDTO(id);
 
-        //  Cargar categorías para el select
+        model.addAttribute(
+            "productoDTO",
+            dto
+        );
+
         model.addAttribute(
             "categorias",
             categoriaService.obtenerTodas()
         );
 
-        //  Enviar producto al formulario
         model.addAttribute(
-            "productoDTO",
-            dto
+            "marcas",
+            marcaService.obtenerTodas()
         );
 
         return "EditarProducto";
@@ -185,22 +213,32 @@ public class ProductoViewController {
             );
 
             if (dto.getNuevaCategoria() != null &&
-                !dto.getNuevaCategoria().isBlank()) {
+            	    !dto.getNuevaCategoria().isBlank()) {
 
-                datos.setCategoria(
-                    categoriaService.obtenerOCrearCategoria(
-                        dto.getNuevaCategoria()
-                    )
-                );
+            	    datos.setCategoria(
+            	        categoriaService.obtenerOCrearCategoria(
+            	            dto.getNuevaCategoria()
+            	        )
+            	    );
 
-            } else {
+            	} else {
 
-                datos.setCategoria(
-                    categoriaService.obtenerPorId(
-                        dto.getCategoriaId()
-                    )
-                );
-            }
+            	    datos.setCategoria(
+            	        categoriaService.obtenerPorId(
+            	            dto.getCategoriaId()
+            	        )
+            	    );
+            	}
+
+            	/* MARCA SIEMPRE */
+            	if(dto.getMarcaId()!=null){
+
+            	    datos.setMarca(
+            	        marcaService.obtenerPorId(
+            	            dto.getMarcaId()
+            	        )
+            	    );
+            	}
 
             productoService.actualizarProductoCompleto(
                 id,
