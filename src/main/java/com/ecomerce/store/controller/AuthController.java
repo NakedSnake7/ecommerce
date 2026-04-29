@@ -1,6 +1,6 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.RegisterRequestDTO;  
+import com.ecomerce.store.dto.auth.RegisterRequestDTO;
 import com.ecomerce.store.service.RegistrationService;
 
 import jakarta.servlet.http.HttpServletRequest;

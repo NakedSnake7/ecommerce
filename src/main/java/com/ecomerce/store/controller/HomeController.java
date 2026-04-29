@@ -1,6 +1,6 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.ProductoDTO;
+import com.ecomerce.store.dto.producto.publico.ProductoDetailDTO;
 import com.ecomerce.store.repository.ResenaRepository;
 import com.ecomerce.store.service.ProductoService;
 
@@ -33,11 +33,14 @@ public class HomeController {
     // =========================
     private void cargarDatosGlobales(Model model) {
 
-        List<String> categorias = productoService.obtenerCategorias();
-        List<ProductoDTO> productos = productoService.obtenerProductosCompletos();
+        List<String> categorias =
+            productoService.obtenerCategorias();
+
+        var productos =
+            productoService.obtenerProductosIndexOptimizado();
 
         model.addAttribute("categorias", categorias);
-        model.addAttribute("products", productos); //  IMPORTANTE (antes "productos")
+        model.addAttribute("products", productos);
     }
 
     // =========================
@@ -109,8 +112,7 @@ public class HomeController {
     @GetMapping("/producto-detalle/{id}")
     public String verDetalleProducto(@PathVariable Long id, Model model) {
 
-        ProductoDTO producto = productoService.obtenerProductoDTO(id);
-
+    	ProductoDetailDTO producto = productoService.obtenerDetalleProducto(id);
         model.addAttribute("producto", producto);
 
         return "producto-detalle"; // 👈 tu HTML

@@ -151,7 +151,7 @@ required>
 <label>Precio Base</label>
 <input type="number"
 step="0.01"
-th:field="*{price}"
+th:field="*{precio}"
 id="precioBase"
 class="form-control">
 </div>
@@ -163,46 +163,30 @@ class="form-control">
 <label>Categoría</label>
 
 <select class="form-control"
-th:field="*{categoriaId}"
-id="categoriaSelect">
+        th:field="*{categoriaId}"
+        id="categoriaSelect">
 
 <option value="">Selecciona</option>
 
-<option value="1">Calzado</option>
-<option value="2">Ropa</option>
-<option value="3">Accesorios</option>
-<option value="4">Electrónica</option>
-<option value="5">Computación</option>
-<option value="6">Celulares</option>
-<option value="7">Gaming</option>
-<option value="8">Hogar</option>
-<option value="9">Muebles</option>
-<option value="10">Decoración</option>
-<option value="11">Belleza</option>
-<option value="12">Salud</option>
-<option value="13">Deportes</option>
-<option value="14">Fitness</option>
-<option value="15">Mascotas</option>
-<option value="16">Herramientas</option>
-<option value="17">Automotriz</option>
-<option value="18">Juguetes</option>
-<option value="19">Bebés</option>
-<option value="20">Papelería</option>
-<option value="21">Libros</option>
-<option value="22">Cursos Digitales</option>
-<option value="23">Software</option>
-<option value="24">Plantillas Digitales</option>
-<option value="25">Ebooks</option>
-<option value="26">Música Digital</option>
-<option value="27">Fotografía</option>
-<option value="28">Video</option>
-<option value="29">Servicios</option>
-<option value="30">Otros</option>
+<option th:each="c : ${categorias}"
+        th:value="${c.id}"
+        th:text="${c.nombre}">
+</option>
 
 </select>
-</div>
-</div>
 
+</div>
+</div>
+<input type="text"
+th:field="*{nuevaCategoria}"
+class="form-control mt-2"
+placeholder="O escribe nueva categoría">
+
+
+
+<div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+ <div th:each="err : ${#fields.errors('*')}" th:text="${err}"></div>
+</div>
 <!-- MARCA -->
 <div class="col-md-3">
 <div class="form-group">
@@ -220,7 +204,7 @@ th:value="${m.id}"
 th:text="${m.nombre}">
 </option>
 
-<option value="NUEVA_MARCA">
+<option value="-1">
 + Crear Nueva Marca
 </option>
 
@@ -299,7 +283,7 @@ id="counterInfo">
 
 <!-- SAVE -->
 <div class="box">
-<button class="btn-main">
+<button type="submit" class="btn-main">
 GUARDAR PRODUCTO
 </button>
 </div>
@@ -320,7 +304,7 @@ document
 const box=
 document.getElementById("brandCreateBox");
 
-if(this.value==="NUEVA_MARCA"){
+if(this.value==="-1"){
 box.style.display="block";
 }else{
 box.style.display="none";
@@ -524,42 +508,46 @@ sync();
 
 function sync(){
 
-variantes=[];
+	variantes=[];
 
-document
-.querySelectorAll(".color-box")
-.forEach(box=>{
+	document
+	.querySelectorAll(".color-box")
+	.forEach(box=>{
 
-const color=
-box.querySelector(".color-name").value || "Base";
+	const color=
+	box.querySelector(".color-name").value || "Base";
 
-box.querySelectorAll("tbody tr")
-.forEach(row=>{
+	box.querySelectorAll("tbody tr")
+	.forEach(row=>{
 
-variantes.push({
+	variantes.push({
 
-color:color,
-talla:row.dataset.size,
-stock:Number(
-row.querySelector(".stock").value || 0
-),
-precio:Number(
-row.querySelector(".price").value || 0
-)
+	stock:Number(
+	row.querySelector(".stock").value || 0
+	),
 
-});
+	precio:Number(
+	row.querySelector(".price").value || 0
+	),
 
-});
+	atributos:{
+	Color:color,
+	Talla:row.dataset.size
+	}
 
-});
+	});
 
-document.getElementById("variantesJson").value=
-JSON.stringify(variantes);
+	});
 
-document.getElementById("counterInfo").textContent=
-variantes.length+" variantes creadas";
+	});
 
-}
+	document.getElementById("variantesJson").value=
+	JSON.stringify(variantes);
+
+	document.getElementById("counterInfo").textContent=
+	variantes.length+" variantes creadas";
+
+	}
 
 document
 .getElementById("productoForm")

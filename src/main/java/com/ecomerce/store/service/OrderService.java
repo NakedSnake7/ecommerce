@@ -1,11 +1,10 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.exceptions.OrderNotFoundException;                
-
-import com.ecomerce.store.dto.CheckoutRequestDTO;
-import com.ecomerce.store.dto.OrderItemDTO;
-import com.ecomerce.store.dto.OrderRequestDTO;
-import com.ecomerce.store.dto.ProductSalesDTO;
+import com.ecomerce.store.exceptions.OrderNotFoundException;
+import com.ecomerce.store.dto.checkout.CheckoutRequestDTO;
+import com.ecomerce.store.dto.order.OrderItemDTO;
+import com.ecomerce.store.dto.order.OrderRequestDTO;
+import com.ecomerce.store.dto.producto.reportes.ProductoVentaDTO;
 import com.ecomerce.store.model.Order;
 import com.ecomerce.store.model.OrderStatus;
 import com.ecomerce.store.model.PaymentStatus;
@@ -332,7 +331,7 @@ guardar orden por transferencia
         return true;
     }
 
-    public List<ProductSalesDTO> getPaidProductSalesByDate(
+    public List<ProductoVentaDTO> getPaidProductSalesByDate(
             LocalDate from,
             LocalDate to
     ) {

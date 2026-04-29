@@ -1,6 +1,6 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.dto.RegisterRequestDTO; 
+import com.ecomerce.store.dto.auth.RegisterRequestDTO;
 import com.ecomerce.store.model.AuthUser;
 import com.ecomerce.store.model.AuthUser.Role;
 import com.ecomerce.store.model.User;

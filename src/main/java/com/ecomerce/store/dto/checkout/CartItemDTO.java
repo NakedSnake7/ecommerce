@@ -1,4 +1,4 @@
-package com.ecomerce.store.dto;
+package com.ecomerce.store.dto.checkout;
 
 import com.ecomerce.store.contracts.StockItem;  
 

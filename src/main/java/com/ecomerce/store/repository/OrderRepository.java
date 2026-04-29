@@ -1,6 +1,6 @@
 package com.ecomerce.store.repository;
 
-import com.ecomerce.store.dto.ProductSalesDTO;  
+import com.ecomerce.store.dto.producto.reportes.ProductoVentaDTO;
 import com.ecomerce.store.model.Order;
 import com.ecomerce.store.model.OrderStatus;
 import com.ecomerce.store.model.PaymentStatus;
@@ -75,7 +75,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     	);
     
     @Query("""
-    	    SELECT new com.ecomerce.store.dto.ProductSalesDTO(
+            SELECT new com.ecomerce.store.dto.producto.reportes.ProductoVentaDTO(
     	        p.productName,
     	        SUM(oi.quantity)
     	    )
@@ -86,10 +86,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     	    GROUP BY p.productName
     	    ORDER BY SUM(oi.quantity) DESC
     	""")
-    	List<ProductSalesDTO> getPaidProductSales();
+    	List<ProductoVentaDTO> getPaidProductSales();
 
     @Query("""
-    	    SELECT new com.ecomerce.store.dto.ProductSalesDTO(
+    	    SELECT new com.ecomerce.store.dto.producto.reportes.ProductoVentaDTO(
     	        p.productName,
     	        SUM(i.quantity)
     	    )
@@ -102,7 +102,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     	    GROUP BY p.productName
     	    ORDER BY SUM(i.quantity) DESC
     	""")
-    	List<ProductSalesDTO> getPaidProductSalesByDate(
+    	List<ProductoVentaDTO> getPaidProductSalesByDate(
     	    @Param("from") LocalDateTime from,
     	    @Param("to") LocalDateTime to
     	);

@@ -1,8 +1,9 @@
 package com.ecomerce.store;
 
-import java.util.List;    
-import com.ecomerce.store.dto.CartItemDTO;
+import java.util.List;
+
 import com.ecomerce.store.dto.CustomerDTO;
+import com.ecomerce.store.dto.checkout.CartItemDTO;
 
 
 public class CheckoutRequest {

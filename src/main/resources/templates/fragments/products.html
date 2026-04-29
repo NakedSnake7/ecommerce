@@ -48,8 +48,8 @@
 
           <!-- CATEGORIA -->
           <p class="product-brand"
-             th:text="${product.categoriaNombre}">
-          </p>
+          th:text="${product.marcaNombre}">
+          </p>  
 
           <!-- NOMBRE -->
           <p class="product-name"
@@ -62,62 +62,55 @@
             <span class="rating-count">(0 reseñas)</span>
           </div>
 
-    <!-- PRECIOS -->
+
+
 <div class="product-prices">
 
-  <!-- ========================= -->
-  <!-- PRODUCTO CON PROMOCIÓN -->
-  <!-- ========================= -->
-  <div th:if="${product.tienePromocion}">
+    <!-- CON PROMOCION -->
+    <div th:if="${product.tienePromocion}">
 
-    <!-- con variantes -->
-    <div th:if="${product.variantes != null and !#lists.isEmpty(product.variantes)}">
+        <!-- con variantes -->
+        <div th:if="${product.tieneVariantes}">
 
-      <!-- precio original mínimo -->
-      <span class="price-old"
-            th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
-      </span>
+            <span class="price-old"
+                  th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
+            </span>
 
-      <!-- precio final con descuento aplicado al mínimo -->
-      <span class="price-real text-success"
-            th:text="|$${#numbers.formatDecimal(product.precioFinal,1,2)}|">
-      </span>
+            <span class="price-real text-success"
+                  th:text="|$${#numbers.formatDecimal(product.precioConDescuento,1,2)}|">
+            </span>
 
-    </div>
+        </div>
 
-    <!-- sin variantes -->
-    <div th:if="${product.variantes == null or #lists.isEmpty(product.variantes)}">
+        <!-- sin variantes -->
+        <div th:if="${!product.tieneVariantes}">
 
-      <span class="price-old"
-            th:text="|$${#numbers.formatDecimal(product.price,1,2)}|">
-      </span>
+            <span class="price-old"
+                  th:text="|$${#numbers.formatDecimal(product.precio,1,2)}|">
+            </span>
 
-      <span class="price-real text-success"
-            th:text="|$${#numbers.formatDecimal(product.precioFinal,1,2)}|">
-      </span>
+            <span class="price-real text-success"
+                  th:text="|$${#numbers.formatDecimal(product.precioConDescuento,1,2)}|">
+            </span>
+
+        </div>
 
     </div>
 
-  </div>
+    <!-- NORMAL -->
+    <div th:if="${!product.tienePromocion}">
 
-  <!-- ========================= -->
-  <!-- PRODUCTO NORMAL -->
-  <!-- ========================= -->
-  <div th:if="${!product.tienePromocion}">
+        <span class="price-real"
+              th:if="${product.tieneVariantes}"
+              th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
+        </span>
 
-    <!-- con variantes -->
-    <span class="price-real"
-          th:if="${product.variantes != null and !#lists.isEmpty(product.variantes)}"
-          th:text="|Desde $${#numbers.formatDecimal(product.precioMinimo,1,2)}|">
-    </span>
+        <span class="price-real"
+              th:if="${!product.tieneVariantes}"
+              th:text="|$${#numbers.formatDecimal(product.precio,1,2)}|">
+        </span>
 
-    <!-- sin variantes -->
-    <span class="price-real"
-          th:if="${product.variantes == null or #lists.isEmpty(product.variantes)}"
-          th:text="|$${#numbers.formatDecimal(product.price,1,2)}|">
-    </span>
-
-  </div>
+    </div>
 
 </div>
           <!-- CTA -->

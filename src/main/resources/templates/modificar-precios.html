@@ -8,31 +8,57 @@
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body {
-    background-color: #1f1f1f;
-    color: #fff;
+body{
+    background:#1f1f1f;
+    color:#fff;
 }
 
-.container {
-    margin-top: 40px;
+.container{
+    margin-top:40px;
 }
 
-.table input {
-    background-color: #2c2c2c;
-    color: #fff;
-    border: 1px solid #555;
-    border-radius: 6px;
-    padding: 6px;
-    width: 120px;
+.table input{
+    background:#2c2c2c;
+    color:#fff;
+    border:1px solid #555;
+    border-radius:6px;
+    padding:6px;
+    width:120px;
 }
 
-.table-secondary {
-    opacity: 0.55;
+.table-secondary{
+    opacity:.55;
 }
 
-.hint {
-    font-size: 0.85rem;
-    color: #9ca3af;
+.hint{
+    font-size:.85rem;
+    color:#9ca3af;
+}
+
+/* =========================
+   VARIANTES ANIMADAS
+========================= */
+.fila-variante{
+    display:none;
+    opacity:0;
+    transform:translateY(-8px);
+    transition:all .28s ease;
+}
+
+.fila-variante.show{
+    display:table-row;
+    opacity:1;
+    transform:translateY(0);
+}
+
+.btnToggleVariante{
+    transition:.2s ease;
+}
+
+.btnToggleVariante.activo{
+    background:#0ea5e9;
+    border-color:#0ea5e9;
+    color:#fff;
 }
 </style>
 </head>
@@ -40,212 +66,218 @@ body {
 <body>
 
 <div class="container">
-    <h2 class="text-center mb-1">💲 Modificar Precios</h2>
-    <p class="text-center hint mb-4">
-        Edita el precio y presiona <strong>Enter</strong> para guardar
-    </p>
 
-    <div class="table-responsive">
-    
- <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+<h2 class="text-center mb-1">💲 Modificar Precios</h2>
 
-  <select id="filtroCategoria"
-          class="form-control form-control-sm"
-          style="max-width:220px">
-    <option value="">Todas las categorías</option>
+<p class="text-center hint mb-4">
+    Edita el precio y presiona <strong>Enter</strong> para guardar
+</p>
+
+<div class="table-responsive">
+
+<!-- FILTROS -->
+<div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+
+<select id="filtroCategoria"
+        class="form-control form-control-sm"
+        style="max-width:220px">
+
+<option value="">Todas las categorías</option>
+
 <option th:each="cat : ${categorias}"
         th:value="${cat}"
         th:text="${cat}">
 </option>
-  </select>
 
-  <input type="text"
-         id="buscarNombre"
-         class="form-control form-control-sm"
-         style="max-width:260px"
-         placeholder="Buscar producto...">
+</select>
 
-  <small class="text-muted">
-    Filtrar por categoría o nombre
-  </small>
+<input type="text"
+       id="buscarNombre"
+       class="form-control form-control-sm"
+       style="max-width:260px"
+       placeholder="Buscar producto...">
+
+<small class="text-muted ml-2">
+Filtrar por categoría o nombre
+</small>
+
 </div>
 
+<!-- AJUSTE MASIVO -->
+<div class="card bg-dark border-secondary mb-3">
 
-  <small class="text-muted">
-    Filtrar productos por categoría
-  </small>
+<div class="card-body d-flex flex-wrap align-items-center gap-2">
+
+<select id="categoriaSelect"
+        class="form-control form-control-sm mr-2"
+        style="max-width:220px">
+
+<option value="">Categoría</option>
+
+<option th:each="cat : ${categorias}"
+        th:value="${cat}"
+        th:text="${cat}">
+</option>
+
+</select>
+
+<select id="modoSelect"
+        class="form-control form-control-sm mr-2"
+        style="max-width:160px">
+
+<option value="MONTO">Monto fijo ($)</option>
+<option value="PORCENTAJE">Porcentaje (%)</option>
+
+</select>
+
+<input type="number"
+       id="valorInput"
+       class="form-control form-control-sm mr-2"
+       style="max-width:160px"
+       placeholder="+10 / -5">
+
+<button class="btn btn-warning btn-sm"
+        onclick="aplicarAjusteCategoria()">
+Aplicar
+</button>
+
 </div>
-    
-    
-    <div class="card bg-dark border-secondary mb-3">
-  <div class="card-body d-flex flex-wrap align-items-center gap-2">
-
-    <select id="categoriaSelect" class="form-control form-control-sm mr-2"
-            style="max-width:220px">
-      <option value="">Categoría</option>
-      <option th:each="cat : ${categorias}"
-              th:value="${cat}"
-              th:text="${cat}">
-      </option>
-    </select>
-
-    <select id="modoSelect" class="form-control form-control-sm mr-2"
-            style="max-width:160px">
-      <option value="MONTO">Monto fijo ($)</option>
-      <option value="PORCENTAJE">Porcentaje (%)</option>
-    </select>
-
-    <input type="number"
-           id="valorInput"
-           class="form-control form-control-sm mr-2"
-           style="max-width:160px"
-           placeholder="+10 / -5">
-
-    <button class="btn btn-warning btn-sm"
-            onclick="aplicarAjusteCategoria()">
-      Aplicar
-    </button>
-
-    <small class="text-muted ml-2">
-      Monto: +50 / -20 · %: +10 / -5
-    </small>
-  </div>
 </div>
-    
-        <table class="table table-dark table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Producto</th>
-                    <th>Precio actual</th>
-                    <th>Nuevo precio</th>
-                </tr>
-            </thead>
+
+<table class="table table-dark table-striped">
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Producto</th>
+<th>Precio actual</th>
+<th>Nuevo precio</th>
+</tr>
+</thead>
+
 <tbody>
 
 <th:block th:each="producto : ${productos}" th:if="${producto != null}">
 
-<tr
-    th:attr="
+<!-- FILA PRODUCTO -->
+<tr th:attr="
         data-categoria=${producto.categoriaNombre},
         data-nombre=${#strings.toLowerCase(producto.productName)}
     "
     th:classappend="${!producto.visibleEnMenu} ? 'table-secondary'">
 
-    <!-- ID -->
-    <td th:text="${producto.id}"></td>
+<td th:text="${producto.id}"></td>
 
-    <!-- NOMBRE -->
-    <td>
-        <span class="text-muted"
-              th:text="${producto.categoriaNombre}"></span>
+<td>
 
-        <span class="mx-1">·</span>
+<span class="text-muted"
+      th:text="${producto.categoriaNombre}">
+</span>
 
-        <strong th:text="${producto.productName}"></strong>
+<span class="mx-1">·</span>
 
-        <br>
+<strong th:text="${producto.productName}"></strong>
 
-        <span class="badge badge-info"
-              th:if="${producto.tieneVariantes}">
-            Variantes
-        </span>
+<br>
 
-        <span class="badge badge-danger"
-              th:if="${producto.tienePromocion}">
-            Promo
-        </span>
-    </td>
+<span class="badge badge-info"
+      th:if="${producto.tieneVariantes}">
+Variantes
+</span>
 
-    <!-- PRECIO -->
-    <td>
+<span class="badge badge-danger"
+      th:if="${producto.tienePromocion}">
+Promo
+</span>
 
-        <!-- PROMO -->
-        <div th:if="${producto.tienePromocion}">
-            <span style="text-decoration: line-through;">
-                $<span th:text="${#numbers.formatDecimal(producto.price,1,2)}"></span>
-            </span>
-            <br>
-            <span class="text-success font-weight-bold">
-                $<span th:text="${#numbers.formatDecimal(producto.precioFinal,1,2)}"></span>
-            </span>
-        </div>
+</td>
 
-        <!-- VARIANTES -->
-        <div th:if="${!producto.tienePromocion and producto.tieneVariantes}">
-            Desde $<span th:text="${#numbers.formatDecimal(producto.precioMinimo,1,2)}"></span>
-        </div>
+<td>
 
-        <!-- SIMPLE -->
-        <div th:if="${!producto.tienePromocion and !producto.tieneVariantes}">
-            $<span th:text="${#numbers.formatDecimal(producto.price,1,2)}"></span>
-        </div>
+<div th:if="${producto.tienePromocion}">
+<span style="text-decoration:line-through;">
+$<span th:text="${#numbers.formatDecimal(producto.precio,1,2)}"></span>
+</span>
+<br>
+<span class="text-success font-weight-bold">
+$<span th:text="${#numbers.formatDecimal(producto.precioFinal,1,2)}"></span>
+</span>
+</div>
 
-    </td>
+<div th:if="${!producto.tienePromocion and producto.tieneVariantes}">
+Desde $
+<span th:text="${#numbers.formatDecimal(producto.precioMinimo,1,2)}"></span>
+</div>
 
-    <!-- INPUT -->
-    <td>
+<div th:if="${!producto.tienePromocion and !producto.tieneVariantes}">
+$<span th:text="${#numbers.formatDecimal(producto.precio,1,2)}"></span>
+</div>
 
-        <input type="number"
-               step="0.01"
-               min="0"
-               class="price-input"
-               th:if="${!producto.tieneVariantes}"
-               th:attr="data-id=${producto.id}"
-               placeholder="Nuevo precio">
+</td>
 
-        <button class="btn btn-info btn-sm"
-                th:if="${producto.tieneVariantes}"
-                data-toggle="collapse"
-                th:attr="data-target='#var-' + ${producto.id}">
-            Editar variantes
-        </button>
+<td>
 
-    </td>
+<input type="number"
+       step="0.01"
+       min="0"
+       class="price-input"
+       th:if="${!producto.tieneVariantes}"
+       th:attr="data-id=${producto.id}"
+       placeholder="Nuevo precio">
 
+<button class="btn btn-info btn-sm btnToggleVariante"
+        th:if="${producto.tieneVariantes}"
+        th:attr="data-target='var-' + ${producto.id}">
+Editar variantes
+</button>
+
+</td>
 </tr>
 
-<!-- 👇 AHORA SÍ TIENE CONTEXTO -->
-<tr class="collapse bg-dark"
-    th:id="'var-' + ${producto.id}">
+<!-- FILA VARIANTES -->
+<tr th:id="'var-' + ${producto.id}"
+    class="fila-variante bg-dark">
 
 <td colspan="4">
 
-    <table class="table table-sm table-bordered text-white">
-        <thead>
-            <tr>
-                <th>Atributos</th>
-                <th>Precio</th>
-                <th>Editar</th>
-            </tr>
-        </thead>
+<table class="table table-sm table-bordered text-white mb-0">
 
-        <tbody>
-            <tr th:each="var : ${producto.variantes}">
+<thead>
+<tr>
+<th>Atributos</th>
+<th>Precio</th>
+<th>Editar</th>
+</tr>
+</thead>
 
-                <td>
-                    <span th:each="attr : ${var.atributos}">
-                        <b th:text="${attr.key}"></b>:
-                        <span th:text="${attr.value}"></span> |
-                    </span>
-                </td>
+<tbody>
 
-                <td>
-                    $<span th:text="${#numbers.formatDecimal(var.precio,1,2)}"></span>
-                </td>
+<tr th:each="var : ${producto.variantes}">
 
-                <td>
-                    <input type="number"
-                           step="0.01"
-                           min="0"
-                           class="price-variante-input"
-                           th:attr="data-id=${var.id}"
-                           placeholder="Nuevo precio">
-                </td>
+<td>
+<span th:each="attr : ${var.atributos}">
+<b th:text="${attr.key}"></b>:
+<span th:text="${attr.value}"></span> |
+</span>
+</td>
 
-            </tr>
-        </tbody>
-    </table>
+<td>
+$<span th:text="${#numbers.formatDecimal(var.precio,1,2)}"></span>
+</td>
+
+<td>
+<input type="number"
+       step="0.01"
+       min="0"
+       class="price-variante-input"
+       th:attr="data-id=${var.id}"
+       placeholder="Nuevo precio">
+</td>
+
+</tr>
+
+</tbody>
+</table>
 
 </td>
 </tr>
@@ -253,172 +285,181 @@ body {
 </th:block>
 
 </tbody>
-        </table>
-    </div>
+</table>
 
-    <a href="/servicio" class="btn btn-outline-light mt-3">⬅ Volver</a>
-    
+</div>
+
+<a href="/servicio" class="btn btn-outline-light mt-3">
+⬅ Volver
+</a>
+
+</div>
+
+<!-- =========================
+     TOGGLE VARIANTES
+========================= -->
 <script>
-document.querySelectorAll('.price-variante-input').forEach(input => {
+document.addEventListener('click', function(e){
 
-    input.addEventListener('keydown', function (e) {
+    const btn = e.target.closest('.btnToggleVariante');
+    if(!btn) return;
 
-        if (e.key !== 'Enter') return;
+    const id = btn.dataset.target;
+    const fila = document.getElementById(id);
 
-        const id = this.dataset.id;
-        const precio = this.value;
+    if(!fila) return;
 
-        if (!precio || precio <= 0) {
-            marcarError(this);
-            return;
-        }
+    const abierta = fila.classList.contains('show');
 
-        fetch('/api/variantes/actualizarPrecio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                varianteId: id,
-                precio: precio
-            })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error();
-            marcarGuardado(this);
-        })
-        .catch(() => marcarError(this));
-
+    document.querySelectorAll('.fila-variante.show').forEach(x=>{
+        if(x.id !== id) x.classList.remove('show');
     });
 
+    document.querySelectorAll('.btnToggleVariante.activo').forEach(x=>{
+        if(x !== btn) x.classList.remove('activo');
+    });
+
+    fila.classList.toggle('show');
+    btn.classList.toggle('activo');
+
+    btn.innerText = abierta
+        ? 'Editar variantes'
+        : 'Ocultar variantes';
 });
-</script>    
-
-<script>
-const filtroCategoria = document.getElementById('filtroCategoria');
-const buscarNombre = document.getElementById('buscarNombre');
-
-function aplicarFiltros() {
-
-    const categoria = filtroCategoria.value;
-    const texto = buscarNombre.value.toLowerCase().trim();
-
-    document.querySelectorAll('tbody tr').forEach(fila => {
-
-        const catFila = fila.dataset.categoria;
-        const nombreFila = fila.dataset.nombre;
-
-        const coincideCategoria =
-            !categoria || catFila === categoria;
-
-        const coincideNombre =
-            !texto || nombreFila.includes(texto);
-
-        fila.style.display =
-            (coincideCategoria && coincideNombre) ? '' : 'none';
-    });
-}
-
-filtroCategoria.addEventListener('change', aplicarFiltros);
-buscarNombre.addEventListener('input', aplicarFiltros);
 </script>
 
-
+<!-- =========================
+     GUARDAR VARIANTE
+========================= -->
 <script>
-function aplicarAjusteCategoria() {
+document.querySelectorAll('.price-variante-input').forEach(input=>{
 
-    const categoria = document.getElementById('categoriaSelect').value;
-    const modo = document.getElementById('modoSelect').value;
-    const valor = document.getElementById('valorInput').value;
+input.addEventListener('keydown',function(e){
 
-    if (!categoria || !valor) {
-        alert('Selecciona categoría y valor');
-        return;
-    }
+if(e.key!=='Enter') return;
 
-    const textoModo = modo === 'MONTO' ? 'monto' : 'porcentaje';
+const id=this.dataset.id;
+const precio=this.value;
 
-    if (!confirm(`¿Aplicar ${valor} (${textoModo}) a "${categoria}"?`)) {
-        return;
-    }
-
-    fetch('/api/productos/ajustarPrecioCategoria', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-            categoria: categoria,
-            valor: valor,
-            modo: modo
-        })
-    })
-    .then(res => {
-        if (!res.ok) throw new Error();
-        alert('Precios actualizados correctamente');
-        location.reload();
-    })
-    .catch(() => alert('Error al ajustar precios'));
+if(!precio || precio<=0){
+marcarError(this);
+return;
 }
-</script>
 
-<script>
-document.querySelectorAll('.price-input').forEach((input, index, inputs) => {
-
-    input.addEventListener('keydown', function (e) {
-
-        if (e.key !== 'Enter') return;
-
-        e.preventDefault();
-
-        const productoId = this.dataset.id;
-        const nuevoPrecio = this.value;
-
-        if (!nuevoPrecio || nuevoPrecio <= 0) {
-            marcarError(this);
-            return;
-        }
-
-        fetch('/api/productos/actualizarPrecio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                productoId: productoId,
-                precio: nuevoPrecio
-            })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error();
-            marcarGuardado(this);
-
-            // 👉 foco automático al siguiente
-            if (inputs[index + 1]) {
-                inputs[index + 1].focus();
-                inputs[index + 1].select();
-            }
-        })
-        .catch(() => marcarError(this));
-    });
+fetch('/api/variantes/actualizarPrecio',{
+method:'POST',
+headers:{'Content-Type':'application/x-www-form-urlencoded'},
+body:new URLSearchParams({
+varianteId:id,
+precio:precio
+})
+})
+.then(res=>{
+if(!res.ok) throw new Error();
+marcarGuardado(this);
+})
+.catch(()=>marcarError(this));
 
 });
+});
+</script>
 
-/* ===============================
-   FEEDBACK VISUAL
-================================ */
-function marcarGuardado(input) {
-    input.style.borderColor = '#22c55e';
-    input.style.backgroundColor = 'rgba(34,197,94,0.15)';
+<!-- =========================
+     FILTROS
+========================= -->
+<script>
+const filtroCategoria=document.getElementById('filtroCategoria');
+const buscarNombre=document.getElementById('buscarNombre');
 
-    setTimeout(() => {
-        input.style.borderColor = '';
-        input.style.backgroundColor = '';
-    }, 900);
+function aplicarFiltros(){
+
+const categoria=filtroCategoria.value;
+const texto=buscarNombre.value.toLowerCase().trim();
+
+document.querySelectorAll('tbody tr').forEach(fila=>{
+
+const cat=fila.dataset.categoria;
+const nom=fila.dataset.nombre;
+
+if(cat===undefined) return;
+
+const okCat=!categoria || cat===categoria;
+const okNom=!texto || nom.includes(texto);
+
+fila.style.display=(okCat && okNom)?'':'none';
+});
 }
 
-function marcarError(input) {
-    input.style.borderColor = '#ef4444';
-    input.style.backgroundColor = 'rgba(239,68,68,0.2)';
+filtroCategoria.addEventListener('change',aplicarFiltros);
+buscarNombre.addEventListener('input',aplicarFiltros);
+</script>
 
-    setTimeout(() => {
-        input.style.borderColor = '';
-        input.style.backgroundColor = '';
-    }, 1200);
+<!-- =========================
+     GUARDAR SIMPLE
+========================= -->
+<script>
+document.querySelectorAll('.price-input').forEach((input,index,inputs)=>{
+
+input.addEventListener('keydown',function(e){
+
+if(e.key!=='Enter') return;
+
+e.preventDefault();
+
+const productoId=this.dataset.id;
+const nuevoPrecio=this.value;
+
+if(!nuevoPrecio || nuevoPrecio<=0){
+marcarError(this);
+return;
+}
+
+fetch('/api/productos/actualizarPrecio',{
+method:'POST',
+headers:{'Content-Type':'application/x-www-form-urlencoded'},
+body:new URLSearchParams({
+productoId:productoId,
+precio:nuevoPrecio
+})
+})
+.then(res=>{
+if(!res.ok) throw new Error();
+
+marcarGuardado(this);
+
+if(inputs[index+1]){
+inputs[index+1].focus();
+inputs[index+1].select();
+}
+})
+.catch(()=>marcarError(this));
+
+});
+});
+</script>
+
+<!-- =========================
+     FEEDBACK
+========================= -->
+<script>
+function marcarGuardado(input){
+input.style.borderColor='#22c55e';
+input.style.backgroundColor='rgba(34,197,94,.15)';
+
+setTimeout(()=>{
+input.style.borderColor='';
+input.style.backgroundColor='';
+},900);
+}
+
+function marcarError(input){
+input.style.borderColor='#ef4444';
+input.style.backgroundColor='rgba(239,68,68,.2)';
+
+setTimeout(()=>{
+input.style.borderColor='';
+input.style.backgroundColor='';
+},1200);
 }
 </script>
 

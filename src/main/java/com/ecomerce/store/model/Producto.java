@@ -1,9 +1,7 @@
 package com.ecomerce.store.model;
 
-import java.math.BigDecimal; 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.math.BigDecimal;  
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -41,7 +39,6 @@ public class Producto {
 	
 	private String sku;
 	
-	private String imagenUrl;
 
 	// 🔥 CAMBIO IMPORTANTE: LAZY para evitar N+1
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,13 +55,13 @@ public class Producto {
     private String description;
 
     // 🔥 CAMBIO IMPORTANTE: LAZY para evitar N+1
-    @OneToMany(
-        mappedBy = "producto",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
-    private Set<ImagenProducto> imagenes = new HashSet<>();
+	@OneToMany(
+		    mappedBy = "producto",
+		    cascade = CascadeType.ALL,
+		    orphanRemoval = true,
+		    fetch = FetchType.LAZY
+		)
+		private Set<ImagenProducto> imagenes = new LinkedHashSet<>();
     
     @OneToMany(
     	    mappedBy = "producto",
@@ -72,7 +69,7 @@ public class Producto {
     	    orphanRemoval = true,
     	    fetch = FetchType.LAZY
     	)
-    private List<ProductoVariante> variantes = new ArrayList<>();
+    	private Set<ProductoVariante> variantes = new LinkedHashSet<>();
     
     @Column(nullable = false)
     private boolean visibleEnMenu = true;
@@ -131,7 +128,7 @@ public class Producto {
                 return img.getImageUrl();
             }
         }
-        return "/img/default.jpg";
+        return "/img/default.png";
     }
 
     
@@ -266,7 +263,7 @@ public class Producto {
         this.imagenes = imagenes;
     }
 
-    public void setVariantes(List<ProductoVariante> variantes) {
+    public void setVariantes(Set<ProductoVariante> variantes) {
         this.variantes = variantes;
     }
 
@@ -274,7 +271,7 @@ public class Producto {
         return imagenes;
     }
 
-    public List<ProductoVariante> getVariantes() {
+    public Set<ProductoVariante> getVariantes() {
         return variantes;
     }
 
@@ -286,13 +283,7 @@ public class Producto {
 		this.sku = sku;
 	}
 
-	public String getImagenUrl() {
-		return imagenUrl;
-	}
 
-	public void setImagenUrl(String imagenUrl) {
-		this.imagenUrl = imagenUrl;
-	}
 	public Integer getStockSimple() {
 	    return stockSimple;
 	}

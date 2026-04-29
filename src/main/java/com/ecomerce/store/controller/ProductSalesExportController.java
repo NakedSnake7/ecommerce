@@ -1,6 +1,6 @@
 package com.ecomerce.store.controller;
 
-import java.io.IOException; 
+import java.io.IOException;   
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,9 +25,7 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-
-// App
-import com.ecomerce.store.dto.ProductSalesDTO;
+import com.ecomerce.store.dto.producto.reportes.ProductoVentaDTO;
 import com.ecomerce.store.service.OrderService;
 
 @Controller
@@ -57,7 +55,7 @@ public class ProductSalesExportController {
 
     ) throws IOException {
 
-        List<ProductSalesDTO> data =
+        List<ProductoVentaDTO> data =
                 orderService.getPaidProductSalesByDate(from, to);
 
         response.setContentType(
@@ -81,7 +79,7 @@ public class ProductSalesExportController {
                 Row row = sheet.createRow(rowNum);
                 row.createCell(0).setCellValue("Sin ventas en el periodo seleccionado");
             } else {
-                for (ProductSalesDTO dto : data) {
+                for (ProductoVentaDTO dto : data) {
                     Row row = sheet.createRow(rowNum++);
                     row.createCell(0).setCellValue(dto.getProductName());
                     row.createCell(1).setCellValue(dto.getTotalQuantity());
@@ -112,7 +110,7 @@ public class ProductSalesExportController {
             HttpServletResponse response
     ) throws IOException {
 
-        List<ProductSalesDTO> data =
+        List<ProductoVentaDTO> data =
                 orderService.getPaidProductSalesByDate(from, to);
 
         response.setContentType("application/pdf");
@@ -160,7 +158,7 @@ public class ProductSalesExportController {
 
             int total = 0;
 
-            for (ProductSalesDTO dto : data) {
+            for (ProductoVentaDTO dto : data) {
                 table.addCell(dto.getProductName());
                 table.addCell(dto.getTotalQuantity().toString());
                 total += dto.getTotalQuantity();

@@ -1,13 +1,15 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.dto.CategoriaGrupoDTO;      
-
 import com.ecomerce.store.dto.CloudinaryUploadResult;
-import com.ecomerce.store.dto.ProductoDTO;
-import com.ecomerce.store.dto.ProductoPrecioDTO;
-import com.ecomerce.store.dto.ProductoResumenDTO;
-import com.ecomerce.store.dto.ProductoVarianteDTO;
+import com.ecomerce.store.dto.producto.admin.CategoriaGrupoAdminDTO;
+import com.ecomerce.store.dto.producto.admin.ProductoAdminDTO;
+import com.ecomerce.store.dto.producto.admin.ProductoAdminListDTO;
+import com.ecomerce.store.dto.producto.publico.CategoriaGrupoCardDTO;
+import com.ecomerce.store.dto.producto.publico.ProductoCardDTO;
+import com.ecomerce.store.dto.producto.publico.ProductoDetailDTO;
+import com.ecomerce.store.dto.producto.shared.ProductoVarianteDTO;
 import com.ecomerce.store.exception.ImageUploadException;
+import com.ecomerce.store.mapper.ProductoAdminListMapper;
 import com.ecomerce.store.mapper.ProductoMapper;
 import com.ecomerce.store.model.ImagenProducto;
 import com.ecomerce.store.model.Producto;
@@ -28,9 +30,9 @@ import java.math.RoundingMode;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,7 @@ public class ProductoService {
     private final ImagenProductoRepository imagenProductoRepository;
     private final CloudinaryService cloudinaryService;
     private final CategoriaService categoriaService;
+    private final MarcaService marcaService;
     private final ProductoVarianteRepository productoVarianteRepository;
 
     public ProductoService(
@@ -54,12 +57,14 @@ public class ProductoService {
             ImagenProductoRepository imagenProductoRepository,
             CloudinaryService cloudinaryService,
             CategoriaService categoriaService,
+            MarcaService marcaService,
             ProductoVarianteRepository productoVarianteRepository
     ) {
         this.productoRepository = productoRepository;
         this.imagenProductoRepository = imagenProductoRepository;
         this.cloudinaryService = cloudinaryService;
         this.categoriaService = categoriaService;
+        this.marcaService = marcaService;
         this.productoVarianteRepository = productoVarianteRepository;
     }
 
@@ -86,95 +91,16 @@ public class ProductoService {
 
     
     @Transactional(readOnly = true)
-    public List<ProductoDTO> obtenerProductosCompletos(){
+    public List<ProductoCardDTO> obtenerProductosCompletos() {
 
         return productoRepository
-            .findProductosVisiblesConTodo()
-            .stream()
-            .map(producto -> {
-
-                ProductoDTO dto = ProductoMapper.toDTO(producto);
-
-                // ===============================
-                // VARIANTES CON ATRIBUTOS REALES
-                // ===============================
-                if(producto.getVariantes() != null &&
-                   !producto.getVariantes().isEmpty()){
-
-                    List<ProductoVarianteDTO> variantes =
-                        producto.getVariantes()
-                        .stream()
-                        .map(v -> {
-
-                            ProductoVarianteDTO vd =
-                                new ProductoVarianteDTO();
-
-                            vd.setId(v.getId());
-                            vd.setNombre(v.getNombreVisual());
-                            vd.setStock(v.getStock());
-                            vd.setPrecio(v.getPrecio());
-
-                            // 🔥 CLAVE DEL PROBLEMA
-                            vd.setAtributos(
-                                v.getAtributosMap()
-                            );
-
-                            return vd;
-                        })
-                        .toList();
-
-                    dto.setVariantes(variantes);
-
-                    // ===============================
-                    // PRECIO MINIMO
-                    // ===============================
-                    dto.setPrecioMinimo(
-                        variantes.stream()
-                        .map(x ->
-                            x.getPrecio() != null
-                            ? x.getPrecio()
-                            : dto.getPrecio()
-                        )
-                        .min(BigDecimal::compareTo)
-                        .orElse(dto.getPrecio())
-                    );
-                }
-
-                // ===============================
-                // PRECIO FINAL PROMO
-                // ===============================
-                dto.setPrecioFinal(
-                    dto.getPrecioConDescuento()
-                );
-
-                return dto;
-            })
-            .toList();
-    }
-    @Transactional(readOnly = true)
-    public List<ProductoDTO> obtenerProductosParaPrecios() {
-
-        return productoRepository.findProductosVisiblesConTodo()
+                .findProductosVisiblesConTodo()
                 .stream()
-                .map(ProductoMapper::toDTO)
+                .map(ProductoMapper::toCard)
                 .toList();
     }
-    public List<ProductoPrecioDTO> obtenerProductosPrecio() {
 
-        return productoRepository.findProductosPrecioRaw()
-                .stream()
-                .map(r -> new ProductoPrecioDTO(
-                        ((Number) r[0]).longValue(),
-                        (String) r[1],
-                        (BigDecimal) r[2],
-                        (BigDecimal) r[3],
-                        (Boolean) r[4],
-                        (Boolean) r[5],
-                        (String) r[6]
-                ))
-                .toList();
-    }
-    
+
     @Transactional
     public Producto guardarProducto(Producto producto) {
         validarProducto(producto);
@@ -218,204 +144,319 @@ public class ProductoService {
         return producto.getTienePromocion();
     }
 
-    // ============================================================
-    // ACTUALIZACIÓN COMPLETA (🔥 MÉTODO CENTRAL 🔥)
-    // ============================================================
+ // ============================================================
+ // ACTUALIZACIÓN COMPLETA PRO (ESTABLE)
+ // ============================================================
 
-    @Transactional
-    public Producto actualizarProductoCompleto(
-            Long productoId,
-            Producto datos,
-            List<MultipartFile> nuevasImagenes,
-            List<Long> eliminarImagenes,
-            List<ProductoVarianteDTO> variantesDTO
-    ) {
+ @Transactional
+ public Producto actualizarProductoCompleto(
+         Long productoId,
+         Producto datos,
+         List<MultipartFile> nuevasImagenes,
+         List<Long> eliminarImagenes,
+         List<ProductoVarianteDTO> variantesDTO
+ ) {
 
-        Producto producto = obtenerProducto(productoId);
+     Producto producto = obtenerProducto(productoId);
 
-        // =========================
-        // 1. DATOS BASE
-        // =========================
-        producto.setProductName(datos.getProductName());
-        producto.setPrice(datos.getPrice());
-        producto.setDescription(datos.getDescription());
-        producto.setPorcentajeDescuento(datos.getPorcentajeDescuento());
-        producto.setCategoria(datos.getCategoria());
+     // =====================================================
+     // 1. DATOS BASE
+     // =====================================================
+     producto.setProductName(datos.getProductName());
+     producto.setPrice(datos.getPrice());
+     producto.setDescription(datos.getDescription());
 
-        validarProducto(producto);
+     producto.setPorcentajeDescuento(
+             datos.getPorcentajeDescuento() != null
+                     ? datos.getPorcentajeDescuento()
+                     : 0.0
+     );
 
-        List<String> publicIdsSubidos = new ArrayList<>();
+     producto.setTienePromocion(
+             producto.getPorcentajeDescuento() > 0
+     );
 
-        try {
+     if (datos.getCategoria() != null) {
+         producto.setCategoria(datos.getCategoria());
+     }
 
-            // =========================
-            // 2. ELIMINAR IMÁGENES
-            // =========================
-            if (eliminarImagenes != null && !eliminarImagenes.isEmpty()) {
+     // permite quitar marca también
+     producto.setMarca(datos.getMarca());
 
-                producto.getImagenes().removeIf(img -> {
+     List<String> publicIdsSubidos = new ArrayList<>();
 
-                    boolean eliminar = eliminarImagenes.contains(img.getId());
+     try {
 
-                    if (eliminar && img.getPublicId() != null) {
-                        try {
-                            cloudinaryService.eliminarImagen(img.getPublicId());
-                        } catch (Exception e) {
-                            log.warn("Error eliminando imagen Cloudinary {}", img.getPublicId());
-                        }
-                    }
+         // =====================================================
+         // 2. ELIMINAR IMÁGENES
+         // =====================================================
+         if (eliminarImagenes != null && !eliminarImagenes.isEmpty()) {
 
-                    return eliminar;
-                });
-            }
+             producto.getImagenes().removeIf(img -> {
 
-            // =========================
-            // 3. SUBIR NUEVAS IMÁGENES
-            // =========================
-            if (nuevasImagenes != null) {
+                 boolean eliminar =
+                         eliminarImagenes.contains(img.getId());
 
-                for (MultipartFile file : nuevasImagenes) {
-
-                    // 🔥 IGNORAR ARCHIVOS VACÍOS
-                    if (file == null || file.isEmpty()) {
-                        continue;
-                    }
-
-                    try {
-                        var resultado = cloudinaryService.subirImagen(file);
-
-                        ImagenProducto img = new ImagenProducto();
-                        img.setImageUrl(resultado.getSecureUrl());
-                        img.setPublicId(resultado.getPublicId());
-                        img.setProducto(producto);
-
-                        producto.getImagenes().add(img);
-                        imagenProductoRepository.save(img);
-                        publicIdsSubidos.add(resultado.getPublicId());
-
-                    } catch (IOException e) {
-                        log.error("Error subiendo imagen", e);
-                        throw new RuntimeException("Error subiendo imagen", e);
-                    }
-                }
-            }
-
-         // =========================
-         // 4. SINCRONIZAR VARIANTES
-         // =========================
-         if (variantesDTO != null && !variantesDTO.isEmpty()) {
-
-             Map<Long, ProductoVariante> existentes = producto.getVariantes()
-                     .stream()
-                     .collect(Collectors.toMap(
-                             ProductoVariante::getId,
-                             v -> v
-                     ));
-
-             List<ProductoVariante> nuevasLista = new ArrayList<>();
-
-             for (ProductoVarianteDTO dto : variantesDTO) {
-
-                 ProductoVariante variante;
-
-                 // EXISTENTE
-                 if (dto.getId() != null &&
-                     existentes.containsKey(dto.getId())) {
-
-                     variante = existentes.get(dto.getId());
-
-                 } else {
-
-                     // NUEVA
-                     variante = new ProductoVariante();
-                     variante.setProducto(producto);
+                 if (eliminar && img.getPublicId() != null) {
+                     try {
+                         cloudinaryService.eliminarImagen(
+                                 img.getPublicId()
+                         );
+                     } catch (Exception e) {
+                         log.warn(
+                                 "No se pudo eliminar imagen {}",
+                                 img.getPublicId()
+                         );
+                     }
                  }
 
-                 variante.setPrecio(dto.getPrecio());
-
-                 variante.setStock(
-                     dto.getStock() != null
-                         ? dto.getStock()
-                         : 0
-                 );
-
-                 // =========================
-                 // ATRIBUTOS
-                 // =========================
-                 if (variante.getAtributos() == null) {
-                     variante.setAtributos(
-                         new LinkedHashSet<>()
-                     );
-                 } else {
-                     variante.getAtributos().clear();
-                 }
-
-                 if (dto.getAtributos() != null) {
-
-                     dto.getAtributos()
-                     .forEach((key, value) -> {
-
-                         VarianteAtributo attr =
-                             new VarianteAtributo();
-
-                         attr.setNombre(key);
-                         attr.setValor(value);
-                         attr.setVariante(variante);
-
-                         variante.getAtributos()
-                                 .add(attr);
-                     });
-                 }
-
-                 nuevasLista.add(variante);
-             }
-
-             // reemplazo completo
-             producto.getVariantes().clear();
-             producto.getVariantes().addAll(nuevasLista);
-
-             // 🔥 Si tiene variantes,
-             // stock simple se desactiva
-             producto.setStockSimple(0);
-
-         } else {
-
-             // 🔥 Producto simple sin variantes
-             producto.getVariantes().clear();
-
-             producto.setStockSimple(
-                 datos.getStockSimple() != null
-                     ? datos.getStockSimple()
-                     : 0
-             );
+                 return eliminar;
+             });
          }
 
-            // =========================
-            // 5. GUARDAR
-            // =========================
-            log.info("Actualizando producto id={}", productoId);
+         // =====================================================
+         // 3. SUBIR NUEVAS IMÁGENES
+         // =====================================================
+         if (nuevasImagenes != null) {
 
-            productoRepository.save(producto);
+             for (MultipartFile file : nuevasImagenes) {
 
-            return producto;
+                 if (file == null || file.isEmpty()) {
+                     continue;
+                 }
 
-        } catch (Exception e) {
+                 var subida =
+                         cloudinaryService.subirImagen(file);
 
-            // =========================
-            // ROLLBACK CLOUDINARY
-            // =========================
-            for (String publicId : publicIdsSubidos) {
-                try {
-                    cloudinaryService.eliminarImagen(publicId);
-                } catch (Exception ignored) {}
-            }
+                 ImagenProducto img =
+                         new ImagenProducto();
 
-            log.error("Error actualizando producto {}", productoId, e);
+                 img.setProducto(producto);
+                 img.setImageUrl(subida.getSecureUrl());
+                 img.setPublicId(subida.getPublicId());
 
-            throw e;
-        }
-    }
-    
+                 producto.getImagenes().add(img);
+
+                 publicIdsSubidos.add(
+                         subida.getPublicId()
+                 );
+             }
+         }
+
+         // =====================================================
+         // 4. VARIANTES
+         // SOLO SI EL FORM LAS ENVÍA
+         // =====================================================
+         if (variantesDTO != null) {
+
+             if (!variantesDTO.isEmpty()) {
+
+                 actualizarVariantes(producto, variantesDTO);
+                 producto.setStockSimple(0);
+
+             } else {
+
+                 // producto simple
+                 producto.getVariantes().clear();
+
+                 producto.setStockSimple(
+                         datos.getStockSimple() != null
+                                 ? datos.getStockSimple()
+                                 : 0
+                 );
+             }
+         }
+
+         // =====================================================
+         // 5. VALIDACIÓN
+         // =====================================================
+         validarProducto(producto);
+
+         log.info(
+                 "Producto actualizado id={}",
+                 productoId
+         );
+
+         return productoRepository.save(producto);
+
+     } catch (Exception e) {
+
+         // rollback cloudinary
+         for (String publicId : publicIdsSubidos) {
+             try {
+                 cloudinaryService.eliminarImagen(publicId);
+             } catch (Exception ignored) {
+             }
+         }
+
+         log.error(
+                 "Error actualizando producto {}",
+                 productoId,
+                 e
+         );
+
+         throw new RuntimeException(
+                 "Error actualizando producto",
+                 e
+         );
+     }
+ }
+
+
+ // ============================================================
+ // MÉTODO PRO ACTUALIZAR VARIANTES
+ // ============================================================
+
+ private void actualizarVariantes(
+	        Producto producto,
+	        List<ProductoVarianteDTO> variantesDTO
+	) {
+
+	    // ============================================
+	    // VARIANTES ACTUALES EN BD
+	    // ============================================
+	    Map<Long, ProductoVariante> actuales =
+	            producto.getVariantes()
+	                    .stream()
+	                    .filter(v -> v.getId() != null)
+	                    .collect(Collectors.toMap(
+	                            ProductoVariante::getId,
+	                            v -> v
+	                    ));
+
+	    List<ProductoVariante> nuevasLista =
+	            new ArrayList<>();
+
+	    // ============================================
+	    // RECORRER DTO
+	    // ============================================
+	    for (ProductoVarianteDTO dto : variantesDTO) {
+
+	        ProductoVariante variante;
+
+	        // ========================================
+	        // EXISTENTE
+	        // ========================================
+	        if (dto.getId() != null &&
+	                actuales.containsKey(dto.getId())) {
+
+	            variante = actuales.get(dto.getId());
+
+	        } else {
+
+	            // ====================================
+	            // NUEVA
+	            // ====================================
+	            variante = new ProductoVariante();
+	            variante.setProducto(producto);
+	        }
+
+	        // ========================================
+	        // PRECIO
+	        // ========================================
+	        BigDecimal nuevoPrecio =
+	                dto.getPrecio() != null
+	                        ? dto.getPrecio()
+	                        : producto.getPrice();
+
+	        if (!Objects.equals(
+	                variante.getPrecio(),
+	                nuevoPrecio
+	        )) {
+	            variante.setPrecio(nuevoPrecio);
+	        }
+
+	        // ========================================
+	        // STOCK
+	        // ========================================
+	        Integer nuevoStock =
+	                dto.getStock() != null
+	                        ? dto.getStock()
+	                        : 0;
+
+	        if (!Objects.equals(
+	                variante.getStock(),
+	                nuevoStock
+	        )) {
+	            variante.setStock(nuevoStock);
+	        }
+
+	        // ========================================
+	        // ATRIBUTOS SOLO SI CAMBIARON
+	        // ========================================
+	        Map<String, String> attrsActuales =
+	                variante.getAtributos()
+	                        .stream()
+	                        .collect(Collectors.toMap(
+	                                VarianteAtributo::getNombre,
+	                                VarianteAtributo::getValor
+	                        ));
+
+	        Map<String, String> attrsNuevos =
+	                new LinkedHashMap<>();
+
+	        if (dto.getAtributos() != null) {
+
+	            dto.getAtributos().forEach((k, v) -> {
+
+	                if (k != null &&
+	                        !k.isBlank() &&
+	                        v != null &&
+	                        !v.isBlank()) {
+
+	                    attrsNuevos.put(
+	                            k.trim(),
+	                            v.trim()
+	                    );
+	                }
+	            });
+	        }
+
+	        // SOLO SI CAMBIARON
+	        if (!attrsActuales.equals(attrsNuevos)) {
+
+	            variante.getAtributos().clear();
+
+	            attrsNuevos.forEach((k, v) -> {
+
+	                VarianteAtributo attr =
+	                        new VarianteAtributo();
+
+	                attr.setNombre(k);
+	                attr.setValor(v);
+	                attr.setVariante(variante);
+
+	                variante.getAtributos().add(attr);
+	            });
+	        }
+
+	        nuevasLista.add(variante);
+	    }
+
+	    // ============================================
+	    // SOLO REEMPLAZAR LISTA SI CAMBIÓ
+	    // ============================================
+	    boolean cambioCantidad =
+	            producto.getVariantes().size()
+	                    != nuevasLista.size();
+
+	    boolean cambioIds =
+	            !producto.getVariantes()
+	                    .stream()
+	                    .map(ProductoVariante::getId)
+	                    .toList()
+	                    .equals(
+	                            nuevasLista.stream()
+	                                    .map(ProductoVariante::getId)
+	                                    .toList()
+	                    );
+
+	    if (cambioCantidad || cambioIds) {
+
+	        producto.getVariantes().clear();
+	        producto.getVariantes().addAll(nuevasLista);
+	    }
+	}
     @Transactional
     public void actualizarStockVariante(Long varianteId, Integer stock) {
 
@@ -488,12 +529,14 @@ public class ProductoService {
     }
     
     @Transactional(readOnly = true)
-    public ProductoDTO obtenerProductoDTO(Long id) {
-        Producto producto = productoRepository.findByIdConTodo(id)
-                .orElseThrow(() -> new ProductoNotFoundException(id));
+    public ProductoDetailDTO obtenerDetalleProducto(Long id) {
 
-        return ProductoMapper.toDTO(producto);
-    } 
+        Producto producto = productoRepository
+                .findByIdConTodo(id)
+                .orElseThrow(() -> new RuntimeException("No encontrado"));
+
+        return ProductoMapper.toDetail(producto);
+    }
     
     @Transactional
     public void subirImagenesProducto(
@@ -575,28 +618,31 @@ public class ProductoService {
     }
    
     @Transactional(readOnly = true)
-    public List<CategoriaGrupoDTO> obtenerProductosAgrupadosPorCategoria() {
+    public List<CategoriaGrupoCardDTO> obtenerProductosAgrupadosPorCategoria() {
 
-        List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
+        List<Producto> productos =
+                productoRepository.findProductosVisiblesConTodo();
 
         return productos.stream()
-            .map(ProductoMapper::toDTO)
-            .collect(Collectors.groupingBy(
-                p -> new AbstractMap.SimpleEntry<>(
-                    p.getCategoriaId(),
-                    p.getCategoriaNombre()
-                ),
-                LinkedHashMap::new,
-                Collectors.toList()
-            ))
-            .entrySet()
-            .stream()
-            .map(e -> new CategoriaGrupoDTO(
-                e.getKey().getKey(),     //  ID categoría
-                e.getKey().getValue(),   //  Nombre categoría
-                e.getValue()             //  Productos
-            ))
-            .toList();
+                .collect(Collectors.groupingBy(
+                        p -> new AbstractMap.SimpleEntry<>(
+                                p.getCategoria().getId(),
+                                p.getCategoria().getNombre()
+                        ),
+                        LinkedHashMap::new,
+                        Collectors.mapping(
+                                ProductoMapper::toCard,
+                                Collectors.toList()
+                        )
+                ))
+                .entrySet()
+                .stream()
+                .map(e -> new CategoriaGrupoCardDTO(
+                        e.getKey().getKey(),
+                        e.getKey().getValue(),
+                        e.getValue()
+                ))
+                .toList();
     }
 
     @Transactional
@@ -668,7 +714,7 @@ public class ProductoService {
     
     @Transactional
     public Producto crearProducto(
-            ProductoDTO dto,
+    		ProductoAdminDTO dto,
             List<MultipartFile> imagenes) {
 
         Producto producto = new Producto();
@@ -688,13 +734,41 @@ public class ProductoService {
             dto.getDescription()
         );
 
-        producto.setCategoria(
-            categoriaService.obtenerPorId(
-                dto.getCategoriaId()
-            )
-        );
+        // =====================================
+        // CATEGORÍA (POR NOMBRE)
+        // =====================================
+        if(dto.getCategoriaId()!=null){
+            producto.setCategoria(
+                categoriaService.obtenerPorId(dto.getCategoriaId())
+            );
+        }else if(dto.getNuevaCategoria()!=null &&
+                 !dto.getNuevaCategoria().isBlank()){
 
-        producto.setVisibleEnMenu(true);
+            producto.setCategoria(
+                categoriaService.obtenerOCrearCategoria(
+                    dto.getNuevaCategoria().trim()
+                )
+            );
+        }
+
+        // =====================================
+        // MARCA (OPCIONAL)
+        // =====================================
+        if(dto.getMarcaId() != null){
+
+            producto.setMarca(
+                marcaService.obtenerPorId(dto.getMarcaId())
+            );
+
+        }else if(dto.getMarcaNombre() != null &&
+                 !dto.getMarcaNombre().isBlank()){
+
+            producto.setMarca(
+                marcaService.obtenerOCrear(
+                    dto.getMarcaNombre().trim()
+                )
+            );
+        }
 
         // =====================================
         // PROMOCIÓN
@@ -713,7 +787,7 @@ public class ProductoService {
         );
 
         // =====================================
-        // VARIANTES JSON PRO
+        // VARIANTES
         // =====================================
         if(dto.getVariantes() != null &&
            !dto.getVariantes().isEmpty()){
@@ -723,7 +797,6 @@ public class ProductoService {
             for(ProductoVarianteDTO vDto :
                 dto.getVariantes()){
 
-                // ignorar basura vacía
                 if(vDto.getStock() == null &&
                    vDto.getPrecio() == null){
                     continue;
@@ -746,24 +819,19 @@ public class ProductoService {
                     : dto.getPrecio()
                 );
 
-              
-
-                // atributos dinámicos
-                if(vDto.getAtributos()!=null){
+                if(vDto.getAtributos() != null){
 
                     vDto.getAtributos()
-                    .forEach((k,v)->{
+                    .forEach((k,v) -> {
 
                         if(v != null &&
                            !v.isBlank()){
 
-                            variante
-                            .agregarAtributo(
+                            variante.agregarAtributo(
                                 k.trim(),
                                 v.trim()
                             );
                         }
-
                     });
                 }
 
@@ -774,7 +842,6 @@ public class ProductoService {
 
         }else{
 
-            // simple product
             producto.setStockSimple(
                 dto.getStockSimple() != null
                 ? dto.getStockSimple()
@@ -783,7 +850,7 @@ public class ProductoService {
         }
 
         // =====================================
-        // SAVE
+        // GUARDAR
         // =====================================
         Producto saved =
             productoRepository.save(producto);
@@ -804,20 +871,74 @@ public class ProductoService {
     }
     
     @Transactional(readOnly = true)
-    public List<ProductoResumenDTO> obtenerProductosIndexOptimizado() {
+    public List<ProductoCardDTO> obtenerProductosIndexOptimizado() {
 
-        List<Producto> productos = productoRepository.findProductosVisiblesConTodo();
-
-        return productos.stream().map(p -> new ProductoResumenDTO(
-                p.getId(),
-                p.getProductName(),
-                p.getPrice(),
-                p.getTienePromocion(),
-                p.getPorcentajeDescuento(),
-                p.getImageUrl(), // 👈 USAS TU MÉTODO PRO
-                p.getCategoria() != null ? p.getCategoria().getNombre() : "Sin categoría",
-                p.getDescription()
-        )).toList();
+        return productoRepository.findProductosIndexOptimizado();
     }
+    @Transactional(readOnly = true)
+    public ProductoAdminDTO obtenerProductoAdmin(Long id) {
+
+        Producto producto = productoRepository
+                .findByIdConTodo(id)
+                .orElseThrow(() -> new RuntimeException("No encontrado"));
+
+        return ProductoMapper.toAdmin(producto);
+    }
+    @Transactional(readOnly = true)
+    public List<ProductoAdminListDTO> obtenerProductosAdminOptimizado() {
+
+        // 1. carga ligera
+        List<Producto> productosBase =
+                productoRepository.findProductosAdminBase();
+
+        List<Long> ids = productosBase.stream()
+                .map(Producto::getId)
+                .toList();
+
+        // 2. carga variantes separadas (sin duplicación SQL)
+        List<Producto> productosConVariantes =
+                productoRepository.findProductosConVariantes(ids);
+
+        // 3. merge en memoria (MUY importante)
+        Map<Long, Producto> map = productosBase.stream()
+                .collect(Collectors.toMap(Producto::getId, p -> p));
+
+        for (Producto p : productosConVariantes) {
+            Producto base = map.get(p.getId());
+            base.setVariantes(p.getVariantes());
+        }
+
+        // 4. mapper final
+        return productosBase.stream()
+                .map(ProductoAdminListMapper::toDTO)
+                .toList();
+    }
+    
+    @Transactional(readOnly = true)
+    public List<CategoriaGrupoAdminDTO> obtenerProductosAdminAgrupados() {
+
+        List<ProductoAdminListDTO> productos =
+                obtenerProductosAdminOptimizado();
+
+        return productos.stream()
+            .collect(Collectors.groupingBy(
+                p -> new AbstractMap.SimpleEntry<>(
+                    p.getCategoriaId(),
+                    p.getCategoriaNombre()
+                ),
+                LinkedHashMap::new,
+                Collectors.toList()
+            ))
+            .entrySet()
+            .stream()
+            .map(e -> new CategoriaGrupoAdminDTO(
+                e.getKey().getKey(),
+                e.getKey().getValue(),
+                e.getValue()
+            ))
+            .toList();
+    }
+    
+  
 
 }

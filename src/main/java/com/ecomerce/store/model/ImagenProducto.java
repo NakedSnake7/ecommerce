@@ -16,51 +16,44 @@ public class ImagenProducto {
     @Column(name = "public_id", nullable = false)
     private String publicId;
 
-    // 🔥 LAZY para evitar cargar el producto entero en cada imagen
+    @Column(name = "orden")
+    private Integer orden = 0;
+
+    @Column(name = "principal", nullable = false)
+    private Boolean principal = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
-    // Constructor vacío necesario para JPA
     public ImagenProducto() {}
 
-    // Constructor recomendado
     public ImagenProducto(String imageUrl, String publicId, Producto producto) {
         this.imageUrl = imageUrl;
         this.publicId = publicId;
         this.producto = producto;
     }
 
-    // Getters y Setters
-    public Long getId() {
-        return id;
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getPublicId() { return publicId; }
+    public void setPublicId(String publicId) { this.publicId = publicId; }
+
+    public Integer getOrden() { return orden; }
+    public void setOrden(Integer orden) { this.orden = orden; }
+
+    public Boolean getPrincipal() {
+        return principal;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setPrincipal(Boolean principal) {
+        this.principal = principal;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public String getPublicId() {
-        return publicId;
-    }
-
-    public void setPublicId(String publicId) {
-        this.publicId = publicId;
-    }
-
-    public Producto getProducto() {
-        return producto;
-    }
-
-    public void setProducto(Producto producto) {
-        this.producto = producto;
-    }
+    public Producto getProducto() { return producto; }
+    public void setProducto(Producto producto) { this.producto = producto; }
 }

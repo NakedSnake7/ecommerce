@@ -1,7 +1,7 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.ProductoDTO; 
-import com.ecomerce.store.dto.ProductoVarianteDTO;
+import com.ecomerce.store.dto.producto.admin.ProductoAdminDTO;
+import com.ecomerce.store.dto.producto.shared.ProductoVarianteDTO;
 import com.ecomerce.store.model.Producto;
 
 import com.ecomerce.store.service.ProductoService;
@@ -33,13 +33,12 @@ public class ProductoViewController {
     // ==================================================
     // LISTA DE PRODUCTOS
     // ==================================================
-    @GetMapping("/VerProductos")
+    @GetMapping("/admin/productos")
     public String verProductos(Model model) {
-    	
 
         model.addAttribute(
             "categorias",
-            productoService.obtenerProductosAgrupadosPorCategoria()
+            productoService.obtenerProductosAdminAgrupados()
         );
 
         return "VerProductos";
@@ -53,7 +52,7 @@ public class ProductoViewController {
     @GetMapping("/nuevo")
     public String formularioNuevoProducto(Model model) {
 
-        model.addAttribute("producto", new ProductoDTO());
+        model.addAttribute("producto", new ProductoAdminDTO());
 
         model.addAttribute(
             "categorias",
@@ -71,78 +70,144 @@ public class ProductoViewController {
     // ==================================================
     // GUARDAR NUEVO
     // ==================================================
- // CONTROLLER PRO JSON STRIDE
 
     @PostMapping("/nuevo")
     public String guardarProducto(
 
-            @Valid @ModelAttribute("producto") ProductoDTO dto,
+            @Valid @ModelAttribute("producto") ProductoAdminDTO dto,
             BindingResult result,
 
-            @RequestParam(value="imagenes",required=false)
+            @RequestParam(value = "imagenes", required = false)
             List<MultipartFile> imagenes,
 
-            @RequestParam(value="variantesJson",required=false)
+            @RequestParam(value = "variantesJson", required = false)
             String variantesJson,
+
+            @RequestParam(value = "nuevaCategoria", required = false)
+            String nuevaCategoria,
+
+            @RequestParam(value = "nuevaMarca", required = false)
+            String nuevaMarca,
 
             Model model) {
 
-    	if (result.hasErrors()) {
+        // ==================================================
+        // VALIDACIONES DEL FORM
+        // ==================================================
+        if (result.hasErrors()) {
 
-    	    model.addAttribute(
-    	        "categorias",
-    	        categoriaService.obtenerTodas()
-    	    );
+            model.addAttribute(
+                    "categorias",
+                    categoriaService.obtenerTodas()
+            );
 
-    	    model.addAttribute(
-    	        "marcas",
-    	        marcaService.obtenerTodas()
-    	    );
+            model.addAttribute(
+                    "marcas",
+                    marcaService.obtenerTodas()
+            );
 
-    	    return "EditarProducto";
-    	}
+            return "subirProducto";
+        }
 
-        try{
+        try {
 
-            // convertir JSON -> lista variantes
-            if(variantesJson != null &&
-               !variantesJson.isBlank()){
+            // ==================================================
+            // CATEGORÍA
+            // ==================================================
+
+            // Si escribió una nueva categoría manual
+            if (nuevaCategoria != null &&
+                !nuevaCategoria.isBlank()) {
+
+                dto.setCategoriaId(
+
+                    categoriaService
+                        .obtenerOCrearCategoria(
+                            nuevaCategoria.trim()
+                        )
+                        .getId()
+                );
+
+            } else if (dto.getCategoriaId() != null) {
+
+                // Si seleccionó una categoría existente
+                // simplemente usamos esa ID.
+                // Si no existe en BD la crea automática
+                dto.setCategoriaId(
+
+                    categoriaService
+                        .obtenerPorId(dto.getCategoriaId())
+                        .getId()
+                );
+            }
+
+            // ==================================================
+            // MARCA
+            // ==================================================
+
+            if (nuevaMarca != null && !nuevaMarca.isBlank()) {
+                dto.setMarcaId(
+                    marcaService
+                        .obtenerOCrear(nuevaMarca)
+                        .getId()
+                );
+            }
+
+            // ==================================================
+            // CONVERTIR JSON VARIANTES
+            // ==================================================
+
+            if (variantesJson != null &&
+                !variantesJson.isBlank()) {
 
                 ObjectMapper mapper =
-                    new ObjectMapper();
+                        new ObjectMapper();
 
                 List<ProductoVarianteDTO> variantes =
-                    mapper.readValue(
-                        variantesJson,
-                        new TypeReference<
-                          List<ProductoVarianteDTO>>() {}
-                    );
+                        mapper.readValue(
+                                variantesJson,
+                                new TypeReference<
+                                    List<ProductoVarianteDTO>>() {}
+                        );
 
                 dto.setVariantes(variantes);
             }
 
-            productoService.crearProducto(dto,imagenes);
+            // ==================================================
+            // GUARDAR PRODUCTO
+            // ==================================================
+
+            productoService.crearProducto(
+                    dto,
+                    imagenes
+            );
 
             return "redirect:/VerProductos";
 
-        }catch(Exception e){
+        } catch (Exception e) {
 
             e.printStackTrace();
 
             result.reject(
-                "error.producto",
-                "Error al guardar producto"
+                    "error.producto",
+                    "Error al guardar producto: "
+                            + e.getMessage()
             );
 
             model.addAttribute(
-                "categorias",
-                categoriaService.obtenerTodas()
+                    "categorias",
+                    categoriaService.obtenerTodas()
             );
-            
+
             model.addAttribute(
-            	    "marcas",
-            	    marcaService.obtenerTodas()
-            	);
+                    "marcas",
+                    marcaService.obtenerTodas()
+            );
+
+            model.addAttribute(
+                    "producto",
+                    dto
+            );
 
             return "subirProducto";
         }
@@ -156,8 +221,7 @@ public class ProductoViewController {
             @PathVariable Long id,
             Model model) {
 
-        ProductoDTO dto =
-            productoService.obtenerProductoDTO(id);
+    	ProductoAdminDTO dto = productoService.obtenerProductoAdmin(id);
 
         model.addAttribute(
             "productoDTO",
@@ -183,15 +247,17 @@ public class ProductoViewController {
     @PostMapping("/editar/{id}")
     public String editarProducto(
             @PathVariable Long id,
-            @Valid @ModelAttribute("productoDTO") ProductoDTO dto,
+            @Valid @ModelAttribute("productoDTO") ProductoAdminDTO dto,
             BindingResult result,
-            @RequestParam(value = "imagenes", required = false)
+            @RequestParam(value="imagenes", required=false)
             List<MultipartFile> nuevasImagenes,
             Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("categorias",
-                categoriaService.obtenerTodas());
+
+            model.addAttribute("productoDTO", dto);
+            model.addAttribute("categorias", categoriaService.obtenerTodas());
+            model.addAttribute("marcas", marcaService.obtenerTodas());
 
             return "EditarProducto";
         }
@@ -201,44 +267,38 @@ public class ProductoViewController {
             Producto datos = new Producto();
 
             datos.setProductName(dto.getProductName());
-            datos.setPrice(dto.getPrice());
+            datos.setPrice(dto.getPrecio());
             datos.setDescription(dto.getDescription());
-            datos.setPorcentajeDescuento(
-                dto.getPorcentajeDescuento()
-            );
-
-            // 🔥 FIX STOCK SIMPLE
-            datos.setStockSimple(
-                dto.getStockSimple()
-            );
+            datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
+            datos.setStockSimple(dto.getStockSimple());
 
             if (dto.getNuevaCategoria() != null &&
-            	    !dto.getNuevaCategoria().isBlank()) {
+                !dto.getNuevaCategoria().isBlank()) {
 
-            	    datos.setCategoria(
-            	        categoriaService.obtenerOCrearCategoria(
-            	            dto.getNuevaCategoria()
-            	        )
-            	    );
+                datos.setCategoria(
+                    categoriaService.obtenerOCrearCategoria(
+                        dto.getNuevaCategoria()
+                    )
+                );
 
-            	} else {
+            } else {
 
-            	    datos.setCategoria(
-            	        categoriaService.obtenerPorId(
-            	            dto.getCategoriaId()
-            	        )
-            	    );
-            	}
+                datos.setCategoria(
+                    categoriaService.obtenerPorId(
+                        dto.getCategoriaId()
+                    )
+                );
+            }
 
-            	/* MARCA SIEMPRE */
-            	if(dto.getMarcaId()!=null){
-
-            	    datos.setMarca(
-            	        marcaService.obtenerPorId(
-            	            dto.getMarcaId()
-            	        )
-            	    );
-            	}
+            if (dto.getMarcaNombre() != null && !dto.getMarcaNombre().isBlank()) {
+                datos.setMarca(
+                    marcaService.obtenerOCrear(dto.getMarcaNombre())
+                );
+            } else if (dto.getMarcaId() != null) {
+                datos.setMarca(
+                    marcaService.obtenerPorId(dto.getMarcaId())
+                );
+            }
 
             productoService.actualizarProductoCompleto(
                 id,
@@ -252,15 +312,11 @@ public class ProductoViewController {
 
         } catch (Exception e) {
 
-            result.reject(
-                "error.producto",
-                "Error al actualizar producto"
-            );
+            e.printStackTrace();
 
-            model.addAttribute(
-                "categorias",
-                categoriaService.obtenerTodas()
-            );
+            model.addAttribute("productoDTO", dto);
+            model.addAttribute("categorias", categoriaService.obtenerTodas());
+            model.addAttribute("marcas", marcaService.obtenerTodas());
 
             return "EditarProducto";
         }
@@ -278,8 +334,15 @@ public class ProductoViewController {
     @GetMapping("/modificar-precios")
     public String vistaModificarPrecios(Model model) {
 
-        model.addAttribute("productos", productoService.obtenerProductosCompletos()); // DTO
-        model.addAttribute("categorias", productoService.obtenerCategorias());
+        model.addAttribute(
+            "productos",
+            productoService.obtenerProductosAdminOptimizado()
+        );
+
+        model.addAttribute(
+            "categorias",
+            productoService.obtenerCategorias()
+        );
 
         return "modificar-precios";
     }

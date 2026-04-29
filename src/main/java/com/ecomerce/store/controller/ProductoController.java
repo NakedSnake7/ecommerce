@@ -1,11 +1,12 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.ProductoDTO;  
+import com.ecomerce.store.dto.producto.admin.ProductoAdminDTO;
+import com.ecomerce.store.dto.producto.publico.ProductoCardDTO;
+import com.ecomerce.store.dto.producto.publico.ProductoDetailDTO;
 import com.ecomerce.store.model.Producto;
 import com.ecomerce.store.service.CategoriaService;
 import com.ecomerce.store.service.ProductoService;
 
-import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class ProductoController {
     // LISTADO
     // ==================================================
     @GetMapping
-    public List<ProductoDTO> listarProductos() {
+    public List<ProductoCardDTO> listarProductos() {
         return productoService.obtenerProductosCompletos();
     }
 
@@ -38,8 +39,8 @@ public class ProductoController {
     // OBTENER POR ID
     // ==================================================
     @GetMapping("/{id}")
-    public Producto obtenerProducto(@PathVariable Long id) {
-        return productoService.obtenerProducto(id);
+    public ProductoDetailDTO obtenerProducto(@PathVariable Long id) {
+        return productoService.obtenerDetalleProducto(id);
     }
 
     // ==================================================
@@ -57,7 +58,7 @@ public class ProductoController {
     @PostMapping("/editar/{id}")
     public Map<String, Object> actualizarProducto(
             @PathVariable Long id,
-            @Valid @ModelAttribute ProductoDTO dto,
+            @ModelAttribute ProductoAdminDTO dto,
             @RequestParam(value = "imagenes", required = false)
             List<MultipartFile> nuevasImagenes,
 
@@ -68,7 +69,7 @@ public class ProductoController {
         Producto datos = new Producto();
 
         datos.setProductName(dto.getProductName());
-        datos.setPrice(dto.getPrice());
+        datos.setPrice(dto.getPrecio());
         datos.setDescription(dto.getDescription());
         datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
         datos.setStockSimple(dto.getStockSimple());

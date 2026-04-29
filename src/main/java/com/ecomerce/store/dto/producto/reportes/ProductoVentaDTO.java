@@ -1,11 +1,11 @@
-package com.ecomerce.store.dto;
+package com.ecomerce.store.dto.producto.reportes;
 
-public class ProductSalesDTO {
+public class ProductoVentaDTO {
 
     private String productName;
     private Long totalQuantity;
 
-    public ProductSalesDTO(String productName, Long totalQuantity) {
+    public ProductoVentaDTO(String productName, Long totalQuantity) {
         this.productName = productName;
         this.totalQuantity = totalQuantity;
     }

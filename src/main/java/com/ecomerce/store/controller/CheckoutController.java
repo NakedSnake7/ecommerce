@@ -1,6 +1,6 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.CheckoutRequestDTO;   
+import com.ecomerce.store.dto.checkout.CheckoutRequestDTO;
 import com.ecomerce.store.model.*;
 import com.ecomerce.store.model.Order.PaymentMethod;
 import com.ecomerce.store.repository.ProductoRepository;

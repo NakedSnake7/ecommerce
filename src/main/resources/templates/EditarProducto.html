@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Editar Producto</title>
 
 <link rel="stylesheet"
@@ -23,7 +22,10 @@ href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 --gold:#f59e0b;
 }
 
+*{box-sizing:border-box}
+
 body{
+margin:0;
 background:linear-gradient(135deg,#0a0a0a,#111827,#0b0b0d);
 min-height:100vh;
 color:var(--text);
@@ -31,7 +33,7 @@ font-family:Inter,system-ui;
 }
 
 .wrapper{
-max-width:1200px;
+max-width:1300px;
 margin:auto;
 padding:30px 15px;
 }
@@ -50,6 +52,7 @@ margin-bottom:22px;
 display:flex;
 justify-content:space-between;
 align-items:center;
+gap:15px;
 flex-wrap:wrap;
 }
 
@@ -61,31 +64,28 @@ margin:0;
 
 .sub{
 color:var(--muted);
-margin-top:4px;
+margin-top:5px;
 }
 
 .section{
-padding:22px;
+padding:24px;
 margin-bottom:22px;
 }
 
 label{
-font-weight:600;
-font-size:.95rem;
+font-weight:700;
+font-size:.92rem;
+margin-bottom:7px;
+display:block;
 }
 
-.form-control,
-.custom-file-label{
+.form-control{
 background:#111216;
 border:1px solid var(--line);
-color:white;
+color:#fff;
 border-radius:14px;
-height:auto;
 padding:12px 14px;
-}
-
-textarea.form-control{
-min-height:130px;
+height:auto;
 }
 
 .form-control:focus{
@@ -95,26 +95,35 @@ border-color:#3b82f6;
 box-shadow:none;
 }
 
+textarea.form-control{
+min-height:130px;
+resize:vertical;
+}
+
 .btn{
+border:none;
 border-radius:14px;
-padding:10px 18px;
+padding:11px 18px;
 font-weight:700;
 }
 
 .btn-pro{
 background:linear-gradient(135deg,#3b82f6,#2563eb);
 color:white;
-border:none;
 }
 
 .btn-save{
 background:linear-gradient(135deg,#10b981,#059669);
 color:white;
-border:none;
 }
 
 .btn-danger{
-border:none;
+background:linear-gradient(135deg,#ef4444,#dc2626);
+}
+
+.btn-light{
+background:#fff;
+color:#111;
 }
 
 .variant-card{
@@ -125,11 +134,19 @@ padding:18px;
 margin-bottom:16px;
 }
 
+.attr-row{
+display:grid;
+grid-template-columns:1fr 1fr auto;
+gap:10px;
+margin-bottom:10px;
+}
+
 .badge-stock{
 padding:7px 12px;
-border-radius:50px;
+border-radius:40px;
 font-size:.8rem;
 font-weight:700;
+display:inline-block;
 }
 
 .in{
@@ -146,26 +163,26 @@ color:#f87171;
 position:relative;
 border-radius:16px;
 overflow:hidden;
-margin-bottom:15px;
 border:1px solid var(--line);
+margin-bottom:15px;
 }
 
 .img-box img{
 width:100%;
-height:180px;
+height:200px;
 object-fit:cover;
 }
 
 .img-actions{
 position:absolute;
-bottom:10px;
 right:10px;
+bottom:10px;
 }
 
 .dropzone{
 border:2px dashed #374151;
 border-radius:18px;
-padding:30px;
+padding:35px;
 text-align:center;
 cursor:pointer;
 transition:.2s;
@@ -173,57 +190,53 @@ transition:.2s;
 
 .dropzone:hover{
 border-color:#3b82f6;
-background:rgba(59,130,246,.06);
+background:rgba(59,130,246,.05);
 }
 
 .toast-box{
 position:fixed;
-top:25px;
-right:25px;
-z-index:9999;
-min-width:260px;
-display:none;
-padding:15px 18px;
-border-radius:16px;
+right:20px;
+top:20px;
+z-index:99999;
+padding:14px 18px;
+border-radius:14px;
 font-weight:700;
+display:none;
+min-width:240px;
 }
 
-.toast-success{
-background:#10b981;
-color:white;
-}
-
-.toast-error{
-background:#ef4444;
-color:white;
-}
+.toast-success{background:#10b981;color:white;}
+.toast-error{background:#ef4444;color:white;}
 
 .loader{
 display:none;
-width:22px;
-height:22px;
+width:20px;
+height:20px;
 border:3px solid rgba(255,255,255,.2);
 border-top:3px solid white;
 border-radius:50%;
 animation:spin .8s linear infinite;
-margin-right:10px;
+margin-right:8px;
 }
 
 @keyframes spin{
-100%{transform:rotate(360deg);}
+100%{transform:rotate(360deg)}
 }
 
 @media(max-width:768px){
-.title{font-size:1.5rem;}
-.header{padding:20px;}
-.section{padding:18px;}
+.attr-row{
+grid-template-columns:1fr;
+}
+.title{
+font-size:1.45rem;
+}
 }
 </style>
 </head>
 
 <body>
 
-<div class="toast-box" id="toast"></div>
+<div id="toast" class="toast-box"></div>
 
 <div class="wrapper">
 
@@ -235,19 +248,25 @@ margin-right:10px;
 </div>
 
 <div>
-<a href="/VerProductos" class="btn btn-outline-light">Volver</a>
+<button type="button"
+class="btn btn-light"
+onclick="history.back()">
+Volver
+</button>
 </div>
 </div>
 
+<!-- FORM -->
 <form id="formEditar"
-      th:action="@{'/api/productos/editar/' + ${productoDTO.id}}"
-      method="post"
-      enctype="multipart/form-data">
+th:action="@{'/api/productos/editar/' + ${productoDTO.id}}"
+method="post"
+enctype="multipart/form-data">
 
 <input type="hidden" name="id" th:value="${productoDTO.id}">
 
 <!-- DATOS -->
 <div class="glass section">
+
 <div class="row">
 
 <div class="col-md-6 mb-3">
@@ -262,41 +281,44 @@ th:value="${productoDTO.productName}">
 <input type="number"
 step="0.01"
 class="form-control"
-name="price"
-th:value="${productoDTO.price}">
+name="precio"
+th:value="${productoDTO.precio}">
 </div>
 
-<!-- STOCK SIMPLE (solo productos sin variantes) -->
 <div class="col-md-3 mb-3"
-     id="stockSimpleBox"
-     th:style="${productoDTO.tieneVariantes} ? 'display:none;' : 'display:block;'">
-
+id="stockSimpleBox"
+th:style="${productoDTO.tieneVariantes}? 'display:none;' : 'display:block;'">
 <label>Stock General</label>
-
 <input type="number"
-       min="0"
-       class="form-control"
-       name="stockSimple"
-       id="stockSimple"
-       th:value="${productoDTO.stockSimple}">
+class="form-control"
+name="stockSimple"
+id="stockSimple"
+th:value="${productoDTO.stockSimple}">
 </div>
-
 
 <div class="col-md-6 mb-3">
-<label>Categoría</label>
-
-<select class="form-control" name="categoriaId">
-    <option value="">Selecciona categoría</option>
-
-    <option th:each="cat : ${categorias}"
-            th:value="${cat.id}"
-            th:text="${cat.nombre}"
-            th:selected="${cat.id == productoDTO.categoriaId}">
-    </option>
+<label>Marca</label>
+<select class="form-control" name="marcaId">
+<option value="">Sin marca</option>
+<option th:each="m : ${marcas}"
+th:value="${m.id}"
+th:text="${m.nombre}"
+th:selected="${m.id == productoDTO.marcaId}">
+</option>
 </select>
 </div>
 
-
+<div class="col-md-6 mb-3">
+<label>Categoría</label>
+<select class="form-control" name="categoriaId">
+<option value="">Seleccionar</option>
+<option th:each="cat : ${categorias}"
+th:value="${cat.id}"
+th:text="${cat.nombre}"
+th:selected="${cat.id == productoDTO.categoriaId}">
+</option>
+</select>
+</div>
 
 <div class="col-md-3 mb-3">
 <label>Descuento %</label>
@@ -319,10 +341,13 @@ th:text="${productoDTO.description}"></textarea>
 <!-- VARIANTES -->
 <div class="glass section">
 
-<div class="d-flex justify-content-between mb-3">
-<h4>Variantes</h4>
-<button type="button" id="addVariante" class="btn btn-pro">
-+ Agregar
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h4 class="m-0">Variantes</h4>
+
+<button type="button"
+class="btn btn-pro"
+id="addVariante">
++ Agregar Variante
 </button>
 </div>
 
@@ -338,7 +363,7 @@ th:value="${v.id}">
 
 <div class="row">
 
-<div class="col-md-3 mb-2">
+<div class="col-md-4 mb-2">
 <label>Stock</label>
 <input type="number"
 class="form-control stock-input"
@@ -346,7 +371,7 @@ th:name="|variantes[${iter.index}].stock|"
 th:value="${v.stock}">
 </div>
 
-<div class="col-md-3 mb-2">
+<div class="col-md-4 mb-2">
 <label>Precio</label>
 <input type="number"
 step="0.01"
@@ -355,7 +380,7 @@ th:name="|variantes[${iter.index}].precio|"
 th:value="${v.precio}">
 </div>
 
-<div class="col-md-3 mb-2 d-flex align-items-end">
+<div class="col-md-4 mb-2 d-flex align-items-end">
 <span class="badge-stock"
 th:classappend="${v.stock > 0 ? ' in':' out'}"
 th:text="${v.stock > 0 ? 'Con stock':'Agotado'}">
@@ -364,34 +389,43 @@ th:text="${v.stock > 0 ? 'Con stock':'Agotado'}">
 
 </div>
 
-<!-- 🔥 ATRIBUTOS -->
 <div class="atributos-container mt-2">
 
-<div th:each="entry, i : ${v.atributos}" class="attr-row">
-<input type="text"
-class="form-control mb-1"
-th:name="|variantes[${iter.index}].atributosKeys[${i.index}]|"
-th:value="${entry.key}"
-placeholder="Nombre atributo">
+<div class="attr-row"
+th:each="entry,i : ${v.atributos}">
 
 <input type="text"
-class="form-control mb-2"
+class="form-control"
+th:name="|variantes[${iter.index}].atributosKeys[${i.index}]|"
+th:value="${entry.key}"
+placeholder="Nombre">
+
+<input type="text"
+class="form-control"
 th:name="|variantes[${iter.index}].atributosValues[${i.index}]|"
 th:value="${entry.value}"
 placeholder="Valor">
-</div>
-
-</div>
 
 <button type="button"
-class="btn btn-info btn-sm addAttr mt-2">
-+ atributo
+class="btn btn-danger removeAttr">
+X
+</button>
+
+</div>
+
+</div>
+
+<div class="mt-2">
+<button type="button"
+class="btn btn-info btn-sm addAttr">
++ Atributo
 </button>
 
 <button type="button"
-class="btn btn-danger btn-sm removeVariante mt-2">
+class="btn btn-danger btn-sm removeVariante">
 Eliminar
 </button>
+</div>
 
 </div>
 
@@ -407,36 +441,34 @@ Eliminar
 <div class="row">
 
 <div class="col-md-4"
-     th:each="img,iter : ${productoDTO.urlsImagenesExistentes}">
+th:each="img,iter : ${productoDTO.urlsImagenesExistentes}">
 
-    <div class="img-box imagen-item">
+<div class="img-box">
 
-        <img th:src="${img}">
+<img th:src="${img}">
 
-        <div class="img-actions">
+<div class="img-actions">
 
-            <button type="button"
-                    class="btn btn-danger btn-sm btnEliminarImagen"
-                    th:data-id="${productoDTO.imagenesExistentes[iter.index]}"
-                    th:data-producto="${productoDTO.id}">
-                Eliminar
-            </button>
+<button type="button"
+class="btn btn-danger btn-sm btnEliminarImagen"
+th:data-id="${productoDTO.imagenesExistentes[iter.index]}"
+th:data-producto="${productoDTO.id}">
+Eliminar
+</button>
 
-        </div>
-
-    </div>
-
+</div>
+</div>
 </div>
 
 </div>
 
 <div class="dropzone mt-3" id="dropzone">
-<div>Arrastra imágenes aquí o haz click</div>
-<input type="file"
+Haz click o arrastra imágenes aquí
+<input hidden
 multiple
+type="file"
 name="imagenes"
 id="imagenes"
-hidden
 accept="image/*">
 </div>
 
@@ -447,9 +479,12 @@ accept="image/*">
 <!-- SAVE -->
 <div class="text-center mb-5">
 
-<button class="btn btn-save btn-lg px-5" type="submit">
-<span class="loader" id="loader"></span>
+<button class="btn btn-save btn-lg px-5"
+type="submit">
+
+<span id="loader" class="loader"></span>
 <span id="btnText">Guardar Cambios</span>
+
 </button>
 
 </div>
@@ -458,458 +493,302 @@ accept="image/*">
 </div>
 
 <script>
-/* =========================
-   TOAST
-========================= */
-const toast = (msg, type = 'success') => {
-    const t = document.getElementById('toast');
+/* ==========================
+TOAST
+========================== */
+function toast(msg,type='success'){
+const t=document.getElementById('toast');
+t.className='toast-box ' + (type==='success' ? 'toast-success':'toast-error');
+t.innerText=msg;
+t.style.display='block';
+setTimeout(()=>t.style.display='none',2500);
+}
 
-    t.className =
-        'toast-box ' +
-        (type === 'success'
-            ? 'toast-success'
-            : 'toast-error');
+/* ==========================
+BADGES
+========================== */
+function actualizarBadgeStock(input){
+const badge=input.closest('.variant-card')
+.querySelector('.badge-stock');
 
-    t.innerText = msg;
-    t.style.display = 'block';
+if(Number(input.value)>0){
+badge.innerText='Con stock';
+badge.className='badge-stock in';
+}else{
+badge.innerText='Agotado';
+badge.className='badge-stock out';
+}
+}
 
-    setTimeout(() => {
-        t.style.display = 'none';
-    }, 2500);
+function controlarStockSimple(){
+const box=document.getElementById('stockSimpleBox');
+const cards=document.querySelectorAll('.variant-card');
+box.style.display=cards.length===0?'block':'none';
+}
+
+/* ==========================
+REINDEX
+========================== */
+function reindexVariantes(){
+
+document.querySelectorAll('.variant-card')
+.forEach((card,index)=>{
+
+card.dataset.index=index;
+
+card.querySelectorAll('input').forEach(input=>{
+if(!input.name)return;
+input.name=input.name.replace(
+/variantes\[\d+]/g,
+`variantes[${index}]`
+);
+});
+
+card.querySelectorAll('.attr-row')
+.forEach((row,i)=>{
+
+const inputs=row.querySelectorAll('input');
+
+inputs[0].name=
+`variantes[${index}].atributosKeys[${i}]`;
+
+inputs[1].name=
+`variantes[${index}].atributosValues[${i}]`;
+
+});
+});
+
+controlarStockSimple();
+}
+
+/* ==========================
+ADD VARIANTE
+========================== */
+document.getElementById('addVariante')
+.addEventListener('click',()=>{
+
+const wrap=document.getElementById('variantesWrap');
+const i=document.querySelectorAll('.variant-card').length;
+
+wrap.insertAdjacentHTML('beforeend',`
+
+<div class="variant-card" data-index="${i}">
+
+<div class="row">
+
+<div class="col-md-4 mb-2">
+<label>Stock</label>
+<input type="number"
+class="form-control stock-input"
+name="variantes[${i}].stock"
+value="0">
+</div>
+
+<div class="col-md-4 mb-2">
+<label>Precio</label>
+<input type="number"
+step="0.01"
+class="form-control"
+name="variantes[${i}].precio">
+</div>
+
+<div class="col-md-4 mb-2 d-flex align-items-end">
+<span class="badge-stock out">
+Agotado
+</span>
+</div>
+
+</div>
+
+<div class="atributos-container mt-2"></div>
+
+<div class="mt-2">
+<button type="button"
+class="btn btn-info btn-sm addAttr">
++ Atributo
+</button>
+
+<button type="button"
+class="btn btn-danger btn-sm removeVariante">
+Eliminar
+</button>
+</div>
+
+</div>
+`);
+
+controlarStockSimple();
+
+});
+
+/* ==========================
+EVENTOS GLOBALES
+========================== */
+document.addEventListener('click',e=>{
+
+if(e.target.classList.contains('removeVariante')){
+e.target.closest('.variant-card').remove();
+reindexVariantes();
+}
+
+if(e.target.classList.contains('addAttr')){
+
+const card=e.target.closest('.variant-card');
+const i=card.dataset.index;
+const c=card.querySelector('.atributos-container');
+const n=c.querySelectorAll('.attr-row').length;
+
+c.insertAdjacentHTML('beforeend',`
+
+<div class="attr-row">
+
+<input type="text"
+class="form-control"
+name="variantes[${i}].atributosKeys[${n}]"
+placeholder="Nombre">
+
+<input type="text"
+class="form-control"
+name="variantes[${i}].atributosValues[${n}]"
+placeholder="Valor">
+
+<button type="button"
+class="btn btn-danger removeAttr">
+X
+</button>
+
+</div>
+`);
+}
+
+if(e.target.classList.contains('removeAttr')){
+e.target.closest('.attr-row').remove();
+reindexVariantes();
+}
+
+if(e.target.classList.contains('btnEliminarImagen')){
+eliminarImagen(e.target);
+}
+
+});
+
+document.addEventListener('input',e=>{
+if(e.target.classList.contains('stock-input')){
+actualizarBadgeStock(e.target);
+}
+});
+
+/* ==========================
+DROPZONE
+========================== */
+const dz=document.getElementById('dropzone');
+const file=document.getElementById('imagenes');
+const preview=document.getElementById('preview');
+
+dz.onclick=()=>file.click();
+
+file.onchange=()=>{
+
+preview.innerHTML='';
+
+[...file.files].forEach(f=>{
+
+const reader=new FileReader();
+
+reader.onload=e=>{
+
+preview.insertAdjacentHTML('beforeend',`
+
+<div class="col-md-3 mb-3">
+<div class="img-box">
+<img src="${e.target.result}">
+</div>
+</div>
+
+`);
+
 };
 
-
-/* =========================
-   BADGE STOCK VARIANTES
-========================= */
-function actualizarBadgeStock(input) {
-
-    const badge = input
-        .closest('.variant-card')
-        ?.querySelector('.badge-stock');
-
-    if (!badge) return;
-
-    if (Number(input.value) > 0) {
-        badge.innerText = 'Con stock';
-        badge.className = 'badge-stock in';
-    } else {
-        badge.innerText = 'Agotado';
-        badge.className = 'badge-stock out';
-    }
-}
-
-
-/* =========================
-   BADGE STOCK SIMPLE
-========================= */
-function actualizarBadgeSimple() {
-
-    const input =
-        document.getElementById('stockSimple');
-
-    const badge =
-        document.getElementById('badgeStockSimple');
-
-    if (!input || !badge) return;
-
-    if (Number(input.value) > 0) {
-        badge.innerText = 'Con stock';
-        badge.className = 'badge-stock in';
-    } else {
-        badge.innerText = 'Agotado';
-        badge.className = 'badge-stock out';
-    }
-}
-
-
-/* =========================
-   MOSTRAR / OCULTAR STOCK SIMPLE
-========================= */
-function controlarStockSimple() {
-
-    const bloque =
-        document.getElementById('stockSimpleBox');
-
-    const variantes =
-        document.querySelectorAll('.variant-card');
-
-    if (!bloque) return;
-
-    if (variantes.length === 0) {
-        bloque.style.display = 'block';
-    } else {
-        bloque.style.display = 'none';
-    }
-}
-
-
-/* =========================
-   REINDEX VARIANTES
-========================= */
-function reindexVariantes() {
-
-    const cards =
-        document.querySelectorAll('.variant-card');
-
-    cards.forEach((card, index) => {
-
-        card.dataset.index = index;
-
-        card.querySelectorAll('input').forEach(input => {
-
-            if (!input.name) return;
-
-            input.name = input.name.replace(
-                /variantes\[\d+]/,
-                `variantes[${index}]`
-            );
-        });
-
-        const attrRows =
-            card.querySelectorAll('.attr-row');
-
-        attrRows.forEach((row, attrIndex) => {
-
-            const inputs =
-                row.querySelectorAll('input');
-
-            if (inputs.length < 2) return;
-
-            inputs[0].name =
-                `variantes[${index}].atributosKeys[${attrIndex}]`;
-
-            inputs[1].name =
-                `variantes[${index}].atributosValues[${attrIndex}]`;
-
-        });
-
-    });
-
-    controlarStockSimple();
-}
-
-
-/* =========================
-   INPUT EVENTS
-========================= */
-document.addEventListener('input', e => {
-
-    if (e.target.classList.contains('stock-input')) {
-        actualizarBadgeStock(e.target);
-    }
-
-    if (e.target.id === 'stockSimple') {
-        actualizarBadgeSimple();
-    }
+reader.readAsDataURL(f);
 
 });
+};
 
+/* ==========================
+DELETE IMG
+========================== */
+async function eliminarImagen(btn){
 
-/* =========================
-   AGREGAR VARIANTE
-========================= */
-document.getElementById('addVariante')
-?.addEventListener('click', () => {
+if(!confirm('¿Eliminar imagen?')) return;
 
-    const wrap =
-        document.getElementById('variantesWrap');
+const id=btn.dataset.id;
+const producto=btn.dataset.producto;
 
-    const index =
-        document.querySelectorAll('.variant-card').length;
+const r=await fetch(
+`/api/productos/${producto}/eliminar-imagen/${id}`,
+{method:'DELETE'}
+);
 
-    wrap.insertAdjacentHTML('beforeend', `
-
-    <div class="variant-card"
-         data-index="${index}">
-
-        <div class="row">
-
-            <div class="col-md-4 mb-2">
-                <label>Stock</label>
-
-                <input type="number"
-                       class="form-control stock-input"
-                       name="variantes[${index}].stock"
-                       value="0">
-            </div>
-
-            <div class="col-md-4 mb-2">
-                <label>Precio</label>
-
-                <input type="number"
-                       step="0.01"
-                       class="form-control"
-                       name="variantes[${index}].precio">
-            </div>
-
-            <div class="col-md-4 mb-2 d-flex align-items-end">
-                <span class="badge-stock out">
-                    Agotado
-                </span>
-            </div>
-
-        </div>
-
-        <div class="atributos-container mt-2"></div>
-
-        <button type="button"
-                class="btn btn-info btn-sm addAttr mt-2">
-            + atributo
-        </button>
-
-        <button type="button"
-                class="btn btn-danger btn-sm removeVariante mt-2">
-            Eliminar
-        </button>
-
-    </div>
-    `);
-
-    controlarStockSimple();
-
-});
-
-
-/* =========================
-   CLICK GLOBAL
-========================= */
-document.addEventListener('click', e => {
-
-    /* ELIMINAR VARIANTE */
-    if (e.target.classList.contains('removeVariante')) {
-
-        e.target
-            .closest('.variant-card')
-            .remove();
-
-        reindexVariantes();
-    }
-
-    /* AGREGAR ATRIBUTO */
-    if (e.target.classList.contains('addAttr')) {
-
-        const card =
-            e.target.closest('.variant-card');
-
-        const index =
-            card.dataset.index;
-
-        const container =
-            card.querySelector('.atributos-container');
-
-        const attrIndex =
-            container.querySelectorAll('.attr-row').length;
-
-        container.insertAdjacentHTML('beforeend', `
-
-        <div class="attr-row">
-
-            <input type="text"
-                   class="form-control mb-1"
-                   name="variantes[${index}].atributosKeys[${attrIndex}]"
-                   placeholder="Ej: Color">
-
-            <input type="text"
-                   class="form-control mb-2"
-                   name="variantes[${index}].atributosValues[${attrIndex}]"
-                   placeholder="Ej: Negro">
-
-        </div>
-        `);
-    }
-
-});
-
-
-/* =========================
-   DROPZONE IMAGENES
-========================= */
-const dz =
-    document.getElementById('dropzone');
-
-const input =
-    document.getElementById('imagenes');
-
-const preview =
-    document.getElementById('preview');
-
-if (dz && input) {
-
-    dz.addEventListener('click', () => {
-        input.click();
-    });
-
-    input.addEventListener('change', () => {
-
-        preview.innerHTML = '';
-
-        [...input.files].forEach(file => {
-
-            const reader = new FileReader();
-
-            reader.onload = e => {
-
-                preview.insertAdjacentHTML('beforeend', `
-
-                <div class="col-md-3 mb-3">
-                    <div class="img-box">
-                        <img src="${e.target.result}">
-                    </div>
-                </div>
-
-                `);
-            };
-
-            reader.readAsDataURL(file);
-        });
-
-    });
-
+if(r.ok){
+btn.closest('.col-md-4').remove();
+toast('Imagen eliminada');
+}else{
+toast('No se pudo eliminar','error');
+}
 }
 
-
-/* =========================
-   SUBMIT AJAX
-========================= */
+/* ==========================
+SUBMIT AJAX
+========================== */
 document.getElementById('formEditar')
-.addEventListener('submit', async e => {
+.addEventListener('submit',async e=>{
 
-    e.preventDefault();
+e.preventDefault();
 
-    const form = e.target;
+reindexVariantes();
 
-    const loader =
-        document.getElementById('loader');
+const form=e.target;
+const loader=document.getElementById('loader');
+const text=document.getElementById('btnText');
 
-    const text =
-        document.getElementById('btnText');
+loader.style.display='inline-block';
+text.innerText='Guardando...';
 
-    loader.style.display = 'inline-block';
-    text.innerText = 'Guardando...';
+try{
 
-    try {
+const resp=await fetch(form.action,{
+method:'POST',
+body:new FormData(form)
+});
 
-        const resp = await fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form)
-        });
+const data=await resp.json();
 
-        const data = await resp.json();
+if(resp.ok && data.success){
 
-        if (!resp.ok) {
-            throw new Error("Error servidor");
-        }
+toast('Producto actualizado 🔥');
 
-        if (data.success) {
+setTimeout(()=>{
+location.href='/admin/productos';
+},1200);
 
-            toast(
-                'Producto actualizado 🔥',
-                'success'
-            );
+}else{
+toast(data.error || 'Error al guardar','error');
+}
 
-            setTimeout(() => {
-                location.href =
-                    '/VerProductos';
-            }, 1200);
+}catch(err){
+toast('Error de conexión','error');
+}
 
-        } else {
-
-            toast(
-                data.error ||
-                'Error al guardar',
-                'error'
-            );
-        }
-
-    } catch (err) {
-
-        toast(
-            'Error de conexión',
-            'error'
-        );
-    }
-
-    loader.style.display = 'none';
-    text.innerText =
-        'Guardar Cambios';
+loader.style.display='none';
+text.innerText='Guardar Cambios';
 
 });
 
-
-/* =========================
-   INIT
-========================= */
-document.addEventListener('DOMContentLoaded', () => {
-    controlarStockSimple();
-    actualizarBadgeSimple();
-});
+/* ==========================
+INIT
+========================== */
+controlarStockSimple();
 </script>
-<!-- PARTICLES -->
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-<script>
-particlesJS("particles-js", {
-    particles: {
-        number: { value: 80, density: { enable: true, value_area: 900 } },
-        color: { value: ["#00ffcc", "#2bff99"] },
-        shape: { type: "circle" },
-        opacity: { value: 0.35, random: true },
-        size: { value: 4, random: true },
-        line_linked: {
-            enable: true,
-            distance: 150,
-            color: "#00ffcc",
-            opacity: 0.35,
-            width: 1
-        },
-        move: { enable: true, speed: 1.2 }
-    },
-    interactivity: {
-        events: { onhover: { enable: true, mode: "grab" } }
-    },
-    retina_detect: true
-});
-</script>
-<script>
-document.addEventListener('click', async e => {
 
-    if (!e.target.classList.contains('btnEliminarImagen')) return;
-
-    const btn = e.target;
-
-    const idImagen = btn.dataset.id;
-    const productoId = btn.dataset.producto;
-
-    if (!confirm("¿Eliminar imagen definitivamente?")) return;
-
-    try {
-
-        const resp = await fetch(
-            `/api/productos/${productoId}/eliminar-imagen/${idImagen}`,
-            {
-                method: 'DELETE'
-            }
-        );
-
-        if (resp.ok) {
-
-            btn.closest('.col-md-4').remove();
-
-            toast('Imagen eliminada 🔥');
-
-        } else {
-
-            toast('No se pudo eliminar', 'error');
-
-        }
-
-    } catch (error) {
-
-        toast('Error de conexión', 'error');
-
-    }
-
-});
-</script>
 </body>
 </html>
