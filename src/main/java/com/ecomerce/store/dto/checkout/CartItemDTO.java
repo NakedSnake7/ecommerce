@@ -1,5 +1,6 @@
 package com.ecomerce.store.dto.checkout;
 
+
 import com.ecomerce.store.contracts.StockItem;  
 
 import jakarta.validation.constraints.DecimalMin;  
@@ -62,11 +63,11 @@ public class CartItemDTO implements StockItem {
         this.quantity = quantity;
     }
 
-    public Double getPrice() {
+    public @NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") @NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") Double getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(@NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") @NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") Double price) {
         this.price = price;
     }
 }
