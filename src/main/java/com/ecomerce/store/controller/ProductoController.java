@@ -5,6 +5,7 @@ import com.ecomerce.store.dto.producto.publico.ProductoCardDTO;
 import com.ecomerce.store.dto.producto.publico.ProductoDetailDTO;
 import com.ecomerce.store.model.Producto;
 import com.ecomerce.store.service.CategoriaService;
+import com.ecomerce.store.service.MarcaService;
 import com.ecomerce.store.service.ProductoService;
 
 
@@ -26,6 +27,9 @@ public class ProductoController {
 
     @Autowired
     private CategoriaService categoriaService;
+    
+    @Autowired
+    private MarcaService marcaService;
 
     // ==================================================
     // LISTADO
@@ -52,66 +56,88 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==================================================
-    // EDITAR PRODUCTO (AJAX)
-    // ==================================================
-    @PostMapping("/editar/{id}")
-    public Map<String, Object> actualizarProducto(
-            @PathVariable Long id,
-            @ModelAttribute ProductoAdminDTO dto,
-            @RequestParam(value = "imagenes", required = false)
-            List<MultipartFile> nuevasImagenes,
+ // ==================================================
+ // EDITAR PRODUCTO (AJAX) - FIX FINAL
+ // ==================================================
+ @PostMapping("/editar/{id}")
+ public Map<String, Object> actualizarProducto(
+         @PathVariable Long id,
+         @ModelAttribute ProductoAdminDTO dto,
+         @RequestParam(value = "imagenes", required = false)
+         List<MultipartFile> nuevasImagenes,
+         @RequestParam(value = "eliminarImagenes", required = false)
+         List<Long> eliminarImagenes
+ ) {
 
-            @RequestParam(value = "eliminarImagenes", required = false)
-            List<Long> eliminarImagenes
-    ) {
+     Producto datos = new Producto();
 
-        Producto datos = new Producto();
+     // =====================================
+     // BASE
+     // =====================================
+     datos.setProductName(dto.getProductName());
+     datos.setPrice(dto.getPrecio());
+     datos.setDescription(dto.getDescription());
+     datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
+     datos.setStockSimple(dto.getStockSimple());
 
-        datos.setProductName(dto.getProductName());
-        datos.setPrice(dto.getPrecio());
-        datos.setDescription(dto.getDescription());
-        datos.setPorcentajeDescuento(dto.getPorcentajeDescuento());
-        datos.setStockSimple(dto.getStockSimple());
+     // =====================================
+     // CATEGORÍA
+     // =====================================
+     if (dto.getNuevaCategoria() != null &&
+         !dto.getNuevaCategoria().isBlank()) {
 
-        // Categoría
-        if (dto.getNuevaCategoria() != null &&
-            !dto.getNuevaCategoria().isBlank()) {
+         datos.setCategoria(
+             categoriaService.obtenerOCrearCategoria(
+                 dto.getNuevaCategoria().trim()
+             )
+         );
 
-            datos.setCategoria(
-                categoriaService.obtenerOCrearCategoria(
-                    dto.getNuevaCategoria()
-                )
-            );
+     } else if (dto.getCategoriaId() != null) {
 
-        } else if (dto.getCategoriaId() != null) {
+         datos.setCategoria(
+             categoriaService.obtenerPorId(
+                 dto.getCategoriaId()
+             )
+         );
 
-            datos.setCategoria(
-                categoriaService.obtenerPorId(
-                    dto.getCategoriaId()
-                )
-            );
+     } else {
+         throw new IllegalArgumentException(
+             "Debe seleccionar categoría"
+         );
+     }
 
-        } else {
-            throw new IllegalArgumentException(
-                "Debe seleccionar categoría"
-            );
-        }
+     // =====================================
+     // 🔥 MARCA (FIX REAL)
+     // =====================================
+     if (dto.getMarcaId() != null) {
 
-        Producto actualizado =
-            productoService.actualizarProductoCompleto(
-                id,
-                datos,
-                nuevasImagenes,
-                eliminarImagenes,
-                dto.getVariantes()
-            );
+         datos.setMarca(
+             marcaService.obtenerPorId(dto.getMarcaId())
+         );
 
-        return Map.of(
-            "success", true,
-            "productoId", actualizado.getId()
-        );
-    }
+     } else {
+
+         // permite quitar marca
+         datos.setMarca(null);
+     }
+
+     // =====================================
+     // ACTUALIZAR
+     // =====================================
+     Producto actualizado =
+         productoService.actualizarProductoCompleto(
+             id,
+             datos,
+             nuevasImagenes,
+             eliminarImagenes,
+             dto.getVariantes()
+         );
+
+     return Map.of(
+         "success", true,
+         "productoId", actualizado.getId()
+     );
+ }
 
     // ==================================================
     // ELIMINAR IMAGEN INMEDIATA (AJAX)
