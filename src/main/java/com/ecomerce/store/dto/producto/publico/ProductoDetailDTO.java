@@ -100,5 +100,11 @@ public class ProductoDetailDTO {
 	public void setPrecioConDescuento(BigDecimal precioConDescuento) {
 	    this.precioConDescuento = precioConDescuento;
 	}
+	public String getMarcaDisplay() {
+	    if (marcaNombre == null || marcaNombre.isBlank()) {
+	        return categoriaNombre;
+	    }
+	    return marcaNombre;
+	}
 	
 }
