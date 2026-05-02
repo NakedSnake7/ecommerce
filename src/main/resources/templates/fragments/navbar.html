@@ -1,23 +1,24 @@
 <!-- ===== NAVBAR FRAGMENT ===== -->
 <section id="navbar" th:fragment="navbar">
   <div class="container nav-inner">
-    
-      <!-- LOGO -->
+
+    <!-- LOGO -->
     <a th:href="@{/}" class="nav-logo">
       STR<span>I</span>DE
     </a>
 
     <!-- LINKS -->
     <ul class="nav-links">
-      <li><a th:href="@{/categoria/hombres}">Hombres</a></li>
-      <li><a th:href="@{/categoria/mujeres}">Mujeres</a></li>
-      <li><a th:href="@{/novedades}">Novedades</a></li>
-      <li><a th:href="@{/#banner}" class="ofertas">Ofertas</a></li>
+      <li><a th:href="@{/#hero}">Home</a></li>
+      <li><a th:href="@{/#footer}">Contactanos</a></li>
+      <li><a th:href="@{/#products}">productos</a></li>
+      <li><a th:href="@{/privacy}" class="privacy">Políticas</a></li>
     </ul>
+    
 
     <!-- ACTIONS -->
     <div class="nav-actions">
-      
+
       <!-- CARRITO -->
       <button class="cart-btn" id="cart-btn" aria-label="Ver carrito">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -28,10 +29,69 @@
         <span class="cart-badge" id="cart-badge" th:text="${cartCount != null ? cartCount : 0}">0</span>
       </button>
 
-      <!-- LOGIN -->
-      <button class="btn-login" th:onclick="|window.location.href='@{/login}'|">
-        Iniciar sesión
-      </button>
+      <!-- ── USUARIO LOGUEADO ── -->
+      <div class="user-menu-wrapper" sec:authorize="isAuthenticated()">
+
+        <button class="btn-user-toggle" id="userMenuBtn" aria-label="Menú de usuario" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span class="user-name" sec:authentication="name">Usuario</span>
+          <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        <ul class="user-dropdown" id="userDropdown" role="menu">
+          <li>
+            <a th:href="@{/cuenta}" role="menuitem">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+              Mi cuenta
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/pedidos}" role="menuitem">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+              </svg>
+              Mis pedidos
+            </a>
+          </li>
+          <li class="dropdown-divider"></li>
+          <li>
+            <a th:href="@{/logout}" class="logout-item" role="menuitem">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Cerrar sesión
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ── USUARIO NO LOGUEADO ── -->
+      <div class="auth-actions" sec:authorize="isAnonymous()">
+        <a class="btn-login-link" th:href="@{/login}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Login
+        </a>
+        <button class="btn-login"
+                data-bs-toggle="modal"
+                data-bs-target="#registroModal">
+          Registro
+        </button>
+      </div>
 
       <!-- HAMBURGER -->
       <button class="hamburger" id="hamburger" aria-label="Menú">
