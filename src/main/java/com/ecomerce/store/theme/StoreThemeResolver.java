@@ -6,25 +6,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class StoreThemeResolver {
 
-    public String getTheme(HttpServletRequest request) {
+	public String getTheme(HttpServletRequest request) {
 
-        String host = request.getHeader("X-Forwarded-Host");
+	    String host = request.getHeader("X-Forwarded-Host");
 
-        if (host == null || host.isBlank()) {
-            host = request.getServerName();
-        }
+	    if (host == null || host.isBlank()) {
+	        host = request.getServerName();
+	    }
 
-        if (host == null) {
-            return "stride";
-        }
+	    if (host == null) {
+	        return "stride";
+	    }
 
-        // espacio.midominio.com -> espacio
-        if (host.contains(".")) {
-            return host.split("\\.")[0];
-        }
+	    // SOLO usar subdominio si es tu dominio real
+	    if (host.endsWith("midominio.com")) {
+	        String sub = host.split("\\.")[0];
+	        return sub;
+	    }
 
-        return "stride";
-    }
+	    // Render, localhost, etc
+	    return "stride";
+	}
 
     public String view(HttpServletRequest request, String page) {
         return "themes/" + getTheme(request) + "/" + page;
