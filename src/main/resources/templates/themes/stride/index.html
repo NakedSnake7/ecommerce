@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+
+<head>
+    <title> STRIDE — Sneakers Premium </title>
+</head>
+
+<body>
+
+    <th:block th:fragment="content">
+
+        <div th:replace="~{themes/__${theme}__/fragments/hero :: hero}"></div>
+
+        <div th:replace="~{themes/__${theme}__/fragments/trust-bar :: trustBar}"></div>
+
+        <div th:replace="~{themes/__${theme}__/fragments/brands :: brands}"></div>
+
+        <div th:replace="~{themes/__${theme}__/fragments/products :: products}"></div>
+
+        <div th:replace="~{themes/__${theme}__/fragments/banner :: banner}"></div>
+
+        <div th:replace="~{themes/__${theme}__/fragments/categories :: categories}"></div>
+
+        <div th:replace="~{themes/__${theme}__/fragments/testimonials :: testimonials}"></div>
+
+        <div th:replace="~{themes/__${theme}__/fragments/newsletter :: newsletter}"></div>
+
+    </th:block>
+
+</body>
+</html>

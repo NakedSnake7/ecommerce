@@ -1,0 +1,232 @@
+<!-- ===== NAVBAR FRAGMENT ===== -->
+<section id="navbar"
+         th:fragment="navbar"
+         xmlns:th="http://www.thymeleaf.org"
+         xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <div class="container nav-inner">
+
+        <!-- LOGO -->
+        <a th:href="@{/}" class="nav-logo">
+            STR<span>I</span>DE
+        </a>
+
+
+        <!-- LINKS -->
+        <ul class="nav-links">
+
+            <li>
+                <a th:href="@{/#hero}">
+                    Home
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/#products}">
+                    Productos
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/#footer}">
+                    Contáctanos
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/privacy}" class="privacy">
+                    Políticas
+                </a>
+            </li>
+
+        </ul>
+
+
+        <!-- ACTIONS -->
+        <div class="nav-actions">
+
+            <!-- CARRITO -->
+            <button type="button"
+                    class="cart-btn"
+                    id="cart-btn"
+                    aria-label="Ver carrito"
+                    aria-expanded="false">
+
+                <svg width="22"
+                     height="22"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 01-8 0"/>
+
+                </svg>
+
+                <span class="cart-badge" id="cart-badge">
+                    0
+                </span>
+
+            </button>
+
+
+            <!-- USUARIO LOGUEADO -->
+            <div class="user-menu-wrapper"
+                 sec:authorize="isAuthenticated()">
+
+                <button class="btn-user-toggle"
+                        id="userMenuBtn"
+                        type="button"
+                        aria-expanded="false">
+
+                    <svg width="20"
+                         height="20"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+
+                    </svg>
+
+                    <span class="user-name"
+                          sec:authentication="name">
+                        Usuario
+                    </span>
+
+                </button>
+
+
+                <ul class="user-dropdown"
+                    id="userDropdown">
+
+                    <li>
+                        <a th:href="@{/cuenta}">
+                            Mi cuenta
+                        </a>
+                    </li>
+
+                    <li>
+                        <a th:href="@{/pedidos}">
+                            Mis pedidos
+                        </a>
+                    </li>
+
+                    <li class="dropdown-divider"></li>
+
+                    <li>
+                        <a th:href="@{/logout}"
+                           class="logout-item">
+                            Cerrar sesión
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- USUARIO NO LOGUEADO -->
+            <div class="auth-actions"
+                 sec:authorize="isAnonymous()">
+
+                <a class="btn-login-link"
+                   th:href="@{/login}">
+                    Login
+                </a>
+
+                <button type="button"
+                        class="btn-login"
+                        data-bs-toggle="modal"
+                        data-bs-target="#registroModal">
+
+                    Registro
+
+                </button>
+
+            </div>
+
+
+            <!-- HAMBURGER -->
+            <button class="hamburger"
+                    id="hamburger"
+                    type="button"
+                    aria-label="Abrir menú">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- MOBILE MENU -->
+    <div id="mobile-menu">
+
+        <div class="mobile-menu-inner">
+
+            <a th:href="@{/#hero}">
+                Home
+            </a>
+
+            <a th:href="@{/#products}">
+                Productos
+            </a>
+
+            <a th:href="@{/#footer}">
+                Contáctanos
+            </a>
+
+            <a th:href="@{/privacy}">
+                Políticas
+            </a>
+
+
+            <!-- Usuario anónimo -->
+            <div sec:authorize="isAnonymous()">
+
+                <a th:href="@{/login}">
+                    Login
+                </a>
+
+                <a href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#registroModal">
+
+                    Registro
+
+                </a>
+
+            </div>
+
+
+            <!-- Usuario autenticado -->
+            <div sec:authorize="isAuthenticated()">
+
+                <a th:href="@{/cuenta}">
+                    Mi cuenta
+                </a>
+
+                <a th:href="@{/pedidos}">
+                    Mis pedidos
+                </a>
+
+                <a th:href="@{/logout}">
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

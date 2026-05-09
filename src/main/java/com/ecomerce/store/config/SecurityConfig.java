@@ -40,7 +40,7 @@ public class SecurityConfig {
             			    "/api/checkout/**", "/api/auth/register",
             			    "/login", "/menu","/fragmento-resenas","/producto-detalle/**",
             			    "/fragmento-menu",
-            			    "/css/**", "/js/**", "/images/**",
+            			    "/css/**", "/js/**", "/images/**","/themes/**",
             			    "/assets/**",        
             			    "/webjars/**",
             			    "/favicon.ico"

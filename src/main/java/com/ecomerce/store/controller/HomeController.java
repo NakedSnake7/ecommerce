@@ -3,6 +3,7 @@ package com.ecomerce.store.controller;
 import com.ecomerce.store.dto.producto.publico.ProductoDetailDTO;
 import com.ecomerce.store.repository.ResenaRepository;
 import com.ecomerce.store.service.ProductoService;
+import com.ecomerce.store.theme.StoreThemeResolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -22,12 +23,17 @@ public class HomeController {
 
     private final ProductoService productoService;
     private final ResenaRepository resenaRepository;
+    private final StoreThemeResolver storeThemeResolver;
 
-    public HomeController(ProductoService productoService, ResenaRepository resenaRepository) {
-        this.productoService = productoService;
-        this.resenaRepository = resenaRepository;
-    }
-
+    public HomeController(
+    	    ProductoService productoService,
+    	    ResenaRepository resenaRepository,
+    	    StoreThemeResolver storeThemeResolver
+    	) {
+    	    this.productoService = productoService;
+    	    this.resenaRepository = resenaRepository;
+    	    this.storeThemeResolver = storeThemeResolver;
+    	}
     // =========================
     // DATA GLOBAL (REUTILIZABLE)
     // =========================
@@ -67,8 +73,8 @@ public class HomeController {
                 PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "estrellas"))
             ).getContent()
         );
-        return "index";
-    }
+        return storeThemeResolver.view(request, "index");
+        }
 
     // =========================
     //  BLOQUEAR LANDING DIRECTO
@@ -82,9 +88,9 @@ public class HomeController {
     //  MENÚ
     // =========================
     @GetMapping("/menu")
-    public String verMenu(Model model) {
+    public String verMenu(Model model, HttpServletRequest request) {
         cargarDatosGlobales(model);
-        return "index";
+        return storeThemeResolver.view(request, "index");
     }
 
     // =========================
@@ -102,21 +108,22 @@ public class HomeController {
     //  FRAGMENTO MENÚ (AJAX)
     // =========================
     @GetMapping("/fragmento-menu")
-    public String cargarFragmentoMenu(Model model) {
+    public String cargarFragmentoMenu(Model model, HttpServletRequest request) {
 
         cargarDatosGlobales(model);
 
-        return "fragments/menu :: menu";
-    }
+        return storeThemeResolver.fragment(request, "menu") + " :: menu";    }
+    
+    
     
     @GetMapping("/producto-detalle/{id}")
-    public String verDetalleProducto(@PathVariable Long id, Model model) {
+    public String verDetalleProducto(@PathVariable Long id, Model model, HttpServletRequest request) {
 
     	ProductoDetailDTO producto = productoService.obtenerDetalleProducto(id);
         model.addAttribute("producto", producto);
 
-        return "producto-detalle"; // 👈 tu HTML
-    }
+        return storeThemeResolver.view(request, "producto-detalle");
+        }
     // =========================
     //  FRAGMENTO RESEÑAS
     // =========================
@@ -151,16 +158,16 @@ public class HomeController {
     //  CHECKOUT CANCELADO
     // =========================
     @GetMapping("/checkout-cancel")
-    public String checkoutCancel() {
-        return "checkout-cancel";
+    public String checkoutCancel(HttpServletRequest request) {
+        return storeThemeResolver.view(request, "checkout-cancel");
     }
 
     // =========================
     //  COMPRA EXITOSA
     // =========================
     @GetMapping("/gracias")
-    public String gracias() {
-        return "gracias";
+    public String gracias(HttpServletRequest request) {
+        return storeThemeResolver.view(request, "gracias");
     }
 
     // =========================
@@ -175,7 +182,7 @@ public class HomeController {
     //  PRIVACIDAD
     // =========================
     @GetMapping("/privacy")
-    public String privacy() {
-        return "privacy";
+    public String privacy(HttpServletRequest request) {
+        return storeThemeResolver.view(request, "privacy");
     }
 }

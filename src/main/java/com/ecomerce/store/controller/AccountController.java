@@ -4,6 +4,10 @@ import com.ecomerce.store.model.Order;
 import com.ecomerce.store.model.User;
 import com.ecomerce.store.service.OrderService;
 import com.ecomerce.store.service.UserService;
+import com.ecomerce.store.theme.StoreThemeResolver;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -20,10 +24,15 @@ public class AccountController {
 
     private final UserService userService;
     private final OrderService orderService;
+    private final StoreThemeResolver storeThemeResolver;
 
-    public AccountController(UserService userService, OrderService orderService) {
+
+    public AccountController(UserService userService, OrderService orderService, StoreThemeResolver storeThemeResolver
+) {
         this.userService = userService;
         this.orderService = orderService;
+	    this.storeThemeResolver = storeThemeResolver;
+        
     }
 
     // ============================
@@ -31,10 +40,13 @@ public class AccountController {
     // ============================
     @GetMapping("/cuenta")
     public String cuenta(
+            HttpServletRequest request,
             @AuthenticationPrincipal UserDetails authUser,
             Model model) {
 
-        User usuario = userService.findByEmail(authUser.getUsername()).orElseThrow();
+        User usuario = userService
+                .findByEmail(authUser.getUsername())
+                .orElseThrow();
 
         String direccion = usuario.getDefaultAddress();
 
@@ -45,7 +57,7 @@ public class AccountController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("direccion", direccion);
 
-        return "cuenta";
+        return storeThemeResolver.view(request, "cuenta");
     }
 
     
@@ -100,8 +112,9 @@ public class AccountController {
     // ============================
     @GetMapping("/pedidos")
     public String misPedidos(
+            HttpServletRequest request,
             @AuthenticationPrincipal UserDetails authUser,
-            Model model) {
+            Model model){
 
         if (authUser == null) {
             return "redirect:/login";
@@ -113,6 +126,6 @@ public class AccountController {
 
         model.addAttribute("pedidos", pedidos);
 
-        return "pedidos";
+        return storeThemeResolver.view(request, "pedidos");
     }
 }

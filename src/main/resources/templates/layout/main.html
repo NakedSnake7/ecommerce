@@ -5,10 +5,13 @@
 
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title th:text="${title} ?: 'STRIDE'">STRIDE</title>
+    <title th:text="${title} ?: 'STRIDE'">
+        STRIDE
+    </title>
 
     <!-- Bootstrap -->
     <link
@@ -26,45 +29,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
           rel="stylesheet">
 
-    <!-- CSS -->
+    <!-- CSS dinámico -->
     <link rel="stylesheet"
-          th:href="@{/assets/css/stride.css}">
+          th:href="@{|/themes/${theme}/assets/css/style.css|}">
+
 </head>
+
 <body>
 
-    <!-- NAVBAR -->
-    <header th:replace="~{fragments/navbar :: navbar}"></header>
+<header
+    th:replace="~{themes/__${theme}__/fragments/navbar :: navbar}">
+</header>
 
+<div
+    th:replace="~{themes/__${theme}__/fragments/cart :: cart}">
+</div>
 
-    <!-- COMPONENTES GLOBALES -->
-    
-    <!-- Carrito -->
-    <div th:replace="~{fragments/cart :: cart}"></div>
+<div
+    th:replace="~{themes/__${theme}__/fragments/checkout :: checkout}">
+</div>
 
-    <!-- Checkout -->
-    <div th:replace="~{fragments/checkout :: checkout}"></div>
+<div
+    th:replace="~{themes/__${theme}__/fragments/auth :: auth}">
+</div>
 
-    <!-- Auth -->
-    <div th:replace="~{fragments/auth :: auth}"></div>
-
-
-    <!-- CONTENIDO DE CADA PÁGINA -->
+   <!-- AQUÍ VA EL CONTENIDO DE index.html -->
     <main th:replace="${content}"></main>
 
 
-    <!-- FOOTER -->
-    <footer th:replace="~{fragments/footer :: footer}"></footer>
+<footer
+    th:replace="~{themes/__${theme}__/fragments/footer :: footer}">
+</footer>
 
-
-    <!-- SCRIPTS -->
-    <div th:replace="~{fragments/scripts :: scripts}"></div>
+<div
+    th:replace="~{themes/__${theme}__/fragments/scripts :: scripts}">
+</div>
 
 
     <script>
         document.documentElement.classList.add('js-enabled');
     </script>
-<script
-  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-</script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
 </body>
 </html>
