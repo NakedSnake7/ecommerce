@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+      th:replace="~{layout/main :: layout(
+    'STRIDE — Sneakers Premium',
+    ~{::content}
+)}">
 
-<head>
-    <title> STRIDE — Sneakers Premium </title>
-</head>
 
 <body>
 
