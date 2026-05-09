@@ -6,6 +6,9 @@ import MobileMenu from "./components/mobileMenu.js";
 // Auth
 import Register from './auth/register.js';
 
+//UserMenu
+import UserMenu from './menu/UserMenu.js';
+
 // Cart
 import './cart/cartStore.js';
 import { configurarCarrito } from './components/cart.js';
@@ -27,6 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
     configurarCarrito();
 	
 	Register();
+	
+	UserMenu();
 
     configurarBotonWhatsApp();
 
