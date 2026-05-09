@@ -6,12 +6,13 @@
 		if (window.__carritoInicializado) return;
 		window.__carritoInicializado = true;
 		
-	    const cartButton = document.getElementById('cartButton');
+        const cartButton = document.getElementById('cart-btn');
 	    const cartDropdown = document.getElementById('cartDropdown');
 	    const cartItems = document.getElementById('cartItems');
 	    const cartTotal = document.getElementById('cartTotal');
 	    const modalTotal = document.getElementById('modalTotal');
 	    const checkoutButton = document.getElementById('checkoutButton');
+		const checkoutModal = document.getElementById('checkoutModal'); 
 	    const finalizeButton = document.getElementById("finalizeButton");
 	    const checkoutForm = document.getElementById('checkoutForm');
 	    const LIMITE_ENVIO_GRATIS = 1250;
@@ -105,8 +106,10 @@
 				}
 	        }
 	
-	        if (cartDropdown) cartDropdown.style.display = products.length ? 'block' : 'none';
-	
+			if (cartDropdown && products.length === 0) {
+			    cartDropdown.classList.remove('open');
+			}
+				
 			const resumen = document.getElementById('cartResumenDesglose');
 			if (resumen) {
 			    resumen.innerHTML = `
@@ -289,11 +292,11 @@
 	    }
 	
 	    // Mostrar/Ocultar carrito
-	    if (cartButton && cartDropdown) {
-	        cartButton.addEventListener('click', () => {
-	            cartDropdown.classList.toggle('open');
-	        });
-	    }
+		if (cartButton && cartDropdown) {
+		    cartButton.addEventListener('click', () => {
+		        cartDropdown.classList.toggle('open');
+		    });
+		}
 	
 		if (checkoutButton && checkoutModal) {
 		    checkoutButton.addEventListener('click', () => {

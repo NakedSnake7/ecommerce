@@ -64,6 +64,75 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   opacity: 1;
 }
 
+#cartDropdown {
+    position: fixed;
+    top: 80px;
+    right: 40px;
+
+    width: 380px;
+
+    /* 🔥 evita que se salga de pantalla */
+    max-width: calc(100vw - 20px);
+
+    max-height: 80vh;
+    overflow-y: auto;
+
+    z-index: 9999;
+
+    background: rgba(15,15,15,.95);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+
+    padding: 20px;
+
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+
+    /* estado cerrado */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+
+    pointer-events: none;
+
+    transition:
+        opacity .25s ease,
+        transform .25s ease,
+        visibility .25s ease;
+}
+
+/* estado abierto */
+#cartDropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 768px) {
+
+    #cartDropdown {
+        top: 70px;
+
+        /* 🔥 en lugar de right fijo */
+        left: 12px;
+        right: 12px;
+
+        /* 🔥 ocupa casi toda la pantalla */
+        width: auto;
+        max-width: none;
+
+        padding: 16px;
+
+        border-radius: 14px;
+
+        max-height: 75vh;
+    }
+
+}
 /* ============ SCROLL REVEAL ============ */
 .reveal {
   opacity: 0;
@@ -186,6 +255,10 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   color: var(--bg);
   border-color: var(--text);
 }
+
+/* =========================
+   HAMBURGUESA
+========================= */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -194,7 +267,9 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   background: none;
   border: none;
   padding: 4px;
+  z-index: 1002;
 }
+
 .hamburger span {
   display: block;
   width: 24px;
@@ -203,38 +278,92 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   transition: transform var(--transition), opacity var(--transition);
   transform-origin: center;
 }
-.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* Mobile Menu */
+.hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+
+/* =========================
+   MOBILE MENU
+========================= */
 #mobile-menu {
   position: fixed;
-  top: 68px; left: 0; right: 0;
+
+  top: 68px;
+  left: 0;
+  right: 0;
+
   background: #0d0d0d;
-  border-bottom: 1px solid var(--border);
-  transform: translateY(-110%);
-  transition: transform 0.4s var(--ease);
-  z-index: 999;
+
+  border-top: 1px solid var(--border);
+
+  z-index: 1001;
+
+  /* oculto */
+  opacity: 0;
+  visibility: hidden;
+
+  transform: translateY(-20px);
+
+  pointer-events: none;
+
+  transition: all .35s ease;
 }
-#mobile-menu.open { transform: translateY(0); }
+
+#mobile-menu.open {
+  opacity: 1;
+  visibility: visible;
+
+  transform: translateY(0);
+
+  pointer-events: auto;
+}
+
 .mobile-menu-inner {
-  padding: 1rem 1.5rem 2rem;
   display: flex;
   flex-direction: column;
+  padding: 1rem 1.5rem 2rem;
 }
-.mobile-menu-inner a {
-  font-size: 1.3rem;
-  font-weight: 500;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
-  color: rgba(255,255,255,0.8);
-  transition: color var(--transition);
-}
-.mobile-menu-inner a:last-child { border-bottom: none; }
-.mobile-menu-inner a:hover { color: var(--accent); }
-.mobile-menu-inner a.mob-ofertas { color: var(--accent); }
 
+.mobile-menu-inner a {
+  display: block;
+
+  padding: 1rem 0;
+
+  font-size: 1rem;
+  font-weight: 500;
+
+  color: rgba(255,255,255,.85);
+
+  border-bottom: 1px solid var(--border);
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 992px) {
+
+  .nav-links,
+  .auth-actions,
+  .user-menu-wrapper {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+}
 /* ============ HERO ============ */
 #hero {
   position: relative;
@@ -1052,6 +1181,65 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   font-size: 13px;
   color: var(--muted);
 }
+/* =========================
+   AUTH MODAL
+========================= */
+
+.modal-content {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--border) !important;
+}
+
+.modal-title {
+  color: var(--text);
+  font-family: var(--font-display);
+  letter-spacing: .05em;
+}
+
+.form-label {
+  color: rgba(255,255,255,.8);
+  font-size: .9rem;
+  font-weight: 500;
+}
+
+.form-control {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.form-control:focus {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(255,92,0,.15) !important;
+}
+
+.form-control::placeholder {
+  color: var(--muted);
+}
+
+.btn-close {
+  filter: invert(1);
+  opacity: .8;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* backdrop */
+.modal-backdrop.show {
+  opacity: .75;
+}
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1200px) {
@@ -1121,3 +1309,6 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   .hero-buttons .btn-primary,
   .hero-buttons .btn-ghost { text-align: center; }
 }
+
+
+

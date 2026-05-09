@@ -6,12 +6,10 @@ export default function ScrollReveal() {
     const els = $$('.reveal');
 
     if (!els.length) {
-      console.warn("⏳ Aún no hay elementos .reveal, reintentando...");
-      setTimeout(init, 100); // reintento controlado
+
       return;
     }
 
-    console.log("🔥 ScrollReveal activo:", els.length);
 
     // Mostrar los visibles desde inicio
     els.forEach(el => {

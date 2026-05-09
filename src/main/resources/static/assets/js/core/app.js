@@ -1,7 +1,6 @@
 import Navbar from "../components/navbar.js";
-import MobileMenu from "../components/mobileMenu.js";
+//import MobileMenu from "../components/mobileMenu.js";
 import ScrollIndicator from "../components/scrollIndicator.js";
-//import Cart from "../components/cart.js";
 import Countdown from "../components/countdown.js";
 import Newsletter from "../components/newsletter.js";
 import ScrollReveal from "../utils/scrollReveal.js";
@@ -12,9 +11,8 @@ import ScrollReveal from "../utils/scrollReveal.js";
 export function initApp() {
   try {
     Navbar();
-    MobileMenu();
+  //  MobileMenu();
     ScrollIndicator();
-  //  Cart();
     Countdown();
     Newsletter();
     ScrollReveal();

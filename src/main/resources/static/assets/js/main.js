@@ -1,28 +1,55 @@
 // Core
 import './core/particles.js';
+import { initApp } from "./core/app.js";
+import MobileMenu from "./components/mobileMenu.js";
+
 // Auth
-import './auth/register.js';
+import Register from './auth/register.js';
+
 // Cart
 import './cart/cartStore.js';
-import { configurarCarrito } from './cart/carrito.js';
+import { configurarCarrito } from './components/cart.js';
+
 // UI
 import './ui/footer-year.js';
 import './ui/modal.js';
 import './ui/maya-loader.js';
 import './ui/sombras.js';
 
-// Features globales
+// Features
 import { configurarBotonWhatsApp } from './whatsapp.js';
 
-import { initApp } from "./core/app.js";
-	
-document.addEventListener("DOMContentLoaded", initApp);
-
-document.addEventListener('menu-ready', e => {
-    configurarCarrito();      // ✅ ahora el DOM existe
-    initMenu(e.target);
-	
-});
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM listo");
+
+    initApp();
+
+    configurarCarrito();
+	
+	Register();
+
     configurarBotonWhatsApp();
+
+    esperarNavbar();
 });
+
+
+function esperarNavbar() {
+
+    const interval = setInterval(() => {
+
+        const navbar = document.querySelector("#navbar");
+
+        if (navbar) {
+
+           
+
+            clearInterval(interval);
+
+            MobileMenu();
+
+        }
+
+    }, 100);
+
+}
