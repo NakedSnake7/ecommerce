@@ -1,8 +1,9 @@
 package com.ecomerce.store.config;
 
-import com.ecomerce.store.service.AuthUserDetailsService; 
+import com.ecomerce.store.service.AuthUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,7 +19,6 @@ public class SecurityConfig {
         this.authUserDetailsService = authUserDetailsService;
     }
 
-    // AuthenticationManager moderno
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration
@@ -26,45 +26,95 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    // Configuración de seguridad
+    // ====================================
+    // LOGIN ADMIN
+    // ====================================
     @Bean
-    public SecurityFilterChain securityFilterChain(
+    @Order(1)
+    public SecurityFilterChain adminSecurity(
+            HttpSecurity http
+    ) throws Exception {
+
+        http
+            .securityMatcher("/admin/**")
+
+            .csrf(csrf -> csrf.disable())
+
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/login").permitAll()
+                .anyRequest().hasRole("ADMIN")
+            )
+
+            .formLogin(form -> form
+                .loginPage("/admin/login")
+                .loginProcessingUrl("/admin/login")
+                .defaultSuccessUrl("/admin/dashboard", true)
+                .permitAll()
+            )
+
+            .logout(logout -> logout
+                .logoutUrl("/admin/logout")
+                .logoutSuccessUrl("/admin/login")
+            );
+
+        return http.build();
+    }
+
+
+    // ====================================
+    // LOGIN CLIENTE
+    // ====================================
+    @Bean
+    @Order(2)
+    public SecurityFilterChain storeSecurity(
             HttpSecurity http,
             PasswordEncoder passwordEncoder
     ) throws Exception {
+
         http
             .csrf(csrf -> csrf.disable())
+
             .authorizeHttpRequests(auth -> auth
-            		.requestMatchers(
-            			    "/", "/index", "/inicio","/privacy", "/productos/**", "/products/**",
-            			    "/api/checkout/**", "/api/auth/register",
-            			    "/login", "/menu","/fragmento-resenas","/producto-detalle/**",
-            			    "/fragmento-menu",
-            			    "/css/**", "/js/**", "/images/**","/themes/**",
-            			    "/assets/**",        
-            			    "/webjars/**",
-            			    "/favicon.ico"
-            			).permitAll()
                 .requestMatchers(
-                    "/subirProducto", "/VerProductos", "/servicio", "/orders",
-                    "/order-details", "/modificar-precios"
-                ).hasRole("ADMIN")
+                    "/", "/index", "/inicio", "/privacy",
+                    "/productos/**",
+                    "/products/**",
+                    "/producto-detalle/**",
+                    "/fragmento-menu",
+                    "/fragmento-resenas",
+
+                    "/login",
+
+                    "/themes/**",
+                    "/assets/**",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/webjars/**",
+                    "/favicon.ico"
+                ).permitAll()
+
                 .requestMatchers(
-                    "/cuenta/**", "/pedidos/**"
+                    "/cuenta/**",
+                    "/pedidos/**"
                 ).hasRole("USER")
+
                 .anyRequest().authenticated()
             )
+
             .formLogin(form -> form
                 .loginPage("/login")
+                .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/inicio", true)
                 .permitAll()
             )
+
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
-                .permitAll()
             )
-            .userDetailsService(authUserDetailsService); // UserDetailsService inyectado
+
+            .userDetailsService(authUserDetailsService);
 
         return http.build();
     }

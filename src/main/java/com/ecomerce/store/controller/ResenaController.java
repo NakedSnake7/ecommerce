@@ -57,7 +57,7 @@ public class ResenaController {
                 .toList()
         );
 
-        return "reviews";
+        return "admin/reviews";
     }
 
     // ==========================
@@ -94,7 +94,7 @@ public class ResenaController {
             	        .toList()
             	);
 
-            return "reviews";
+            return "admin/reviews";
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -159,7 +159,7 @@ public class ResenaController {
                 .toList()
         );
 
-        return "reviews";
+        return "admin/reviews";
     }
 
     // ==========================

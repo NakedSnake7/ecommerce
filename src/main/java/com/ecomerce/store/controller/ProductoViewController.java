@@ -41,7 +41,7 @@ public class ProductoViewController {
             productoService.obtenerProductosAdminAgrupados()
         );
 
-        return "VerProductos";
+        return "admin/VerProductos";
     }
 
 
@@ -64,7 +64,7 @@ public class ProductoViewController {
             marcaService.obtenerTodas()
         );
 
-        return "subirProducto";
+        return "admin/subirProducto";
     }
 
     // ==================================================
@@ -106,7 +106,7 @@ public class ProductoViewController {
                     marcaService.obtenerTodas()
             );
 
-            return "subirProducto";
+            return "admin/subirProducto";
         }
 
         try {
@@ -209,7 +209,7 @@ public class ProductoViewController {
                     dto
             );
 
-            return "subirProducto";
+            return "admin/subirProducto";
         }
     }
     
@@ -238,7 +238,7 @@ public class ProductoViewController {
             marcaService.obtenerTodas()
         );
 
-        return "EditarProducto";
+        return "admin/EditarProducto";
     }
 
     // ==================================================
@@ -259,7 +259,7 @@ public class ProductoViewController {
             model.addAttribute("categorias", categoriaService.obtenerTodas());
             model.addAttribute("marcas", marcaService.obtenerTodas());
 
-            return "EditarProducto";
+            return "admin/EditarProducto";
         }
 
         try {
@@ -318,7 +318,7 @@ public class ProductoViewController {
             model.addAttribute("categorias", categoriaService.obtenerTodas());
             model.addAttribute("marcas", marcaService.obtenerTodas());
 
-            return "EditarProducto";
+            return "admin/EditarProducto";
         }
     }
     @PostMapping("/variantes/{id}/stock")
@@ -344,7 +344,7 @@ public class ProductoViewController {
             productoService.obtenerCategorias()
         );
 
-        return "modificar-precios";
+        return "admin/modificar-precios";
     }
 
 }

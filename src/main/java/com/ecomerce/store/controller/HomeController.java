@@ -101,7 +101,7 @@ public class HomeController {
         if (user == null) {
             return "redirect:/login";
         }
-        return "subirProducto";
+        return "admin/subirProducto";
     }
 
     // =========================
@@ -173,9 +173,9 @@ public class HomeController {
     // =========================
     //  SERVICIO
     // =========================
-    @GetMapping("/servicio")
+    @GetMapping("/admin")
     public String servicio() {
-        return "servicio";
+        return "admin/dashboard";
     }
 
     // =========================

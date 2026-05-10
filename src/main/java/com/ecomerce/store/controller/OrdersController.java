@@ -69,7 +69,7 @@ public class OrdersController {
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("paymentStatuses", PaymentStatus.values());
 
-        return "orders";
+        return "admin/orders";
     }
 
 
@@ -81,7 +81,7 @@ public class OrdersController {
     public String verDetalles(@PathVariable Long id, Model model) {
         Order order = orderService.getOrderByIdWithUserAndItems(id);
         model.addAttribute("order", order);
-        return "order-details";
+        return "admin/order-details";
     }
 
 

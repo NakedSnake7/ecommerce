@@ -289,9 +289,11 @@ $<span th:text="${#numbers.formatDecimal(var.precio,1,2)}"></span>
 
 </div>
 
-<a href="/servicio" class="btn btn-outline-light mt-3">
-⬅ Volver
-</a>
+    <button type="button"
+       class="btn btn-success float-btn"
+            onclick="history.back()">
+     ⬅ Volver
+    </button>
 
 </div>
 

@@ -1,6 +1,6 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.model.Order; 
+import com.ecomerce.store.model.Order;  
 import com.ecomerce.store.model.User;
 import com.ecomerce.store.service.OrderService;
 import com.ecomerce.store.service.UserService;

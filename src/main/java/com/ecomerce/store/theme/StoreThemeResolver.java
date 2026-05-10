@@ -18,13 +18,12 @@ public class StoreThemeResolver {
 	        return "stride";
 	    }
 
-	    // SOLO usar subdominio si es tu dominio real
+	    host = host.toLowerCase().split(":")[0];
+
 	    if (host.endsWith("midominio.com")) {
-	        String sub = host.split("\\.")[0];
-	        return sub;
+	        return host.split("\\.")[0];
 	    }
 
-	    // Render, localhost, etc
 	    return "stride";
 	}
 
