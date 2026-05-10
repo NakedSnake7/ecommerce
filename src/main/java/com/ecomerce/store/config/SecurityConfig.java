@@ -103,11 +103,25 @@ public class SecurityConfig {
             )
 
             .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/inicio", true)
-                .permitAll()
-            )
+            	    .loginPage("/login")
+            	    .loginProcessingUrl("/login")
+
+            	    .successHandler((request, response, authentication) -> {
+
+            	        if (authentication.getAuthorities().stream()
+            	                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+
+            	            response.sendRedirect("/admin");
+
+            	        } else {
+
+            	            response.sendRedirect("/inicio");
+
+            	        }
+            	    })
+
+            	    .permitAll()
+            	)
 
             .logout(logout -> logout
                 .logoutUrl("/logout")
