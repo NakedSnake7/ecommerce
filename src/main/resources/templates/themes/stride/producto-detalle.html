@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="es"
-      xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
+      xmlns:th="http://www.thymeleaf.org">
+
+<body
+th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
 
 <section>
 <style>
@@ -538,11 +540,17 @@
     .pd-sticky-mobile { display: block; }
     .pd-btn-cart.desktop-only { display: none; }
   }
-  @media (max-width: 480px) {
-    .pd-var-grid { grid-template-columns: repeat(3, 1fr); }
-    .pd-trust-strip { grid-template-columns: 1fr; }
-    .pd-trust-strip { grid-template-columns: repeat(3,1fr); }
+@media (max-width: 480px) {
+
+  .pd-var-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
+
+  .pd-trust-strip {
+    grid-template-columns: 1fr;
+  }
+
+}
 </style>
 
 <div class="pw">
@@ -581,9 +589,10 @@
              onclick="setMain(this, this.querySelector('img').src)">
           <img th:src="${producto.imageUrl}" th:alt="${producto.productName}">
         </div>
-        <div class="pd-thumb"
-             th:each="img : ${producto.imagenes}"
-             onclick="setMain(this, this.querySelector('img').src)">
+<div class="pd-thumb"
+     th:if="${producto.imagenes != null}"
+     th:each="img : ${producto.imagenes}"
+     onclick="setMain(this, this.querySelector('img').src)">
           <img th:src="${img}" th:alt="${producto.productName}">
         </div>
       </div>
@@ -595,7 +604,7 @@
 
       <!-- Meta: marca + estrellas -->
       <div class="pd-meta">
-<span class="brand"
+<span class="pd-brand"
       th:text="${#strings.isEmpty(producto.marcaNombre) ? producto.categoriaNombre : producto.marcaNombre}">
 </span>
        <div class="pd-reviews">
@@ -612,15 +621,24 @@
       </div>
 
       <!-- Título con acento naranja en primera palabra -->
-      <h1 class="pd-title">
-        <em th:text="${#strings.substringBefore(producto.productName,' ')}"></em>
-        <th:block th:text="${' ' + #strings.substringAfter(producto.productName,' ')}"></th:block>
-      </h1>
+<h1 class="pd-title">
+
+  <em th:text="${#strings.arraySplit(producto.productName,' ')[0]}">
+    Producto
+  </em>
+
+  <th:block
+    th:if="${#strings.contains(producto.productName,' ')}"
+    th:text="${' ' + #strings.substringAfter(producto.productName,' ')}">
+  </th:block>
+
+</h1>
+      
 
       <!-- Precio -->
       <div class="pd-price-row">
         <span class="pd-price-now">
-          $<span th:text="${#numbers.formatDecimal(producto.precioConDescuento != null ? producto.precioConDescuento : producto.precio, 1, 2)}">699.00</span>
+<span th:text="${#numbers.formatDecimal((producto.precioConDescuento ?: producto.precio), 1, 2)}">
         </span>
         <span class="pd-price-was"
               th:if="${producto.tienePromocion}">
@@ -761,12 +779,19 @@
 </div>
 
 <!-- ══ SCRIPTS ══ -->
+
+
 <script th:inline="javascript">
-  const variantes      = /*[[${producto.variantes}]]*/ [];
-  const productoId     = /*[[${producto.id}]]*/ 0;
+  const variantes = /*[[${producto.variantes}]]*/ [];
+  const productoId = /*[[${producto.id}]]*/ 0;
   const productoNombre = /*[[${producto.productName}]]*/ '';
   const tienePromocion = /*[[${producto.tienePromocion}]]*/ false;
-  const WA_NUMBER      = '5210000000000'; // ← Cambia por tu número real
+
+  const productoPrecio = /*[[${producto.precioConDescuento != null 
+      ? producto.precioConDescuento 
+      : producto.precio}]]*/ 0;
+
+  const WA_NUMBER = '522221234567';
 </script>
 
 <script>
@@ -803,8 +828,12 @@
       btn.disabled  = stock <= 0;
       btn.innerHTML = getLabel(v) + '<small>' + (stock > 0 ? stock + ' pzs' : 'Agotado') + '</small>';
       if (stock > 0) {
-        btn.onclick = () => {
-          document.querySelectorAll('.pd-vbtn').forEach(b => b.classList.remove('pd-vbtn-active'));
+    	  btn.onclick = () => {
+
+    		  if (btn.classList.contains('pd-vbtn-active')) {
+    		    return;
+    		  }
+    	document.querySelectorAll('.pd-vbtn').forEach(b => b.classList.remove('pd-vbtn-active'));
           btn.classList.add('pd-vbtn-active');
           varianteSel = v;
           maxQty = stock;
@@ -839,29 +868,82 @@
   }
 
   /* ── CARRITO ── */
-  async function addToCart() {
-    const btns = [document.getElementById('btnCart'), document.getElementById('btnCartMobile')];
-    const label = 'Agregar al carrito';
-    btns.forEach(b => { if (b) { b.disabled = true; b.textContent = 'Agregando...'; } });
-    try {
-      await fetch('/carrito/agregar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productoId, cantidad: qty, varianteId: varianteSel?.id ?? null })
-      });
-      btns.forEach(b => { if (b) { b.classList.add('added'); b.textContent = '¡Listo! Producto agregado'; } });
-      /* Anima el badge del carrito si existe en el layout */
-      document.querySelector('.cart-badge')?.classList.add('pop');
-      setTimeout(() => {
-        btns.forEach(b => {
-          if (b) { b.classList.remove('added'); b.disabled = false; b.textContent = label; }
-        });
-      }, 2000);
-    } catch {
-      btns.forEach(b => { if (b) { b.disabled = false; b.textContent = label; } });
+async function addToCart() {
+	console.log("click detectado");
+	console.log(window.addProductToCart);
+  const btns = [
+    document.getElementById('btnCart'),
+    document.getElementById('btnCartMobile')
+  ];
+
+  const label = 'Agregar al carrito';
+
+  btns.forEach(btn => {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Agregando...';
     }
+  });
+
+  try {
+
+	  const price = Number(productoPrecio);
+
+    // agrega al carrito real del navbar
+window.addProductToCart({
+  id: varianteSel?.id || productoId,
+  name: productoNombre +
+        (varianteSel ? ` (${getLabel(varianteSel)})` : ''),
+  price: price,
+  quantity: qty
+});
+
+    // opcional backend
+    await fetch('/carrito/agregar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        productoId,
+        cantidad: qty,
+        varianteId: varianteSel?.id ?? null
+      })
+    });
+
+    btns.forEach(btn => {
+      if (btn) {
+        btn.classList.add('added');
+        btn.textContent = '¡Listo!';
+      }
+    });
+
+    setTimeout(() => {
+
+      btns.forEach(btn => {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('added');
+          btn.textContent = label;
+        }
+      });
+
+    }, 1500);
+
+  } catch (error) {
+
+    console.error(error);
+
+    btns.forEach(btn => {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+    });
+
   }
 
+}
   /* ── WHATSAPP ── */
   function abrirWa() {
     const msg = '¡Hola! Tengo una pregunta sobre el producto: ' + productoNombre;
@@ -904,10 +986,27 @@
   }
 
   /* ── INIT ── */
-  document.getElementById('btnCart')?.addEventListener('click', addToCart);
-  document.getElementById('btnCartMobile')?.addEventListener('click', addToCart);
-  document.getElementById('btnWa')?.addEventListener('click', abrirWa);
+document.addEventListener('DOMContentLoaded', () => {
 
+  document.getElementById('btnCart')
+    ?.addEventListener('click', addToCart);
+
+  document.getElementById('btnCartMobile')
+    ?.addEventListener('click', addToCart);
+
+  document.getElementById('btnWa')
+    ?.addEventListener('click', abrirWa);
+
+  const acc0 = document.getElementById('accarr0');
+
+  if (acc0) {
+    acc0.style.transform = 'rotate(180deg)';
+  }
+
+  renderVariantes();
+  initCountdown();
+
+});
   /* Acordeón: abrir descripción por defecto */
   document.getElementById('accarr0').style.transform = 'rotate(180deg)';
 
@@ -916,4 +1015,5 @@
 </script>
 
 </section>
+</body>
 </html>

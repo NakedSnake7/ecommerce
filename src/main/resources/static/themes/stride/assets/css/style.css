@@ -236,6 +236,45 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .cart-badge.pop {
   animation: badgePop 0.3s var(--ease);
 }
+
+.cart-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.cart-item-info{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.cart-item-info strong{
+  font-size:14px;
+  color:var(--text);
+}
+
+.cart-item-info small{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.cart-remove-btn{
+  border:none;
+  background:none;
+  color:var(--accent);
+  font-size:18px;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.cart-remove-btn:hover{
+  transform:scale(1.15);
+  opacity:.8;
+}
 @keyframes badgePop {
   0% { transform: scale(1); }
   50% { transform: scale(1.5); }
@@ -1605,6 +1644,8 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   }
 
 }
+
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1200px) {
   .products-grid { grid-template-columns: repeat(2, 1fr); }

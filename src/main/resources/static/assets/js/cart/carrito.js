@@ -1,12 +1,16 @@
 import { cartStore } from './cartStore.js';
+window.cartStore = cartStore;
 
+window.addProductToCart = function(product) {
+    cartStore.add(product);
+};
 
 export function configurarCarrito() {
 	
 	if (window.__carritoInicializado) return;
 	window.__carritoInicializado = true;
 	
-    const cartButton = document.getElementById('cartButton');
+    const cartButton = document.getElementById('cart-btn');
     const cartDropdown = document.getElementById('cartDropdown');
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
@@ -40,8 +44,11 @@ export function configurarCarrito() {
 
     function updateCart() {
 		const { products, coupon } = cartStore.getState();
-        if (!cartItems) return;
-        cartItems.innerHTML = '';
+		if (!cartItems) {
+		    console.warn("cartItems no existe en DOM");
+		    return;
+		}
+		        cartItems.innerHTML = '';
 
         
 		const { subtotal, discount, envio, total } =
@@ -569,9 +576,21 @@ export function configurarCarrito() {
 	
 	
 	cartStore.subscribe(() => {
-	    const products = cartStore.getState().products;
-	    products.forEach(p => actualizarStockSiExiste(p.id));
-	    updateCart();
+	    try {
+	        const products = cartStore.getState().products;
+
+	        products.forEach(p => {
+	            try {
+	                actualizarStockSiExiste(p.id);
+	            } catch (e) {
+	                console.warn("Error stock UI:", e);
+	            }
+	        });
+
+	        updateCart();
+	    } catch (e) {
+	        console.error("Error en subscribe carrito:", e);
+	    }
 	});
 
 

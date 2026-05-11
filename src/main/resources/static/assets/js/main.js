@@ -10,8 +10,7 @@ import Register from './auth/register.js';
 import UserMenu from './menu/UserMenu.js';
 
 // Cart
-import './cart/cartStore.js';
-import { configurarCarrito } from './components/cart.js';
+import { configurarCarrito } from './cart/carrito.js';
 
 // UI
 import './ui/footer-year.js';
@@ -26,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM listo");
 
     initApp();
+	
 
     configurarCarrito();
 	
