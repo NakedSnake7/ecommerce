@@ -2,7 +2,6 @@ package com.ecomerce.store.service;
 
 import com.ecomerce.store.exceptions.OrderNotFoundException; 
 import com.ecomerce.store.dto.checkout.CheckoutRequestDTO;
-import com.ecomerce.store.dto.order.OrderItemDTO;
 import com.ecomerce.store.dto.order.OrderRequestDTO;
 import com.ecomerce.store.dto.producto.reportes.ProductoVentaDTO;
 import com.ecomerce.store.model.Order;
@@ -183,6 +182,8 @@ guardar orden por transferencia
 
         Order saved = orderRepository.saveAndFlush(order);
 
+        stockService.descontarStock(saved);
+
         Order fullOrder = orderRepository
                 .findByIdFull(saved.getId())
                 .orElseThrow(() ->
@@ -250,6 +251,8 @@ guardar orden por transferencia
 
          log.error("Stock falló en orden {}", orderId, e);    }
  }
+ 
+ 
  @Transactional
  public void confirmarPagoTransferencia(Long orderId) {
 
@@ -260,13 +263,9 @@ guardar orden por transferencia
      }
 
      order.markAsPaid(null);
-     orderRepository.save(order);
+     order.markAsProcessed();
 
-     try {
-         procesarPostPago(orderId);
-     } catch (Exception e) {
-         log.error("Error post-pago transferencia {}", orderId, e);
-     }
+     orderRepository.save(order);
 
      notificationService.sendPaymentConfirmation(order);
  }
@@ -327,16 +326,7 @@ guardar orden por transferencia
     }
 
     public void validarStockCheckout(CheckoutRequestDTO request) {
-
-        stockService.validarStock(
-            request.getCart().stream()
-                .map(item -> new OrderItemDTO(
-                    item.getVarianteId(),
-                    item.getQuantity()
-                ))
-                .toList()
-        );
-
+        stockService.validarStock(request.getCart());
     }
 /* =====================================================
     EXPIRAR ÓRDENES (TRANSFERENCIAS)
