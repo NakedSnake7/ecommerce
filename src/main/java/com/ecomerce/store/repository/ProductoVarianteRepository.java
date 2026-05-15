@@ -1,6 +1,6 @@
 package com.ecomerce.store.repository;
 
-import com.ecomerce.store.model.ProductoVariante;
+import com.ecomerce.store.model.ProductoVariante; 
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 

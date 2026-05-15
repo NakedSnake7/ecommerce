@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -112,15 +113,17 @@ public class EmailService {
 
      String template = cargarTemplate("email/email-transferencia.html");
 
-     double subtotal = 0;
+     BigDecimal subtotal = BigDecimal.ZERO;
      StringBuilder productos = new StringBuilder();
 
      for (OrderItem item : order.getItems()) {
-         double sub = item.getPrice() * item.getQuantity();
-         subtotal += sub;
-
+    	 BigDecimal sub = item.getPrice()
+    		        .multiply(BigDecimal.valueOf(item.getQuantity()));
+    	 
+    	 subtotal = subtotal.add(sub);
+    	 
          productos.append("<tr>")
-                 .append("<td>").append(item.getProducto().getProductName()).append("</td>")
+                 .append("<td>").append(nombreProductoSeguro(item)).append("</td>")
                  .append("<td style='text-align:center;'>").append(item.getQuantity()).append("</td>")
                  .append("<td style='text-align:center;'>$")
                  .append(MONEY.format(sub))
@@ -128,10 +131,15 @@ public class EmailService {
                  .append("</tr>");
      }
 
-     double envioCosto = calcularEnvio(subtotal);
-     String envio = envioCosto == 0 ? "GRATIS" : "$" + MONEY.format(envioCosto);
-     double total = subtotal + envioCosto;
+     BigDecimal envioCosto = calcularEnvio(subtotal);
 
+     String envio = envioCosto.compareTo(BigDecimal.ZERO) == 0
+             ? "GRATIS"
+             : "$" + MONEY.format(envioCosto);
+
+     BigDecimal total = subtotal.add(envioCosto);
+     
+     
      String html = template
              .replace("{NOMBRE}", order.getCustomerName())
              .replace("{NUMERO_ORDEN}", String.valueOf(order.getId()))
@@ -159,15 +167,17 @@ public class EmailService {
 
         String template = cargarTemplate("email/order-processed.html");
 
-        double subtotal = 0;
+        BigDecimal subtotal = BigDecimal.ZERO;
         StringBuilder productos = new StringBuilder();
 
         for (OrderItem item : items) {
-            double sub = item.getPrice() * item.getQuantity();
-            subtotal += sub;
+        	BigDecimal sub = item.getPrice()
+        	        .multiply(BigDecimal.valueOf(item.getQuantity()));
+
+        	subtotal = subtotal.add(sub);
 
             productos.append("<tr>")
-                    .append("<td>").append(item.getProducto().getProductName()).append("</td>")
+                    .append("<td>").append(nombreProductoSeguro(item)).append("</td>")
                     .append("<td style='text-align:center;'>").append(item.getQuantity()).append("</td>")
                     .append("<td style='text-align:center;'>$")
                     .append(MONEY.format(sub))
@@ -175,10 +185,14 @@ public class EmailService {
                     .append("</tr>");
         }
 
-        double envioCosto = calcularEnvio(subtotal);
-        String envio = envioCosto == 0 ? "GRATIS" : "$" + MONEY.format(envioCosto);
-        double total = subtotal + envioCosto;
+        BigDecimal envioCosto = calcularEnvio(subtotal);
 
+        String envio = envioCosto.compareTo(BigDecimal.ZERO) == 0
+                ? "GRATIS"
+                : "$" + MONEY.format(envioCosto);
+
+        BigDecimal total = subtotal.add(envioCosto);
+        
         String html = template
                 .replace("{NOMBRE}", nombre)
                 .replace("{NUMERO_ORDEN}", String.valueOf(orderId))
@@ -200,19 +214,17 @@ public class EmailService {
 
         String template = cargarTemplate("email/email-order-expired.html");
 
-        double subtotal = 0;
+        BigDecimal subtotal = BigDecimal.ZERO;
         StringBuilder productos = new StringBuilder();
 
         for (OrderItem item : order.getItems()) {
-            double sub = item.getPrice() * item.getQuantity();
-            subtotal += sub;
+        	BigDecimal sub = item.getPrice()
+        	        .multiply(BigDecimal.valueOf(item.getQuantity()));
+
+        	subtotal = subtotal.add(sub);
 
             productos.append("<tr>")
-                    .append("<td>").append(
-                            item.getProducto() != null
-                                    ? item.getProducto().getProductName()
-                                    : "Producto"
-                    ).append("</td>")
+                    .append("<td>").append(nombreProductoSeguro(item)).append("</td>")
                     .append("<td style='text-align:center;'>").append(item.getQuantity()).append("</td>")
                     .append("<td style='text-align:center;'>$")
                     .append(MONEY.format(sub))
@@ -220,10 +232,12 @@ public class EmailService {
                     .append("</tr>");
         }
 
-        double envioCosto = calcularEnvio(subtotal);
-        String envio = envioCosto == 0 ? "GRATIS" : "$" + MONEY.format(envioCosto);
-        double total = subtotal + envioCosto;
-
+        BigDecimal envioCosto = calcularEnvio(subtotal);
+        String envio = envioCosto.compareTo(BigDecimal.ZERO) == 0
+                ? "GRATIS"
+                : "$" + MONEY.format(envioCosto);
+        BigDecimal total = subtotal.add(envioCosto);
+        
         String html = template
                 .replace("{NOMBRE}", order.getCustomerName() != null
                         ? order.getCustomerName()
@@ -271,8 +285,13 @@ public class EmailService {
     ===================================================== */
    
 
-    private double calcularEnvio(double subtotal) {
-        return subtotal >= ENVIO_GRATIS_MIN ? 0 : ENVIO_COSTO;
+    private BigDecimal calcularEnvio(BigDecimal subtotal) {
+
+        if (subtotal.compareTo(BigDecimal.valueOf(ENVIO_GRATIS_MIN)) >= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return BigDecimal.valueOf(ENVIO_COSTO);
     }
 
     private String cargarTemplate(String path) throws IOException {
@@ -286,5 +305,18 @@ public class EmailService {
                 throw new RuntimeException(e);
             }
         });
+    }
+    private String nombreProductoSeguro(OrderItem item) {
+
+        if (item.getProducto() == null) {
+            return "Producto";
+        }
+
+        try {
+            return item.getProductName();
+        } catch (Exception e) {
+            log.warn("No se pudo cargar producto del item {}", item.getId());
+            return "Producto";
+        }
     }
 }

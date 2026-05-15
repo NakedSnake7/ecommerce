@@ -1,5 +1,7 @@
 package com.ecomerce.store.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;  
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -22,23 +24,25 @@ public class OrderItem {
 
     @NotNull(message = "El precio no puede ser nulo")
     @Min(value = 0, message = "El precio debe ser mayor a 0")
-    private Double price; // Nuevo campo para el precio
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variante_id", nullable = false)
+    @JoinColumn(name = "variante_id", nullable = true)
     private ProductoVariante variante;
     
-    
+    @Column(name = "product_name")
+    private String productName;
 
     // Constructor vacío para JPA
     public OrderItem() {}
 
     // Constructor con parámetros
-    public OrderItem(Producto producto, Integer quantity, Double price, Order order) {
+    public OrderItem(Producto producto, Integer quantity,BigDecimal price, Order order) {
         this.producto = producto;
         this.quantity = quantity;
         this.price = price;
@@ -79,11 +83,11 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -93,5 +97,12 @@ public class OrderItem {
 
     public void setOrder(Order order) {
         this.order = order;
+    }
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 }

@@ -75,32 +75,45 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/", "/index", "/inicio", "/privacy",
-                    "/productos/**",
-                    "/products/**",
-                    "/producto-detalle/**",
-                    "/fragmento-menu",
-                    "/fragmento-resenas",
 
-                    "/login",
+            	    .requestMatchers(
 
-                    "/themes/**",
-                    "/assets/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/webjars/**",
-                    "/favicon.ico"
-                ).permitAll()
+            	        "/", "/index", "/inicio", "/privacy",
 
-                .requestMatchers(
-                    "/cuenta/**",
-                    "/pedidos/**"
-                ).hasRole("USER")
+            	        "/productos/**",
+            	        "/products/**",
+            	        "/producto-detalle/**",
 
-                .anyRequest().authenticated()
-            )
+            	        "/fragmento-menu",
+            	        "/fragmento-resenas",
+
+            	        "/login",
+
+            	        // API checkout guest
+            	        "/api/checkout",
+            	        "/api/stripe/**",
+
+            	        // API frontend
+            	        "/api/user/me",
+
+            	        // static
+            	        "/themes/**",
+            	        "/assets/**",
+            	        "/css/**",
+            	        "/js/**",
+            	        "/images/**",
+            	        "/webjars/**",
+            	        "/favicon.ico"
+
+            	    ).permitAll()
+
+            	    .requestMatchers(
+            	        "/cuenta/**",
+            	        "/pedidos/**"
+            	    ).hasRole("USER")
+
+            	    .anyRequest().authenticated()
+            	)
 
             .formLogin(form -> form
             	    .loginPage("/login")

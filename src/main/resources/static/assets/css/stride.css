@@ -236,6 +236,41 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .cart-badge.pop {
   animation: badgePop 0.3s var(--ease);
 }
+
+/* DRAWER DEL CARRITO */
+.cart-dropdown {
+  position: fixed;
+  top: 68px; /* debajo del navbar */
+  right: 0;
+
+  width: 380px;
+  max-width: 90vw;
+  height: calc(100vh - 68px);
+
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+
+  z-index: 9999;
+
+  overflow-y: auto;
+
+  /* oculto inicialmente */
+  transform: translateX(100%);
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    transform .35s var(--ease),
+    opacity .35s var(--ease),
+    visibility .35s var(--ease);
+}
+
+/* visible */
+.cart-dropdown.open {
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+}
 @keyframes badgePop {
   0% { transform: scale(1); }
   50% { transform: scale(1.5); }

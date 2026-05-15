@@ -1,6 +1,6 @@
 package com.ecomerce.store.service;
 
-import java.util.List;
+import java.util.List; 
 
 import org.springframework.stereotype.Service;
 
@@ -35,10 +35,17 @@ public class StockService {
 
         for (StockItem item : items) {
 
+            // Producto simple (sin variante)
+            if (item.getVarianteId() == null) {
+                continue;
+            }
+
             ProductoVariante variante = varianteRepository
                     .findByIdForUpdate(item.getVarianteId())
                     .orElseThrow(() ->
-                            new ResourceNotFoundException("Variante no encontrada")
+                            new ResourceNotFoundException(
+                                "Variante no encontrada: " + item.getVarianteId()
+                            )
                     );
 
             if (variante.getStock() < item.getQuantity()) {

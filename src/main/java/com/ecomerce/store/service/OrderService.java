@@ -1,6 +1,6 @@
 package com.ecomerce.store.service;
 
-import com.ecomerce.store.exceptions.OrderNotFoundException;
+import com.ecomerce.store.exceptions.OrderNotFoundException; 
 import com.ecomerce.store.dto.checkout.CheckoutRequestDTO;
 import com.ecomerce.store.dto.order.OrderItemDTO;
 import com.ecomerce.store.dto.order.OrderRequestDTO;
@@ -8,8 +8,12 @@ import com.ecomerce.store.dto.producto.reportes.ProductoVentaDTO;
 import com.ecomerce.store.model.Order;
 import com.ecomerce.store.model.OrderStatus;
 import com.ecomerce.store.model.PaymentStatus;
+import com.ecomerce.store.model.Producto;
+import com.ecomerce.store.model.ProductoVariante;
 import com.ecomerce.store.model.User;
 import com.ecomerce.store.repository.OrderRepository;
+import com.ecomerce.store.repository.ProductoRepository;
+import com.ecomerce.store.repository.ProductoVarianteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,16 +35,22 @@ import java.util.Optional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductoRepository productoRepository;
+    private final ProductoVarianteRepository productoVarianteRepository;
     private final StockService stockService;
     private final NotificationService notificationService;
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(
     	    OrderRepository orderRepository,
+    	    ProductoRepository productoRepository,
+            ProductoVarianteRepository productoVarianteRepository,
     	    StockService stockService,
     	    NotificationService notificationService
     	) {
     	    this.orderRepository = orderRepository;
+    	    this.productoRepository = productoRepository;
+    	    this.productoVarianteRepository = productoVarianteRepository;
     	    this.stockService = stockService;
     	    this.notificationService = notificationService;
     	}
@@ -74,7 +84,14 @@ public class OrderService {
         );
     }
 
-    
+    public Producto buscarProducto(Long productId) {
+        return productoRepository.findById(productId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Producto no encontrado: " + productId
+                        )
+                );
+    }
     // ============================
     // OBTENER ORDEN
     // ============================
@@ -161,12 +178,21 @@ public class OrderService {
 guardar orden por transferencia
 ===================================================== */
  
- @Transactional
- public Order saveOrderTransferencia(Order order) {
-     Order saved = orderRepository.save(order);
-     notificationService.sendTransferInstructions(saved);
-     return saved;
- }
+    @Transactional
+    public Order saveOrderTransferencia(Order order) {
+
+        Order saved = orderRepository.saveAndFlush(order);
+
+        Order fullOrder = orderRepository
+                .findByIdFull(saved.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("Orden no encontrada")
+                );
+
+        notificationService.sendTransferInstructions(fullOrder);
+
+        return fullOrder;
+    }
  /* =====================================================
     WEBHOOK STRIPE – PASO 1 (CRÍTICO)
     👉 ESTE NUNCA DEBE FALLAR
@@ -301,6 +327,7 @@ guardar orden por transferencia
     }
 
     public void validarStockCheckout(CheckoutRequestDTO request) {
+
         stockService.validarStock(
             request.getCart().stream()
                 .map(item -> new OrderItemDTO(
@@ -309,7 +336,8 @@ guardar orden por transferencia
                 ))
                 .toList()
         );
-    }  
+
+    }
 /* =====================================================
     EXPIRAR ÓRDENES (TRANSFERENCIAS)
  ===================================================== */
@@ -365,5 +393,13 @@ guardar orden por transferencia
 	        .map(Order::getAddress)
 	        .orElse(null);
 	}
+ @Transactional
+ public ProductoVariante obtenerVarianteConLock(Long id) {
+     return productoVarianteRepository
+             .findByIdForUpdate(id)
+             .orElseThrow(() ->
+                 new RuntimeException("Variante no encontrada")
+             );
+ }
 
 }

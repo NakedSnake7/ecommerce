@@ -1,9 +1,8 @@
 package com.ecomerce.store.dto.checkout;
 
+import com.ecomerce.store.contracts.StockItem;
 
-import com.ecomerce.store.contracts.StockItem;  
-
-import jakarta.validation.constraints.DecimalMin;  
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,9 +10,9 @@ import jakarta.validation.constraints.NotNull;
 public class CartItemDTO implements StockItem {
 
     @NotNull(message = "El ID del producto no puede ser nulo")
-    private Long productId; // 
-    
-    @NotNull
+    private Long productId;
+
+    // Puede ser null para productos simples
     private Long varianteId;
 
     @NotBlank(message = "El nombre del producto no puede estar vacío")
@@ -26,12 +25,6 @@ public class CartItemDTO implements StockItem {
     @NotNull(message = "El precio no puede ser nulo")
     @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
     private Double price;
-    
- 
-
-    // =====================
-    // GETTERS Y SETTERS
-    // =====================
 
     public Long getProductId() {
         return productId;
@@ -39,6 +32,15 @@ public class CartItemDTO implements StockItem {
 
     public void setProductId(Long productId) {
         this.productId = productId;
+    }
+
+    @Override
+    public Long getVarianteId() {
+        return varianteId;
+    }
+
+    public void setVarianteId(Long varianteId) {
+        this.varianteId = varianteId;
     }
 
     public String getName() {
@@ -50,11 +52,6 @@ public class CartItemDTO implements StockItem {
     }
 
     @Override
-    public Long getVarianteId() {
-        return varianteId;
-    }
-
-    @Override
     public Integer getQuantity() {
         return quantity;
     }
@@ -63,11 +60,11 @@ public class CartItemDTO implements StockItem {
         this.quantity = quantity;
     }
 
-    public @NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") @NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") Double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(@NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") @NotNull(message = "El precio no puede ser nulo") @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0") Double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 }

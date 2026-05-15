@@ -6,6 +6,8 @@ public class OrderItemDTO implements StockItem {
 
     private Long varianteId;
     private Integer quantity;
+    
+    
 
     // 🔥 Constructor vacío (necesario para Jackson)
     public OrderItemDTO() {}

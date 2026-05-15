@@ -19,6 +19,7 @@ th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
     min-height: 100vh;
     padding-top: 68px; /* altura navbar fija */
   }
+  
 
   /* ── BREADCRUMB ── */
   .pd-breadcrumb {
@@ -836,6 +837,7 @@ th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
     	document.querySelectorAll('.pd-vbtn').forEach(b => b.classList.remove('pd-vbtn-active'));
           btn.classList.add('pd-vbtn-active');
           varianteSel = v;
+          actualizarPrecioVariante();
           maxQty = stock;
           qty = Math.min(qty, maxQty);
           document.getElementById('qtyVal').textContent = qty;
@@ -866,12 +868,24 @@ th:replace="~{layout/main :: layout(${producto.productName}, ~{::section})}">
       bar.style.width = '60%';
     }
   }
+  
+  function actualizarPrecioVariante() {
+
+	  const priceEl = document.querySelector('.pd-price-now');
+
+	  if (!priceEl) return;
+
+	  const price = Number(varianteSel?.precio ?? productoPrecio);
+
+	  priceEl.textContent = `$${price.toFixed(2)}`;
+
+	}
 
   /* ── CARRITO ── */
 async function addToCart() {
 	console.log("click detectado");
-	console.log(window.addProductToCart);
-  const btns = [
+	console.log(window.cartStore);
+	const btns = [
     document.getElementById('btnCart'),
     document.getElementById('btnCartMobile')
   ];
@@ -887,16 +901,49 @@ async function addToCart() {
 
   try {
 
-	  const price = Number(productoPrecio);
-
+	  const stockActual = varianteSel
+	    ? Number(varianteSel.stock)
+	    : Number(/*[[${producto.stockSimple}]]*/ 0);
+	    
     // agrega al carrito real del navbar
-window.addProductToCart({
-  id: varianteSel?.id || productoId,
-  name: productoNombre +
+window.cartStore.add({
+    id: productoId,
+    productId: productoId,
+    varianteId: varianteSel?.id ?? null,
+    name: productoNombre +
         (varianteSel ? ` (${getLabel(varianteSel)})` : ''),
-  price: price,
-  quantity: qty
+        price: Number(varianteSel?.precio ?? productoPrecio),
+        quantity: qty,
+    originalStock: stockActual
 });
+if (varianteSel) {
+    varianteSel.stock -= qty;
+
+    if (varianteSel.stock < 0) {
+        varianteSel.stock = 0;
+    }
+
+    maxQty = varianteSel.stock;
+
+    renderVariantes();
+
+    actualizarUrgencia(varianteSel.stock);
+
+    const note = document.getElementById('qtyNote');
+
+    if (note) {
+        note.textContent =
+            varianteSel.stock > 0
+                ? `Máx. ${varianteSel.stock} disponibles`
+                : 'Agotado';
+    }
+}
+//abrir carrito automáticamente
+document
+  .getElementById("cartDropdown")
+  ?.classList.add("open");
+
+console.log("Estado carrito:", window.cartStore.getState());
 
     // opcional backend
     await fetch('/carrito/agregar', {
@@ -1010,8 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Acordeón: abrir descripción por defecto */
   document.getElementById('accarr0').style.transform = 'rotate(180deg)';
 
-  renderVariantes();
-  initCountdown();
+
 </script>
 
 </section>

@@ -113,5 +113,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByCustomerEmailIgnoreCaseAndUserIsNull(String email);
 
+    @Query("""
+    	    SELECT DISTINCT o
+    	    FROM Order o
+    	    LEFT JOIN FETCH o.items i
+    	    LEFT JOIN FETCH i.producto
+    	    LEFT JOIN FETCH i.variante
+    	    WHERE o.id = :id
+    	""")
+    	Optional<Order> findByIdFull(@Param("id") Long id);
 
 }

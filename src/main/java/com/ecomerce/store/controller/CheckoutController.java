@@ -1,9 +1,8 @@
 package com.ecomerce.store.controller;
 
-import com.ecomerce.store.dto.checkout.CheckoutRequestDTO;
+import com.ecomerce.store.dto.checkout.CheckoutRequestDTO;  
 import com.ecomerce.store.model.*;
 import com.ecomerce.store.model.Order.PaymentMethod;
-import com.ecomerce.store.repository.ProductoRepository;
 import com.ecomerce.store.service.OrderService;
 import com.ecomerce.store.service.UserService;
 
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api")
@@ -32,17 +32,14 @@ public class CheckoutController {
 
     private final OrderService orderService;
     private final UserService userService;
-    private final ProductoRepository productoRepository;
-
+    
     public CheckoutController(
             OrderService orderService,
-            UserService userService,
-            ProductoRepository productoRepository
-    ) {
+            UserService userService
+            ) {
         this.orderService = orderService;
         this.userService = userService;
-        this.productoRepository = productoRepository;
-    }
+        }
 
     @PostMapping("/checkout")
     @CrossOrigin(origins = {
@@ -128,21 +125,44 @@ public class CheckoutController {
 
             // 7️⃣ Items
             checkoutRequest.getCart().forEach(cartItem -> {
-                Producto producto = productoRepository
-                        .findByProductNameConTodo(cartItem.getName())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Producto no encontrado: "
-                                                + cartItem.getName()
-                                ));
+
+                Producto producto;
+                ProductoVariante variante = null;
+
+                // Si existe variante
+                if (cartItem.getVarianteId() != null) {
+
+                    variante = orderService.obtenerVarianteConLock(
+                            cartItem.getVarianteId()
+                    );
+
+                    producto = variante.getProducto();
+
+                
+
+                } else {
+
+                    // Producto simple (sin variante)
+                    producto = orderService.buscarProducto(cartItem.getProductId());
+
+                }
 
                 OrderItem item = new OrderItem(
                         producto,
                         cartItem.getQuantity(),
-                        cartItem.getPrice(),
+                        BigDecimal.valueOf(cartItem.getPrice()),
                         order
                 );
+
+                // 🔥 Guardar nombre histórico para correos
+                item.setProductName(cartItem.getName());
+
+                if (variante != null) {
+                    item.setVariante(variante);
+                }
+
                 order.addItem(item);
+
             });
 
          // 8️⃣ Guardar orden (según método de pago)

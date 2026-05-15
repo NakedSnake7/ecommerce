@@ -1,12 +1,15 @@
 // Core
 import './core/particles.js';
 import { initApp } from "./core/app.js";
+
+// Components
+import Navbar from './components/navbar.js';
 import MobileMenu from "./components/mobileMenu.js";
 
 // Auth
 import Register from './auth/register.js';
 
-//UserMenu
+// User
 import UserMenu from './menu/UserMenu.js';
 
 // Cart
@@ -21,21 +24,21 @@ import './ui/sombras.js';
 // Features
 import { configurarBotonWhatsApp } from './whatsapp.js';
 
+
 document.addEventListener("DOMContentLoaded", () => {
+
     console.log("DOM listo");
 
     initApp();
-	
 
-    configurarCarrito();
-	
-	Register();
-	
-	UserMenu();
+    Register();
+
+    UserMenu();
 
     configurarBotonWhatsApp();
 
     esperarNavbar();
+
 });
 
 
@@ -45,16 +48,35 @@ function esperarNavbar() {
 
         const navbar = document.querySelector("#navbar");
 
-        if (navbar) {
+        if (!navbar) return;
 
-           
+        clearInterval(interval);
 
-            clearInterval(interval);
+        // Renderiza primero
+        Navbar();
+        MobileMenu();
 
-            MobileMenu();
-
-        }
+        // Espera a que el carrito exista realmente
+        esperarCarrito();
 
     }, 100);
+
+}
+
+function esperarCarrito() {
+
+    const interval = setInterval(() => {
+
+        const cartItems = document.getElementById("cartItems");
+
+        if (!cartItems) return;
+
+        clearInterval(interval);
+
+        console.log("Carrito listo");
+
+        configurarCarrito();
+
+    }, 50);
 
 }
