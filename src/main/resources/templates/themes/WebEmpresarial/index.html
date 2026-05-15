@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(
+        'WebEmpresarial™',
+        ~{::content}
+)}">
+
+<body>
+
+<th:block th:fragment="content">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="container">
+    <div class="badge"><div class="badge-dot"></div>Ecommerce · Sitios Web · Software Empresarial</div>
+    <h1>Tu negocio merece vender,<br><span class="gradient-text">automatizar y escalar.</span></h1>
+    <p class="hero-sub">Desarrollamos tiendas online, páginas corporativas y sistemas web a medida. Dejamos de entregar páginas bonitas y empezamos a construir máquinas de venta.</p>
+    <div class="actions">
+      <a class="btn btn-cyan btn-lg" href="#contacto">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .82h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"></path></svg>
+        Solicitar auditoría gratuita
+      </a>
+      <a class="btn btn-ghost btn-lg" href="#roi">Ver calculadora de ROI</a>
+    </div>
+    <div class="trust-row">
+      <div class="trust-pill">✓ Sin plantillas genéricas</div>
+      <div class="trust-pill">✓ Stack moderno</div>
+      <div class="trust-pill">✓ Enfoque en conversión</div>
+      <div class="trust-pill">✓ Soporte mensual</div>
+      <div class="trust-pill">✓ Garantía de entrega</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF BAR -->
+<div class="proof-bar">
+  <div class="container">
+    <div class="proof-inner">
+      <div class="proof-stat"><div class="proof-num" id="pn1">40</div><div class="proof-label">Proyectos entregados</div></div>
+      <div class="proof-divider"></div>
+      <div class="proof-stat"><div class="proof-num">7–21d</div><div class="proof-label">Tiempo de lanzamiento</div></div>
+      <div class="proof-divider"></div>
+      <div class="proof-stat"><div class="proof-num">3.4×</div><div class="proof-label">ROI promedio reportado</div></div>
+      <div class="proof-divider"></div>
+      <div class="proof-stat"><div class="proof-num" id="pn2">98</div><div class="proof-label">% clientes que repiten</div></div>
+      <div class="proof-divider"></div>
+      <div class="proof-stat"><div class="proof-num">24/7</div><div class="proof-label">Tu negocio activo</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRES LÍNEAS -->
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Soluciones</div>
+      <div class="divider-line"></div>
+      <h2>Tres líneas para cada etapa de tu negocio</h2>
+      <p>Desde presencia profesional hasta ecommerce completo o automatización operativa interna.</p>
+    </div>
+    <div class="g3">
+      <div class="card reveal reveal-d1">
+        <div class="eyebrow">Vender online</div>
+        <h3>WebEmpresarial Commerce™</h3>
+        <p>Tiendas online, catálogos, pagos, pedidos y automatización comercial.</p>
+        <a class="btn btn-ghost" style="margin-top:22px;" href="#commerce">Ver planes →</a>
+      </div>
+      <div class="card hl reveal reveal-d2">
+        <div class="eyebrow">Presencia digital</div>
+        <h3>WebEmpresarial Business™</h3>
+        <p>Páginas corporativas, landing pages, SEO base y generación de leads.</p>
+        <a class="btn btn-cyan" style="margin-top:22px;" href="#business">Ver planes →</a>
+      </div>
+      <div class="card reveal reveal-d3">
+        <div class="eyebrow">Automatización</div>
+        <h3>WebEmpresarial Systems™</h3>
+        <p>CRMs, dashboards, inventarios, portales internos y software a medida.</p>
+        <a class="btn btn-ghost" style="margin-top:22px;" href="#systems">Ver planes →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI -->
+<section class="roi-section" id="roi">
+  <div class="container">
+    <div class="roi-grid">
+      <div class="roi-left reveal">
+        <div class="sec-label">Retorno de inversión</div>
+        <div class="divider-line" style="margin:0 0 18px"></div>
+        <h2>¿Cuánto te cuesta <em style="color:var(--cyan);font-style:normal">no tener</em> un sitio profesional?</h2>
+        <p>Negocios sin presencia digital sólida pierden entre 30% y 60% de sus ventas potenciales. Clientes que no te encuentran, confianza que no genera, leads que se van a la competencia.</p>
+        <div class="roi-items">
+          <div class="roi-item">
+            <div class="roi-icon">📈</div>
+            <div class="roi-item-text">
+              <strong>Más ventas desde el día 1</strong>
+              <span>Clientes que te buscan en Google y redes aterrizan en una página que convierte.</span>
+            </div>
+          </div>
+          <div class="roi-item">
+            <div class="roi-icon">⚡</div>
+            <div class="roi-item-text">
+              <strong>Automatiza lo que haces a mano</strong>
+              <span>Pedidos, cotizaciones, leads y seguimientos sin depender de WhatsApp manual.</span>
+            </div>
+          </div>
+          <div class="roi-item">
+            <div class="roi-icon">🔒</div>
+            <div class="roi-item-text">
+              <strong>Tu marca no depende de Instagram</strong>
+              <span>Las redes pueden caer o bloquearte. Tu propio dominio siempre estará disponible.</span>
+            </div>
+          </div>
+        </div>
+        <a class="btn btn-cyan" href="#contacto">Quiero calcular mi ROI real →</a>
+      </div>
+      <div class="roi-calc reveal reveal-d2">
+        <div class="roi-calc-title">📊 Ejemplo de retorno — Commerce Pro</div>
+        <div class="roi-row"><span class="roi-row-label">Inversión inicial (Commerce Pro)</span><span class="roi-row-val">$19,900 MXN</span></div>
+        <div class="roi-row"><span class="roi-row-label">Soporte mensual</span><span class="roi-row-val">$1,900 MXN/mes</span></div>
+        <div class="roi-row"><span class="roi-row-label">Ventas estimadas mes 1</span><span class="roi-row-val pos">+$28,000 MXN</span></div>
+        <div class="roi-row"><span class="roi-row-label">Aumento desde mes 3 (SEO + pixel)</span><span class="roi-row-val pos">+$55,000 MXN</span></div>
+        <div class="roi-row"><span class="roi-row-label">ROI estimado al 6° mes</span><span class="roi-row-val big">3.8×</span></div>
+        <p class="roi-disclaimer">* Estimaciones basadas en proyectos similares. Los resultados varían según industria y ejecución de marketing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMERCE -->
+<section id="commerce" class="service-anchor">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Commerce</div>
+      <div class="divider-line"></div>
+      <h2>WebEmpresarial Commerce™</h2>
+      <p>Para marcas que venden en redes y quieren una tienda online que cierre ventas automáticamente.</p>
+    </div>
+    <div class="g3">
+      <div class="card reveal reveal-d1">
+        <h3>Launch</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">9,900</span></div>
+        <div class="monthly">+$1,200/mes soporte</div>
+        <span class="ideal">Valida ventas online rápido</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Landing + catálogo de productos</li>
+          <li><span class="chk">✓</span>Botón WhatsApp integrado</li>
+          <li><span class="chk">✓</span>Dominio y hosting incluidos</li>
+          <li><span class="chk">✓</span>Pixel Meta y Google Analytics</li>
+        </ul>
+        <a class="btn btn-ghost" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+      <div class="card hl reveal reveal-d2" style="position:relative">
+        <div class="popular-badge">Más popular</div>
+        <h3>Commerce Pro</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">19,900</span></div>
+        <div class="monthly">+$1,900/mes soporte</div>
+        <span class="ideal">La opción principal con checkout</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Ecommerce completo con carrito</li>
+          <li><span class="chk">✓</span>Pagos online integrados</li>
+          <li><span class="chk">✓</span>Panel administrativo de pedidos</li>
+          <li><span class="chk">✓</span>Gestión de productos y stock</li>
+        </ul>
+        <a class="btn btn-cyan" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+      <div class="card reveal reveal-d3">
+        <h3>Growth Commerce</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">29,900</span></div>
+        <div class="monthly">+$3,500/mes growth</div>
+        <span class="ideal">Escala y automatiza seguimiento</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Automatizaciones de carrito</li>
+          <li><span class="chk">✓</span>CRM básico integrado</li>
+          <li><span class="chk">✓</span>Funnels y remarketing</li>
+          <li><span class="chk">✓</span>Recuperación de clientes perdidos</li>
+        </ul>
+        <a class="btn btn-ghost" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUSINESS -->
+<section id="business" class="service-anchor">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Business</div>
+      <div class="divider-line"></div>
+      <h2>WebEmpresarial Business™</h2>
+      <p>Para negocios locales, clínicas, despachos, inmobiliarias y consultoras que necesitan captar clientes online.</p>
+    </div>
+    <div class="g3">
+      <div class="card reveal reveal-d1">
+        <h3>Business Start</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">7,900</span></div>
+        <div class="monthly">+$900/mes soporte</div>
+        <span class="ideal">Presencia profesional inmediata</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Landing page profesional</li>
+          <li><span class="chk">✓</span>Formulario de contacto</li>
+          <li><span class="chk">✓</span>WhatsApp directo</li>
+          <li><span class="chk">✓</span>Diseño responsive</li>
+        </ul>
+        <a class="btn btn-ghost" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+      <div class="card hl reveal reveal-d2" style="position:relative">
+        <div class="popular-badge">Más popular</div>
+        <h3>Business Pro</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">14,900</span></div>
+        <div class="monthly">+$1,500/mes soporte</div>
+        <span class="ideal">Capta y convierte clientes online</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Sitio hasta 5 secciones</li>
+          <li><span class="chk">✓</span>SEO base optimizado</li>
+          <li><span class="chk">✓</span>Google Maps integrado</li>
+          <li><span class="chk">✓</span>Analytics y pixel</li>
+        </ul>
+        <a class="btn btn-cyan" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+      <div class="card reveal reveal-d3">
+        <h3>Business Growth</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">24,900</span></div>
+        <div class="monthly">+$2,900/mes growth</div>
+        <span class="ideal">Automatiza generación de leads</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Web corporativa avanzada</li>
+          <li><span class="chk">✓</span>Blog o sección de recursos</li>
+          <li><span class="chk">✓</span>Automatización de leads</li>
+          <li><span class="chk">✓</span>Estrategia de conversión</li>
+        </ul>
+        <a class="btn btn-ghost" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEMS -->
+<section id="systems" class="service-anchor">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Systems</div>
+      <div class="divider-line"></div>
+      <h2>WebEmpresarial Systems™</h2>
+      <p>Para empresas que quieren dejar atrás hojas de cálculo y tener control total de sus operaciones.</p>
+    </div>
+    <div class="g3">
+      <div class="card reveal reveal-d1">
+        <h3>Systems Starter</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">19,900</span></div>
+        <div class="monthly">+$1,900/mes soporte</div>
+        <span class="ideal">Digitaliza un proceso interno</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Login de usuarios</li>
+          <li><span class="chk">✓</span>Panel administrativo</li>
+          <li><span class="chk">✓</span>CRUD principal</li>
+          <li><span class="chk">✓</span>Base de datos MySQL</li>
+        </ul>
+        <a class="btn btn-ghost" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+      <div class="card hl reveal reveal-d2" style="position:relative">
+        <div class="popular-badge">Más popular</div>
+        <h3>Systems Pro</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">39,900</span></div>
+        <div class="monthly">+$3,900/mes soporte</div>
+        <span class="ideal">Operaciones con reportes y roles</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>CRM o inventario completo</li>
+          <li><span class="chk">✓</span>Dashboards y reportes</li>
+          <li><span class="chk">✓</span>Roles y permisos de usuario</li>
+          <li><span class="chk">✓</span>Integración con APIs externas</li>
+        </ul>
+        <a class="btn btn-cyan" style="margin-top:22px;width:100%;" href="#contacto">Empezar →</a>
+      </div>
+      <div class="card reveal reveal-d3">
+        <h3>Systems Enterprise</h3>
+        <div class="price-tag"><span class="price-cur">$</span><span class="price">69,900+</span></div>
+        <div class="monthly">Desde $6,900/mes</div>
+        <span class="ideal">Software empresarial personalizado</span>
+        <ul class="feat-list">
+          <li><span class="chk">✓</span>Arquitectura escalable</li>
+          <li><span class="chk">✓</span>Automatizaciones avanzadas</li>
+          <li><span class="chk">✓</span>Integraciones múltiples</li>
+          <li><span class="chk">✓</span>Soporte prioritario</li>
+        </ul>
+        <a class="btn btn-ghost" style="margin-top:22px;width:100%;" href="#contacto">Contactar →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonios">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Casos de éxito</div>
+      <div class="divider-line"></div>
+      <h2>Negocios que ya están creciendo con nosotros</h2>
+      <p>Resultados reales de clientes que apostaron por una solución digital profesional.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal reveal-d1">
+        <div class="stars">★★★★★</div>
+        <div class="testi-result">📈 +180% ventas en 3 meses</div>
+        <p class="testi-quote">Vendíamos solo por Instagram y dependíamos de que alguien nos escribiera. Ahora tenemos una tienda que vende sola. El primer mes recuperamos la inversión.</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-a">SL</div>
+          <div><div class="testi-name">Sofía López</div><div class="testi-role">Fundadora · Boutique Solis, CDMX</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d2">
+        <div class="stars">★★★★★</div>
+        <div class="testi-result">⚡ 12 leads/semana desde Google</div>
+        <p class="testi-quote">Teníamos página pero no nos encontraban. Con Business Pro y el SEO base empezamos a recibir pacientes nuevos directamente del buscador. Increíble diferencia.</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-b">DR</div>
+          <div><div class="testi-name">Dr. Ramón Ávila</div><div class="testi-role">Director · Clínica DentalMex, Monterrey</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d3">
+        <div class="stars">★★★★★</div>
+        <div class="testi-result">🏭 -60% tiempo en reportes</div>
+        <p class="testi-quote">Llevábamos el inventario en Excel y cometíamos errores constantemente. El sistema tardó 3 semanas y ya no necesitamos reportes manuales.</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-c">MG</div>
+          <div><div class="testi-name">Miguel García</div><div class="testi-role">CEO · Distribuidora Norte, Guadalajara</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d1">
+        <div class="stars">★★★★★</div>
+        <div class="testi-result">💰 ROI 4.2× en 6 meses</div>
+        <p class="testi-quote">Pensaba que era caro hasta que calculé lo que perdía sin una tienda profesional. En seis meses el retorno fue de más de cuatro veces la inversión.</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-d">CR</div>
+          <div><div class="testi-name">Carlos Reyes</div><div class="testi-role">Dueño · Ferretería El Tornillo, Puebla</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d2">
+        <div class="stars">★★★★★</div>
+        <div class="testi-result">🚀 Lanzamiento en 9 días</div>
+        <p class="testi-quote">Necesitaba salir al mercado antes que mi competencia. En menos de dos semanas tenía una landing profesional con formulario, WhatsApp y pixel activo.</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-e">AP</div>
+          <div><div class="testi-name">Andrea Paredes</div><div class="testi-role">Co-fundadora · AgroFresh, Jalisco</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d3">
+        <div class="stars">★★★★★</div>
+        <div class="testi-result">📋 CRM en 18 días</div>
+        <p class="testi-quote">Necesitábamos gestionar 200+ clientes sin hojas de cálculo. Nos entregaron un CRM completo con roles y dashboards. El equipo quedó encantado.</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-f">LM</div>
+          <div><div class="testi-name">Laura Mendoza</div><div class="testi-role">Directora Comercial · Constructora Prados</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Diferenciación</div>
+      <div class="divider-line"></div>
+      <h2>Por qué no somos una agencia web tradicional</h2>
+      <p>No entregamos páginas bonitas. Construimos activos digitales que trabajan por tu negocio.</p>
+    </div>
+    <div class="g2">
+      <div class="card reveal reveal-d1">
+        <h3 style="color:var(--soft);margin-bottom:8px">Agencias tradicionales</h3>
+        <ul class="cmp-list">
+          <li><span class="xi">✕</span>Plantillas genéricas de WordPress</li>
+          <li><span class="xi">✕</span>Sin integración con CRM ni backend</li>
+          <li><span class="xi">✕</span>Poca o nula medición de conversiones</li>
+          <li><span class="xi">✕</span>Cambios lentos y costosos</li>
+          <li><span class="xi">✕</span>Soporte por ticket con días de espera</li>
+        </ul>
+      </div>
+      <div class="card hl reveal reveal-d2">
+        <h3 style="margin-bottom:8px">WebEmpresarial™</h3>
+        <ul class="cmp-list">
+          <li><span class="vi">✓</span>Desarrollo escalable a medida</li>
+          <li><span class="vi">✓</span>Leads conectados a backend real</li>
+          <li><span class="vi">✓</span>Analytics, pixel y eventos configurados</li>
+          <li><span class="vi">✓</span>Preparado para automatización y SaaS</li>
+          <li><span class="vi">✓</span>Soporte por WhatsApp en horas</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Stack</div>
+      <div class="divider-line"></div>
+      <h2>Tecnología moderna para proyectos serios</h2>
+      <p>No dependemos de plantillas. Stack sólido, escalable y mantenible desde el día 1.</p>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-pill reveal reveal-d1">Spring Boot</div>
+      <div class="tech-pill reveal reveal-d2">Next.js</div>
+      <div class="tech-pill reveal reveal-d3">MySQL</div>
+      <div class="tech-pill reveal reveal-d4">Docker</div>
+      <div class="tech-pill reveal reveal-d1">APIs REST</div>
+      <div class="tech-pill reveal reveal-d2">Analytics</div>
+      <div class="tech-pill reveal reveal-d3">Meta Pixel</div>
+      <div class="tech-pill reveal reveal-d4">WhatsApp API</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-label">Proceso</div>
+      <div class="divider-line"></div>
+      <h2>De idea a lanzamiento sin vueltas innecesarias</h2>
+      <p>Cuatro pasos para ir de cero a una solución activa captando clientes.</p>
+    </div>
+    <div class="g4">
+      <div class="card reveal reveal-d1"><div class="step-num">1</div><h3>Auditoría</h3><p>Analizamos negocio, objetivos y oportunidades digitales reales.</p></div>
+      <div class="card reveal reveal-d2"><div class="step-num">2</div><h3>Estrategia</h3><p>Definimos oferta, estructura, tecnología y plan de conversión.</p></div>
+      <div class="card reveal reveal-d3"><div class="step-num">3</div><h3>Desarrollo</h3><p>Construimos con buenas prácticas, velocidad y calidad de código.</p></div>
+      <div class="card reveal reveal-d4"><div class="step-num">4</div><h3>Lanzamiento</h3><p>Publicamos, medimos, optimizamos y damos soporte continuo.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="container" style="max-width:800px">
+    <div class="sec-head reveal">
+      <div class="sec-label">FAQ</div>
+      <div class="divider-line"></div>
+      <h2>Preguntas frecuentes</h2>
+      <p>Respuestas directas para llegar a la llamada con claridad total.</p>
+    </div>
+    <div class="reveal">
+      <div class="faq-item"><div class="faq-q">¿Puedo empezar solo con una página? <span class="faq-icon">+</span></div><div class="faq-a">Sí. Business Start está pensado para lanzar rápido y crecer después hacia SEO, automatización o ecommerce sin rehacerlo todo.</div></div>
+      <div class="faq-item"><div class="faq-q">¿Incluye hosting y dominio? <span class="faq-icon">+</span></div><div class="faq-a">Podemos incluir la configuración inicial. El soporte mensual cubre mantenimiento, monitoreo y ajustes menores sin costo adicional.</div></div>
+      <div class="faq-item"><div class="faq-q">¿Pueden hacer sistemas internos tipo CRM? <span class="faq-icon">+</span></div><div class="faq-a">Sí. Systems está pensado exactamente para eso: CRMs, inventarios, dashboards, reportes y automatización de operaciones internas.</div></div>
+      <div class="faq-item"><div class="faq-q">¿Cuánto tarda un proyecto? <span class="faq-icon">+</span></div><div class="faq-a">Una landing puede salir en 5–7 días. Ecommerce en 2–3 semanas. Systems depende del alcance, normalmente entre 3 y 6 semanas.</div></div>
+      <div class="faq-item"><div class="faq-q">¿Los precios son en pesos mexicanos? <span class="faq-icon">+</span></div><div class="faq-a">Sí, todos los precios están en MXN. Contáctanos si necesitas cotización en USD o para facturación en otras monedas.</div></div>
+      <div class="faq-item"><div class="faq-q">¿Qué pasa si no estoy satisfecho con el resultado? <span class="faq-icon">+</span></div><div class="faq-a">Trabajamos con revisiones ilimitadas durante el desarrollo hasta que el resultado sea exactamente lo que acordamos. Tu inversión está protegida por nuestra garantía de entrega.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section>
+  <div class="container">
+    <div class="cta-banner reveal">
+      <div class="eyebrow">Oferta de lanzamiento</div>
+      <div class="cta-urgency"><div class="urgency-dot"></div>Solo quedan 3 lugares este mes con auditoría + estrategia gratis</div>
+      <h2>¿Listo para que tu negocio trabaje mientras duermes?</h2>
+      <p>Agenda tu diagnóstico sin costo y te diremos exactamente qué necesitas para vender, automatizar y escalar.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative">
+        <a class="btn btn-white btn-lg" href="#contacto">Quiero mi diagnóstico gratis →</a>
+        <a class="btn btn-ghost btn-lg" target="_blank" href="https://wa.me/5210000000000?text=Hola%20quiero%20una%20auditoria%20de%20WebEmpresarial">💬 Hablar por WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contacto">
+  <div class="container">
+    <div class="form-wrap">
+      <div class="card contact-info reveal">
+        <div class="eyebrow">Auditoría gratuita</div>
+        <h2>Cuéntanos qué quieres construir.</h2>
+        <p>Revisamos qué solución conviene más y te enviamos la propuesta por WhatsApp.</p>
+        <ul class="feat-list" style="margin-bottom:24px">
+          <li><span class="chk">✓</span>Respuesta en menos de 24 horas</li>
+          <li><span class="chk">✓</span>Diagnóstico inicial sin costo</li>
+          <li><span class="chk">✓</span>Propuesta adaptada a tu etapa</li>
+          <li><span class="chk">✓</span>Sin compromiso de compra</li>
+        </ul>
+        <a class="btn btn-ghost" target="_blank" href="https://wa.me/5210000000000?text=Hola%20quiero%20una%20auditoria%20de%20WebEmpresarial">💬 Prefiero hablar por WhatsApp</a>
+        <div class="guarantee">
+          <div class="guarantee-icon">🛡️</div>
+          <div class="guarantee-text">
+            <strong>Garantía de entrega</strong>
+            <span>Si no cumplimos lo acordado, trabajamos sin costo hasta lograrlo.</span>
+          </div>
+        </div>
+      </div>
+      <div class="card reveal reveal-d2">
+        <form id="leadForm">
+          <input name="nombre"    placeholder="Nombre completo" required/>
+          <input name="empresa"   placeholder="Empresa o negocio" required/>
+          <input name="whatsapp"  placeholder="WhatsApp (con clave de país)" required/>
+          <input name="instagram" placeholder="Instagram o sitio web actual"/>
+          <select name="servicio" required>
+            <option value="">¿Qué servicio te interesa?</option>
+            <option value="commerce">Commerce — Ecommerce</option>
+            <option value="business">Business — Página web</option>
+            <option value="systems">Systems — Sistema a medida</option>
+            <option value="no-se">No sé todavía, necesito orientación</option>
+          </select>
+          <select name="presupuesto" required>
+            <option value="">Presupuesto estimado (MXN)</option>
+            <option value="menos-10k">Menos de $10,000</option>
+            <option value="10k-25k">$10,000 – $25,000</option>
+            <option value="25k-50k">$25,000 – $50,000</option>
+            <option value="50k-plus">Más de $50,000</option>
+          </select>
+          <textarea name="objetivo" placeholder="¿Qué objetivo quieres lograr? Ej. vender online, captar clientes, automatizar inventario…"></textarea>
+          <button class="btn btn-cyan" type="submit" style="width:100%;padding:15px">Enviar solicitud — es gratis →</button>
+        </form>
+        <p id="formMsg" style="margin-top:13px;color:var(--green);display:none;font-size:.91rem">✓ Solicitud enviada. Te contactaremos por WhatsApp en menos de 24 h.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a class="btn btn-cyan sticky-mobile" target="_blank" href="https://wa.me/5210000000000?text=Hola%20quiero%20una%20auditoria%20de%20WebEmpresarial">
+  📲 Auditoría gratis — quedan 3 lugares
+</a>
+
+</th:block>
+
+</body>
+</html>

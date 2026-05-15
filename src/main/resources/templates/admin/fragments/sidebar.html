@@ -1,0 +1,79 @@
+<aside th:fragment="sidebar"
+       class="admin-sidebar"
+       id="adminSidebar">
+
+    <div class="sidebar-brand">
+        <div class="sidebar-text">
+            <strong>WebEmpresarial</strong>
+            <small>Commerce Admin</small>
+        </div>
+
+        <button type="button"
+                class="sidebar-toggle"
+                id="sidebarToggle"
+                aria-label="Plegar menú">
+            ☰
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+
+        <a href="/admin/dashboard" class="sidebar-link">
+            <span class="sidebar-icon">🏠</span>
+            <span class="sidebar-text">Dashboard</span>
+        </a>
+
+        <a href="/admin/leads" class="sidebar-link">
+            <span class="sidebar-icon">🎯</span>
+            <span class="sidebar-text">Leads / CRM</span>
+        </a>
+
+        <a href="/admin/productos" class="sidebar-link">
+            <span class="sidebar-icon">📦</span>
+            <span class="sidebar-text">Productos</span>
+        </a>
+
+        <a href="/nuevo" class="sidebar-link">
+            <span class="sidebar-icon">➕</span>
+            <span class="sidebar-text">Subir producto</span>
+        </a>
+
+        <a href="/modificar-precios" class="sidebar-link">
+            <span class="sidebar-icon">💲</span>
+            <span class="sidebar-text">Precios</span>
+        </a>
+
+        <a href="/orders" class="sidebar-link">
+            <span class="sidebar-icon">🧾</span>
+            <span class="sidebar-text">Pedidos</span>
+        </a>
+
+        <a href="/resenas/nueva" class="sidebar-link">
+            <span class="sidebar-icon">⭐</span>
+            <span class="sidebar-text">Reseñas</span>
+        </a>
+
+        <div class="sidebar-section sidebar-text">
+            Automatización
+        </div>
+
+        <a href="/admin/automations" class="sidebar-link">
+            <span class="sidebar-icon">⚡</span>
+            <span class="sidebar-text">Automatizaciones</span>
+        </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="/" target="_blank" class="sidebar-link">
+            <span class="sidebar-icon">🌐</span>
+            <span class="sidebar-text">Ver sitio</span>
+        </a>
+
+        <a href="/admin/logout" class="sidebar-link logout">
+            <span class="sidebar-icon">🚪</span>
+            <span class="sidebar-text">Cerrar sesión</span>
+        </a>
+    </div>
+
+</aside>

@@ -1,0 +1,207 @@
+package com.webempresarial.store.service;
+
+import java.util.List;  
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.webempresarial.store.contracts.StockItem;
+import com.webempresarial.store.dto.checkout.CartItemDTO;
+import com.webempresarial.store.exceptions.InsufficientStockException;
+import com.webempresarial.store.exceptions.ResourceNotFoundException;
+import com.webempresarial.store.model.Order;
+import com.webempresarial.store.model.OrderItem;
+import com.webempresarial.store.model.ProductoVariante;
+import com.webempresarial.store.repository.ProductoRepository;
+import com.webempresarial.store.repository.ProductoVarianteRepository;
+
+@Service
+public class StockService {
+
+	private final ProductoVarianteRepository varianteRepository;
+	private final ProductoRepository productoRepository;
+	
+	public StockService(
+	        ProductoVarianteRepository varianteRepository,
+	        ProductoRepository productoRepository
+	) {
+	    this.varianteRepository = varianteRepository;
+	    this.productoRepository = productoRepository;
+	}
+
+    // ============================
+    // VALIDAR STOCK
+    // ============================
+	@Transactional
+	public void validarStock(List<? extends StockItem> items) {
+
+	    if (items == null || items.isEmpty()) {
+	        throw new IllegalArgumentException("No hay items en la orden");
+	    }
+
+	    for (StockItem item : items) {
+
+	        // =========================
+	        // VARIANTE
+	        // =========================
+	        if (item.getVarianteId() != null) {
+
+	            ProductoVariante variante = varianteRepository
+	                    .findByIdForUpdate(item.getVarianteId())
+	                    .orElseThrow(() ->
+	                            new ResourceNotFoundException(
+	                                    "Variante no encontrada: "
+	                                            + item.getVarianteId()
+	                            )
+	                    );
+
+	            if (variante.getStock() < item.getQuantity()) {
+	                throw new InsufficientStockException(
+	                        "Stock insuficiente para variante"
+	                );
+	            }
+	        }
+
+	        // =========================
+	        // PRODUCTO SIMPLE
+	        // =========================
+	        else {
+
+	            CartItemDTO cartItem = (CartItemDTO) item;
+
+	            var producto = productoRepository
+	                    .findById(cartItem.getProductId())
+	                    .orElseThrow(() ->
+	                            new ResourceNotFoundException(
+	                                    "Producto no encontrado: "
+	                                            + cartItem.getProductId()
+	                            )
+	                    );
+
+	            if (producto.getStockSimple() < item.getQuantity()) {
+	                throw new InsufficientStockException(
+	                        "Stock insuficiente para producto: "
+	                                + producto.getProductName()
+	                );
+	            }
+	        }
+	    }
+	}
+    
+    
+
+    // ============================
+    // DESCONTAR STOCK
+    // ============================
+    @Transactional
+    public void descontarStock(Order order) {
+
+        if (order.isStockReduced()) return;
+
+        for (OrderItem item : order.getItems()) {
+
+            // =========================
+            // VARIANTE
+            // =========================
+            if (item.getVariante() != null) {
+
+                ProductoVariante variante = varianteRepository
+                        .findByIdForUpdate(item.getVariante().getId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Variante no encontrada")
+                        );
+
+                if (variante.getStock() < item.getQuantity()) {
+                    throw new InsufficientStockException(
+                            "Stock insuficiente para variante"
+                    );
+                }
+
+                variante.setStock(
+                        variante.getStock() - item.getQuantity()
+                );
+
+                varianteRepository.save(variante);
+
+            }
+
+            // =========================
+            // PRODUCTO SIMPLE
+            // =========================
+            else {
+
+                var producto = productoRepository
+                        .findById(item.getProducto().getId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Producto no encontrado")
+                        );
+
+                if (producto.getStockSimple() < item.getQuantity()) {
+                    throw new InsufficientStockException(
+                            "Stock insuficiente para producto: "
+                                    + producto.getProductName()
+                    );
+                }
+
+                producto.setStockSimple(
+                        producto.getStockSimple() - item.getQuantity()
+                );
+
+                productoRepository.save(producto);
+            }
+        }
+
+        order.setStockReduced(true);
+    }
+
+    // ============================
+    // RESTAURAR STOCK
+    // ============================
+    @Transactional
+    public void restaurarStock(Order order) {
+
+        if (!order.isStockReduced()) return;
+
+        for (OrderItem item : order.getItems()) {
+
+            // =========================
+            // VARIANTE
+            // =========================
+            if (item.getVariante() != null) {
+
+                ProductoVariante variante = varianteRepository
+                        .findByIdForUpdate(item.getVariante().getId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Variante no encontrada")
+                        );
+
+                variante.setStock(
+                        variante.getStock() + item.getQuantity()
+                );
+
+                varianteRepository.save(variante);
+
+            }
+
+            // =========================
+            // PRODUCTO SIMPLE
+            // =========================
+            else {
+
+                var producto = productoRepository
+                        .findById(item.getProducto().getId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Producto no encontrado")
+                        );
+
+                producto.setStockSimple(
+                        producto.getStockSimple() + item.getQuantity()
+                );
+
+                productoRepository.save(producto);
+            }
+        }
+
+        order.setStockReduced(false);
+    }
+}

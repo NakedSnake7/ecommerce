@@ -1,0 +1,35 @@
+<header th:fragment="navbar">
+  <div class="container nav">
+    <a class="logo" href="/">
+      <div class="logo-ring"></div>
+      WebEmpresarial™
+    </a>
+
+    <nav class="nav-links">
+      <a href="#commerce">Commerce</a>
+      <a href="#business">Business</a>
+      <a href="#systems">Systems</a>
+      <a href="#testimonios">Casos</a>
+      <a href="#contacto" class="nav-cta">Auditoría gratis</a>
+    </nav>
+
+    <button class="hamburger"
+            id="hamburger"
+            type="button"
+            aria-label="Abrir menú"
+            aria-controls="mobileNav"
+            aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<nav class="mobile-nav" id="mobileNav" aria-hidden="true">
+  <a href="#commerce" class="mobile-link">Commerce</a>
+  <a href="#business" class="mobile-link">Business</a>
+  <a href="#systems" class="mobile-link">Systems</a>
+  <a href="#testimonios" class="mobile-link">Casos de éxito</a>
+  <a href="#contacto" class="mobile-link mobile-cta">Auditoría gratis →</a>
+</nav>

@@ -1,195 +1,160 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Menú - Gestión de Página</title>
-
-<style>
-:root{
-  --bg:#0f1724;
-  --card:#0b1220;
-  --accent:#22c55e;
-  --accent-2:#06b6d4;
-  --muted:#94a3b8;
-  --text:#e6eef6;
-}
-
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  background:linear-gradient(180deg,#071026 0%, #0b1220 100%);
-  color:var(--text);
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:2rem;
-}
-
-.menu-card{
-  width:100%;
-  max-width:960px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.05);
-  border-radius:14px;
-  padding:1.2rem 1.4rem;
-  box-shadow:0 12px 40px rgba(2,6,23,0.65);
-}
-
-.menu-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:1rem;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:0.9rem;
-}
-
-.logo{
-  width:46px;
-  height:46px;
-  border-radius:10px;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:800;
-  color:#022;
-}
-
-.brand h1{
-  margin:0;
-  font-size:1.15rem;
-}
-.brand p{
-  margin:0;
-  font-size:0.82rem;
-  color:var(--muted);
-}
-
-/* NAV */
-nav{margin-top:1.2rem}
-
-.nav-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-  gap:0.8rem;
-}
-
-.nav-item{
-  display:flex;
-  align-items:center;
-  gap:0.6rem;
-  padding:0.8rem 0.9rem;
-  border-radius:10px;
-  text-decoration:none;
-  color:var(--text);
-  background:rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.04);
-  transition:all .18s ease;
-  font-weight:600;
-}
-
-.nav-item span{
-  font-size:0.9rem;
-}
-
-.nav-item:hover{
-  transform:translateY(-2px);
-  box-shadow:0 10px 22px rgba(0,0,0,.45);
-  border-color:rgba(34,197,94,0.25);
-}
-
-.nav-item.primary{
-  background:linear-gradient(90deg, rgba(34,197,94,0.15), rgba(6,182,212,0.08));
-  border-color:rgba(34,197,94,0.25);
-  color:var(--accent);
-}
-
-.icon{
-  font-size:1.2rem;
-}
-
-/* FOOTER */
-.footer{
-  margin-top:1.4rem;
-  display:flex;
-  justify-content:space-between;
-  font-size:0.85rem;
-  color:var(--muted);
-}
-
-@media (max-width:640px){
-  body{padding:1rem}
-  .footer{flex-direction:column;gap:0.4rem}
-}
-</style>
-</head>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/main :: layout(
+        'Dashboard | WebEmpresarial Admin',
+        ~{::content}
+)}">
 
 <body>
 
+<th:block th:fragment="content">
 
+<section class="container-fluid">
 
-<main class="menu-card">
-  <header class="menu-header">
-    <div class="brand">
-      <div class="logo">W</div>
-      <div>
-        <h1>Panel de Productos</h1>
-        <p>Gestión rápida y centralizada</p>
-      </div>
+    <div class="mb-4">
+        <span class="badge text-bg-success mb-2">WebEmpresarial Admin</span>
+        <h1 class="fw-bold mb-1">Centro de gestión</h1>
+        <p class="text-muted mb-0">
+            Administra leads, productos, pedidos, clientes y automatizaciones desde un solo lugar.
+        </p>
     </div>
-  </header>
 
-  <nav>
-    <div class="nav-grid">
+    <div class="row g-3 mb-4">
 
-      <a th:href="@{/nuevo}" class="nav-item primary">
-        <span class="icon">➕</span>
-        <span>Subir Productos</span>
-      </a>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Leads nuevos</div>
+                    <div class="display-6 fw-bold">0</div>
+                    <a href="/admin/leads" class="small">Ver leads →</a>
+                </div>
+            </div>
+        </div>
 
-      <a th:href="@{/admin/productos}" class="nav-item">
-        <span class="icon">📦</span>
-        <span>Ver / Editar Productos</span>
-      </a>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Productos</div>
+                    <div class="display-6 fw-bold">0</div>
+                    <a href="/admin/productos" class="small">Gestionar productos →</a>
+                </div>
+            </div>
+        </div>
 
-      <a th:href="@{/modificar-precios}" class="nav-item">
-        <span class="icon">💲</span>
-        <span>Modificar Precios</span>
-      </a>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Pedidos</div>
+                    <div class="display-6 fw-bold">0</div>
+                    <a href="/orders" class="small">Ver pedidos →</a>
+                </div>
+            </div>
+        </div>
 
-      <a th:href="@{/proveedor/stock}" class="nav-item">
-        <span class="icon">🏭</span>
-        <span>Stock del Proveedor</span>
-      </a>
-
-      <a th:href="@{/orders}" class="nav-item">
-        <span class="icon">🧾</span>
-        <span>Órdenes</span>
-      </a>
-
-      <a th:href="@{/resenas/nueva}" class="nav-item">
-        <span class="icon">⭐</span>
-        <span>Crear Reseñas</span>
-      </a>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Automatizaciones</div>
+                    <div class="display-6 fw-bold">3</div>
+                    <span class="small text-muted">WhatsApp · Email · CRM</span>
+                </div>
+            </div>
+        </div>
 
     </div>
-  </nav>
-  
 
-  <div class="footer">
-    <span>Usuario: <strong>Administrador</strong></span>
-    <span>Panel WeedTlan • Control Interno</span>
-  </div>
-</main>
+    <div class="row g-3">
+
+        <div class="col-md-4">
+            <a href="/admin/leads" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 dashboard-card">
+                    <div class="card-body">
+                        <div class="fs-2 mb-2">🎯</div>
+                        <h5 class="fw-bold">Leads & CRM</h5>
+                        <p class="text-muted mb-0">
+                            Captura solicitudes, cambia estados y da seguimiento comercial.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="/admin/productos" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 dashboard-card">
+                    <div class="card-body">
+                        <div class="fs-2 mb-2">📦</div>
+                        <h5 class="fw-bold">Productos</h5>
+                        <p class="text-muted mb-0">
+                            Crea, edita y organiza productos para tu ecommerce.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="/orders" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 dashboard-card">
+                    <div class="card-body">
+                        <div class="fs-2 mb-2">🧾</div>
+                        <h5 class="fw-bold">Pedidos</h5>
+                        <p class="text-muted mb-0">
+                            Revisa órdenes, pagos y flujo de venta.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="/nuevo" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 dashboard-card">
+                    <div class="card-body">
+                        <div class="fs-2 mb-2">➕</div>
+                        <h5 class="fw-bold">Subir productos</h5>
+                        <p class="text-muted mb-0">
+                            Agrega nuevos artículos al catálogo de la tienda.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="/modificar-precios" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 dashboard-card">
+                    <div class="card-body">
+                        <div class="fs-2 mb-2">💲</div>
+                        <h5 class="fw-bold">Precios</h5>
+                        <p class="text-muted mb-0">
+                            Actualiza precios, descuentos y promociones.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="/resenas/nueva" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 dashboard-card">
+                    <div class="card-body">
+                        <div class="fs-2 mb-2">⭐</div>
+                        <h5 class="fw-bold">Reseñas</h5>
+                        <p class="text-muted mb-0">
+                            Gestiona testimonios para aumentar confianza.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+</th:block>
 
 </body>
 </html>

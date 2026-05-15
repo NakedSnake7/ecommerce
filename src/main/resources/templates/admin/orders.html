@@ -152,7 +152,7 @@
                 </span>
                 <br>
                 <span class="badge mt-1 d-inline-block"
-                      th:classappend="${order.paymentStatus == T(com.ecommerce.store.model.PaymentStatus).PAID
+                      th:classappend="${order.paymentStatus == T(com.webempresarial.store.model.PaymentStatus).PAID
                  ? 'badge-success' : 'badge-warning'}"
                       th:text="${order.paymentStatusLabel}">
                 </span>
@@ -178,15 +178,15 @@
                 <select class="form-control form-control-sm order-status-select"
                         style="width:140px;"
                         th:data-order-id="${order.id}"
-                        th:if="${order.paymentStatus == T(com.ecommerce.store.model.PaymentStatus).PAID
-                                and order.orderStatus != T(com.ecommerce.store.model.OrderStatus).DELIVERED}">
+                        th:if="${order.paymentStatus == T(com.webempresarial.store.model.PaymentStatus).PAID
+                                and order.orderStatus != T(com.webempresarial.store.model.OrderStatus).DELIVERED}">
 
                     <option th:value="PROCESSED"
-                            th:selected="${order.orderStatus == T(com.ecommerce.store.model.OrderStatus).PROCESSED}">
+                            th:selected="${order.orderStatus == T(com.webempresarial.store.model.OrderStatus).PROCESSED}">
                         Procesada
                     </option>
                     <option th:value="SHIPPED"
-                            th:selected="${order.orderStatus == T(com.ecommerce.store.model.OrderStatus).SHIPPED}">
+                            th:selected="${order.orderStatus == T(com.webempresarial.store.model.OrderStatus).SHIPPED}">
                         Envío
                     </option>
                     <option th:value="DELIVERED">
@@ -194,14 +194,14 @@
                     </option>
                 </select>
 
-                <span th:if="${order.paymentStatus != T(com.ecommerce.store.model.PaymentStatus).PAID}"
+                <span th:if="${order.paymentStatus != T(com.webempresarial.store.model.PaymentStatus).PAID}"
                       class="text-warning small">
                     ⏳ Esperando pago
                 </span>
 
                 <a class="btn btn-danger btn-sm"
                    rel="nofollow"
-                   th:if="${order.paymentStatus != T(com.ecommerce.store.model.PaymentStatus).PAID}"
+                   th:if="${order.paymentStatus != T(com.webempresarial.store.model.PaymentStatus).PAID}"
                    th:href="@{/orders/{id}/delete(id=${order.id})}"
                    onclick="return confirm('¿Seguro que deseas eliminar esta orden?');">
                     ✖ Eliminar
